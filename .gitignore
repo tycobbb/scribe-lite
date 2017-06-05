@@ -4,6 +4,7 @@
 /deps
 /*.ez
 /web/client/elm-stuff
+/web/static/js/main.js
 
 # Generated on crash by the VM
 erl_crash.dump

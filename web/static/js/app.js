@@ -1,6 +1,6 @@
 import Elm from './main'
 
-const root = document.querySelector('#root')
-if (root) {
-  Elm.Main.embed(root)
+const main = document.querySelector('#container')
+if (main) {
+  Elm.Main.embed(main)
 }
