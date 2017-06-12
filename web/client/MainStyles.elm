@@ -5,29 +5,39 @@ import Css exposing (..)
 
 styles :
   { container : Rules m
-  , field : Rules m
+  , header : Rules m
+  , content : Rules m
   , prompt : Rules m
-  , input : Rules m
+  , author : Rules m
   }
 
 styles =
   { container = rules
     [ displayFlex
-    , justifyContent center
+    , flexDirection column
+    , alignItems center
     , height (vh 100)
-    , padding (px 30)
-    , backgroundColor (hex "F5E47F")
+    , padding (px 60)
+    , backgroundColor (hex "FFFEF5")
     ]
-  , field = rules
+  , header = rules
+    [ fontSize (px 28)
+    , color (hex "F2F1E7")
+    ]
+  , content = rules
     [ displayFlex
     , flexDirection column
     , justifyContent stretch
+    , marginTop (px 140)
     ]
   , prompt = rules
     [ marginBottom (px 10)
-    , color (hex "FFFFFF")
+    , fontSize (px 42)
+    , color (hex "F5E9CB")
     ]
-  , input = rules
-    [ color (hex "88CBF5")
+  , author = rules
+    [ marginBottom (px 10)
+    , fontSize (px 18)
+    , color (hex "F2F1E7")
     ]
   }

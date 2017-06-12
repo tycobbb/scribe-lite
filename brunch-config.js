@@ -16,7 +16,8 @@ exports.config = {
   },
 
   conventions: {
-    assets: /^(web\/static\/assets)/
+    assets: /^(web\/static\/assets)/,
+    ignored: /^(web\/client\/elm-stuff)/
   },
 
   // Phoenix paths configuration
