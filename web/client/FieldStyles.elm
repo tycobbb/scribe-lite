@@ -5,19 +5,30 @@ import Css exposing (..)
 
 styles :
   { wrapper : Rules m
-  , shadowInput : Rules m
   , input : Rules m
+  , shadowInput : Rules m
+  , shadowText : Rules m
   , placeholder : Rules m
-  , value : Rules m
-  , outerCaret : Rules m
-  , caret : Rules m
-  , animating : Rules m
+  , count : Rules m
   , hidden : Rules m
   }
 
 styles =
   { wrapper = rules
-    [ position relative
+    [ position relative,
+      fontSize (px 42)
+    ]
+  , input = rules
+    [ width (pct 100)
+    , padding (px 0)
+    , zIndex (int 1)
+    , borderStyle none
+    , outlineStyle none
+    , backgroundColor transparent
+    , cursor pointer
+    , overflow auto
+    , resize none
+    , fontSize (px 42)
     ]
   , shadowInput = rules
     [ position absolute
@@ -25,34 +36,17 @@ styles =
     , bottom (px 0)
     , left (px 0)
     , right (px 0)
-    , borderStyle none
-    , outlineStyle none
-    , backgroundColor transparent
+    , property "pointer-events" "none"
+    ]
+  , shadowText = rules
+    [ marginRight (px 10)
     , color transparent
     ]
-  , input = rules
-    [ fontSize (px 42)
-    , color (hex "272727")
-    ]
   , placeholder = rules
-    [ marginLeft (px 10)
-    , color (hex "F2F1E7")
+    [ color (hex "F2F1E7")
     ]
-  , value = rules
-    [ marginRight (px 10)
-    ]
-  , outerCaret = rules
-    [ display inlineBlock
-    , width (px 3)
-    , height (px 50)
-    ]
-  , caret = rules
-    [ height (pct 100)
-    , marginTop (px 9)
-    , backgroundColor (hex "272727")
-    ]
-  , animating = rules
-    [ property "animation" "0.7s ease-in-out 0.0s infinite alternate blink"
+  , count = rules
+    [ color (hex "F2F1E7")
     ]
   , hidden = rules
     [ display none
