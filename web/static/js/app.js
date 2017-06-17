@@ -1,4 +1,4 @@
-import Elm from './main'
+import Elm from '../../client/Main'
 
 const main = document.querySelector('#container')
 if (main) {
