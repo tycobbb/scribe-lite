@@ -28,19 +28,25 @@ update msg model =
 view : (Action -> a) -> Model -> Html a
 view action model =
   let
+    characterLimit =
+      150
+    charactersLeft =
+      characterLimit - (String.length model.value)
     isBlank =
       String.isEmpty model.value
-    hideWhen condition =
+    hiddenWhen condition =
       if condition then [ styles.hidden ] else []
   in
     div [ styles.wrapper ]
       [ div [ styles.shadowInput ]
-        [ span (styles.placeholder :: hideWhen (not isBlank))
-          [ text "150 Characters" ]
-        , span (styles.shadowText :: hideWhen isBlank)
+        [ span (styles.placeholder :: hiddenWhen (not isBlank))
+          [ text (toString characterLimit ++ " Characters") ]
+        , span (styles.shadowText :: hiddenWhen isBlank)
           [ text model.value ]
-        , span (styles.count :: hideWhen isBlank)
-          [ text (model.value |> String.length |> toString) ]
+        , span (styles.countAnchor :: hiddenWhen isBlank)
+          [ div (styles.count :: hiddenWhen isBlank)
+            [ text (toString charactersLeft) ]
+          ]
         ]
       , textarea [ styles.input, onInput (action << Change) ] []
       ]

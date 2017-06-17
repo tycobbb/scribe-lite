@@ -3,12 +3,21 @@ module FieldStyles exposing (styles)
 import Rules exposing (..)
 import Css exposing (..)
 
+field : Mixin
+field =
+  mixin
+    [ overflow auto
+    , property "word-wrap" "break-word"
+    , property "white-space" "pre-wrap"
+    ]
+
 styles :
   { wrapper : Rules m
   , input : Rules m
   , shadowInput : Rules m
   , shadowText : Rules m
   , placeholder : Rules m
+  , countAnchor : Rules m
   , count : Rules m
   , hidden : Rules m
   }
@@ -19,16 +28,15 @@ styles =
       fontSize (px 42)
     ]
   , input = rules
-    [ width (pct 100)
+    [ field
+    , width (pct 100)
     , padding (px 0)
     , zIndex (int 1)
     , borderStyle none
     , outlineStyle none
     , backgroundColor transparent
     , cursor pointer
-    , overflow auto
     , resize none
-    , fontSize (px 42)
     ]
   , shadowInput = rules
     [ position absolute
@@ -39,14 +47,20 @@ styles =
     , property "pointer-events" "none"
     ]
   , shadowText = rules
-    [ marginRight (px 10)
+    [ field
     , color transparent
     ]
   , placeholder = rules
     [ color (hex "F2F1E7")
     ]
+  , countAnchor = rules
+    [ position relative
+    ]
   , count = rules
-    [ color (hex "F2F1E7")
+    [ position absolute
+    , top (px 0)
+    , left (px 0)
+    , color (hex "F2F1E7")
     ]
   , hidden = rules
     [ display none
