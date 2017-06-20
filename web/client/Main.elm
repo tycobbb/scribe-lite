@@ -6,27 +6,35 @@ import Field
 
 main : Program Never Model Action
 main =
-  beginnerProgram { model = init, view = view , update = update }
+  program
+    { init = init
+    , view = view
+    , update = update
+    , subscriptions = (\_ -> Sub.none)
+    }
 
 -- model
 type alias Model =
   { field: Field.Model
   }
 
-init : Model
+merge : (a -> b) -> (a, Cmd Field.Action) -> (b, Cmd Action)
+merge combiner (field, cmd) =
+  (combiner field, Cmd.map (\a -> FieldAction a) cmd)
+
+init : (Model, Cmd Action)
 init =
-  { field = Field.init
-  }
+  merge (\f -> { field = f }) Field.init
 
 -- update
-type Action =
-  FieldAction Field.Action
+type Action
+  = FieldAction Field.Action
 
-update : Action -> Model -> Model
+update : Action -> Model -> (Model, Cmd Action)
 update action model =
   case action of
     FieldAction action ->
-      { model | field = Field.update action model.field }
+      merge (\f -> { model | field = f }) (Field.update action model.field)
 
 -- view
 view : Model -> Html Action
@@ -36,12 +44,16 @@ view model =
       "Friday May 24 (2017)"
   in
     div [ styles.container ]
-      [ div [ styles.header ]
-        [ text date ]
-      , div [ styles.content ]
-        [ p [ styles.author ] [ text "Gob Bluth" ]
-        , p [ styles.prompt ]
-          [ text "When the tiny dumpling decided to jump across the river, it let out a sigh." ]
-        , Field.view FieldAction model.field
+      [ div [ styles.inner ]
+        [ div [ styles.header ]
+          [ text date ]
+        , div [ styles.content ]
+          [ div [ styles.text ]
+            [ p [ styles.author ] [ text "Gob Bluth" ]
+            , p [ styles.prompt ]
+              [ text "When the tiny dumpling decided to jump across the river, it let out a sigh." ]
+            , Field.view FieldAction model.field
+            ]
+          ]
         ]
       ]
