@@ -66,7 +66,7 @@ styles =
   , count = rules
     [ position absolute
     , top (px 0)
-    , left (px 5)
+    , left (px 10)
     , color (hex "F2F1E7")
     ]
   , hidden = rules
