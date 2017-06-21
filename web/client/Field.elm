@@ -8,6 +8,10 @@ import Dom.Size exposing (Boundary(..))
 import Task
 import Basics exposing (Never)
 
+-- constants
+lineHeight : Float
+lineHeight = 48
+
 -- model
 type alias Model =
   { value: String
@@ -17,7 +21,7 @@ type alias Model =
 init : (Model, Cmd Action)
 init =
   { value = ""
-  , height = 0.0
+  , height = lineHeight
   }
   ! [calculateHeight ""]
 
@@ -32,7 +36,7 @@ update action model =
     Change value ->
       ({ model | value = value }, calculateHeight value)
     Resize height ->
-      ({ model | height = height }, Cmd.none)
+      ({ model | height = lineHeight + height }, Cmd.none)
 
 -- commands
 calculateHeight : String -> Cmd Action
