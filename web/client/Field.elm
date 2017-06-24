@@ -1,7 +1,7 @@
 module Field exposing (Model, Action, init, update, view)
 
 import Dom.Size exposing (Boundary(..))
-import FieldStyles exposing (styles)
+import FieldStyles exposing (Classes(..), namespace, inline)
 import Html exposing (..)
 import Html.Attributes exposing (id, maxlength)
 import Html.Events exposing (onWithOptions, onInput, keyCode)
@@ -82,6 +82,8 @@ filterIllegalKeys currentText action =
         |> Decode.map (\_ -> action None))
 
 -- view
+{ class } = namespace
+
 view : (Action -> a) -> Model -> Html a
 view action model =
   let
@@ -90,22 +92,22 @@ view action model =
     isBlank =
       String.isEmpty model.value
     hiddenWhen condition =
-      if condition then [ styles.hidden ] else []
+      if condition then [ inline.hidden ] else []
   in
-    div [ styles.wrapper ]
-      [ div [ styles.shadowInput ]
-        [ span (id "placeholder" :: styles.placeholder :: hiddenWhen (not isBlank))
+    div [ class [Wrapper] ]
+      [ div [ class [ShadowInput] ]
+        [ span (id "placeholder" :: class [Placeholder] :: hiddenWhen (not isBlank))
           [ text (toString characterLimit ++ " Characters") ]
-        , span (id "shadow-input" :: styles.shadowText :: hiddenWhen isBlank)
+        , span (id "shadow-input" :: class [ShadowInput] :: hiddenWhen isBlank)
           [ text model.value ]
-        , span (styles.countAnchor :: hiddenWhen isBlank)
-          [ div (styles.count :: hiddenWhen isBlank)
+        , span (class [CountAnchor] :: hiddenWhen isBlank)
+          [ div (class [Count] :: hiddenWhen isBlank)
             [ text (toString charactersLeft) ]
           ]
         ]
       , textarea
-        [ styles.input
-        , styles.height model.height
+        [ class [Input]
+        , inline.height model.height
         , maxlength characterLimit
         , filterIllegalKeys model.value action
         , onInput (action << Change)

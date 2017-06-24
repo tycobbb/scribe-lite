@@ -1,3 +1,5 @@
+const CopyPlugin = require('copy-webpack-plugin')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const path = require('path')
 
 module.exports = {
@@ -5,24 +7,39 @@ module.exports = {
     './web/static/js/app.js'
   ],
   output: {
-    path: path.resolve('./priv/static/js'),
-    filename: 'app.js'
+    path: path.resolve('./priv/static'),
+    filename: 'js/app.js'
   },
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.elm']
   },
   module: {
+    noParse: /^((?!Stylesheets).)*\.elm.*$/,
     rules: [{
       test: /\.elm$/,
-      exclude: [/elm-stuff/, /node_modules/],
+      exclude: [/elm-stuff/, /node_modules/, /Stylesheets\.elm/],
       use: {
         loader: 'elm-webpack-loader',
         options: {
-          cwd: path.resolve('./web/client')
+          cwd: path.resolve('./')
         }
       }
-    }],
-    noParse: [/\.elm$/]
-  }
+    }, {
+      test: /Stylesheets\.elm$/,
+      use: ExtractTextPlugin.extract({
+        fallback: 'style-loader',
+        use: [
+          'css-loader',
+          'elm-css-webpack-loader'
+        ]
+      })
+    }]
+  },
+  plugins: [
+    new ExtractTextPlugin('./assets/css/[name]-[hash].css'),
+    new CopyPlugin([
+      { from: './web/static/assets' }
+    ])
+  ]
 }

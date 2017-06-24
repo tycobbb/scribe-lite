@@ -1,4 +1,4 @@
-module Rules exposing (Rules, rules)
+module Rules exposing (..)
 
 import Css
 import Html

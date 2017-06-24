@@ -1,51 +1,58 @@
-module MainStyles exposing (styles)
+module MainStyles exposing (Classes(..), namespace, css)
 
-import Rules exposing (..)
 import Css exposing (..)
+import Css.Namespace as C
+import Html.CssHelpers exposing (Namespace, withNamespace)
+import SharedStyles exposing (..)
 
-styles :
-  { container : Rules m
-  , inner : Rules m
-  , header : Rules m
-  , content : Rules m
-  , text : Rules m
-  , prompt : Rules m
-  , author : Rules m
-  }
+type Classes
+  = Container
+  | Inner
+  | Header
+  | Content
+  | Text
+  | Prompt
+  | Author
 
-styles =
-  { container = rules
-    [ displayFlex
-    , height (vh 100)
-    , backgroundColor (hex "FFFEF5")
+namespace : Namespace String class id msg
+namespace =
+  withNamespace "main"
+
+css : Stylesheet
+css =
+  (stylesheet << C.namespace namespace.name)
+    [ class Container
+      [ displayFlex
+      , height (vh 100)
+      , backgroundColor (hex "FFFEF5")
+      ]
+    , class Inner
+      [ displayFlex
+      , flexDirection column
+      , alignItems center
+      , padding2 (px 60) (px 85)
+      ]
+    , class Header
+      [ fontMedium
+      , color (hex "F2F1E7")
+      ]
+    , class Content
+      [ flex (int 1)
+      ]
+    , class Text
+      [ displayFlex
+      , flexDirection column
+      , justifyContent center
+      , height (pct 50)
+      ]
+    , class Prompt
+      [ marginBottom (px 50)
+      , fontLarge
+      , color (hex "F5E9CB")
+      ]
+    , class Author
+      [ marginBottom (px 20)
+      , fontSmall
+      , color (hex "F2F1E7")
+      ]
     ]
-  , inner = rules
-    [ displayFlex
-    , flexDirection column
-    , alignItems center
-    , padding (px 60)
-    ]
-  , header = rules
-    [ fontSize (px 28)
-    , color (hex "F2F1E7")
-    ]
-  , content = rules
-    [ flex (int 1)
-    ]
-  , text = rules
-    [ displayFlex
-    , flexDirection column
-    , justifyContent center
-    , height (pct 70)
-    ]
-  , prompt = rules
-    [ marginBottom (px 10)
-    , fontSize (px 42)
-    , color (hex "F5E9CB")
-    ]
-  , author = rules
-    [ marginBottom (px 10)
-    , fontSize (px 18)
-    , color (hex "F2F1E7")
-    ]
-  }

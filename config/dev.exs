@@ -1,11 +1,6 @@
 use Mix.Config
 
-# For development, we disable any cache and enable
-# debugging and code reloading.
-#
-# The watchers configuration can be used to run external
-# watchers to your application. For example, we use it
-# with brunch.io to recompile .js and .css sources.
+# for development, we disable any cache and enable debugging and code reloading.
 config :scribe, Scribe.Endpoint,
   http: [port: 4000],
   debug_errors: true,
@@ -13,7 +8,7 @@ config :scribe, Scribe.Endpoint,
   check_origin: false,
   watchers: [npm: ["run", "watch"]]
 
-# Watch static and templates for browser reloading.
+# catch static and templates for browser reloading.
 config :scribe, Scribe.Endpoint,
   live_reload: [
     patterns: [
@@ -24,14 +19,13 @@ config :scribe, Scribe.Endpoint,
     ]
   ]
 
-# Do not include metadata nor timestamps in development logs
+# do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 
-# Set a higher stacktrace during development. Avoid configuring such
-# in production as building large stacktraces may be expensive.
+# set a higher stacktrace during development.
 config :phoenix, :stacktrace_depth, 20
 
-# Configure your database
+# configure your database
 config :scribe, Scribe.Repo,
   adapter: Ecto.Adapters.Postgres,
   username: "postgres",

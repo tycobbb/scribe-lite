@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Html exposing (..)
-import MainStyles exposing (styles)
+import MainStyles exposing (namespace, Classes(..))
 import Field
 
 main : Program Never Model Action
@@ -37,20 +37,23 @@ update action model =
       merge (\f -> { model | field = f }) (Field.update action model.field)
 
 -- view
+{ class } = namespace
+
 view : Model -> Html Action
 view model =
   let
     date =
       "Friday May 24 (2017)"
   in
-    div [ styles.container ]
-      [ div [ styles.inner ]
-        [ div [ styles.header ]
+    div [ class [Container] ]
+      [ div [ class [Inner] ]
+        [ div [ class [Header] ]
           [ text date ]
-        , div [ styles.content ]
-          [ div [ styles.text ]
-            [ p [ styles.author ] [ text "Gob Bluth" ]
-            , p [ styles.prompt ]
+        , div [ class [Content] ]
+          [ div [ class [Text] ]
+            [ p [ class [Author] ]
+              [ text "Gob Bluth" ]
+            , p [ class [Prompt] ]
               [ text "When the tiny dumpling decided to jump across the river, it let out a sigh." ]
             , Field.view FieldAction model.field
             ]

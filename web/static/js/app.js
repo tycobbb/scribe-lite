@@ -1,3 +1,4 @@
+import '../../client/Stylesheets'
 import Elm from '../../client/Main'
 
 const main = document.querySelector('#container')

@@ -4,7 +4,7 @@
   "repository": "https://github.com/wzrad/scribe-lite.git",
   "license": "BSD3",
   "source-directories": [
-    "."
+    "web/client"
   ],
   "exposed-modules": [],
   "dependencies": {
@@ -12,7 +12,8 @@
     "elm-lang/core": "5.1.1 <= v < 6.0.0",
     "elm-lang/dom": "1.1.1 <= v < 2.0.0",
     "elm-lang/html": "2.0.0 <= v < 3.0.0",
-    "rtfeldman/elm-css": "8.2.0 <= v < 9.0.0"
+    "rtfeldman/elm-css": "8.2.0 <= v < 9.0.0",
+    "rtfeldman/elm-css-helpers": "2.1.0 <= v < 3.0.0"
   },
   "dependency-sources": {
     "elm-lang/dom": "https://github.com/wzrad/dom.git"
