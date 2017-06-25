@@ -37,7 +37,7 @@ module.exports = {
     }]
   },
   plugins: [
-    new ExtractTextPlugin('./assets/css/[name]-[hash].css'),
+    new ExtractTextPlugin('./css/app.css'),
     new CopyPlugin([
       { from: './web/static/assets' }
     ])
