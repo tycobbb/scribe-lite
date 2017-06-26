@@ -1,12 +1,12 @@
-module FieldStyles exposing (Classes(..), namespace, css, inline)
+module FieldStyles exposing (Classes(..), styles, inline, lineHeight)
 
 import Css exposing (..)
-import Css.Namespace as C
-import Html.CssHelpers exposing (withNamespace)
-import Rules exposing (Rules, rules)
 import SharedStyles exposing (..)
+import StyleHelpers exposing (Rules, rules, Styles, stylesNamed)
 
-type alias Height = Float
+-- constants
+lineHeight : Float
+lineHeight = 81
 
 -- stylesheet
 type Classes
@@ -17,10 +17,7 @@ type Classes
   | Placeholder
   | CountAnchor
   | Count
-
-namespace : Html.CssHelpers.Namespace String class id msg
-namespace =
-  withNamespace "field"
+  | Hidden
 
 field : Mixin
 field =
@@ -30,16 +27,18 @@ field =
     , property "white-space" "pre-wrap"
     ]
 
-css : Stylesheet
-css =
-  (stylesheet << C.namespace namespace.name)
+styles : Styles c c1 m m1
+styles =
+  stylesNamed "field"
     [ class Wrapper
       [ position relative
       , fontLarge
       ]
     , class Input
       [ field
+      , display block
       , width (pct 100)
+      , marginBottom (px -lineHeight)
       , padding (px 0)
       , zIndex (int 1)
       , borderStyle none
@@ -51,7 +50,6 @@ css =
     , class ShadowInput
       [ position absolute
       , top (px 0)
-      , bottom (px 0)
       , left (px 0)
       , right (px 0)
       , property "pointer-events" "none"
@@ -61,32 +59,28 @@ css =
       , color transparent
       ]
     , class Placeholder
-      [ color (hex "F2F1E7")
+      [ marginLeft (px 20)
+      , color (hex "F2F1E7")
       ]
     , class CountAnchor
       [ position relative
       ]
     , class Count
       [ position absolute
-      , top (px 0)
-      , left (px 10)
+      , left (px 20)
       , color (hex "F2F1E7")
+      ]
+    , class Hidden
+      [ display none
       ]
     ]
 
 -- inline
-inputHeight : Height -> Rules m
-inputHeight value =
-  rules [ height (px value) ]
-
 inline :
-  { hidden : Rules m
-  , height : Height -> Rules m
+  { height : Float -> Rules m
   }
 
 inline =
-  { hidden = rules
-    [ display none
-    ]
-  , height = inputHeight
+  { height =
+      px >> height >> List.singleton >> rules
   }

@@ -1,9 +1,8 @@
-module MainStyles exposing (Classes(..), namespace, css)
+module MainStyles exposing (Classes(..), styles)
 
 import Css exposing (..)
-import Css.Namespace as C
-import Html.CssHelpers exposing (Namespace, withNamespace)
 import SharedStyles exposing (..)
+import StyleHelpers exposing (Styles, stylesNamed)
 
 type Classes
   = Container
@@ -14,19 +13,10 @@ type Classes
   | Prompt
   | Author
 
-namespace : Namespace String class id msg
-namespace =
-  withNamespace "main"
-
-css : Stylesheet
-css =
-  (stylesheet << C.namespace namespace.name)
+styles : Styles c c1 m m1
+styles =
+  stylesNamed "main"
     [ class Container
-      [ displayFlex
-      , height (vh 100)
-      , backgroundColor (hex "FFFEF5")
-      ]
-    , class Inner
       [ displayFlex
       , flexDirection column
       , alignItems center
@@ -38,15 +28,17 @@ css =
       ]
     , class Content
       [ flex (int 1)
-      ]
-    , class Text
-      [ displayFlex
       , flexDirection column
       , justifyContent center
-      , height (pct 50)
+      ]
+    , class Text
+      [ flex (int 1)
+      , displayFlex
+      , flexDirection column
+      , justifyContent center
       ]
     , class Prompt
-      [ marginBottom (px 50)
+      [ marginBottom (px 60)
       , fontLarge
       , color (hex "F5E9CB")
       ]

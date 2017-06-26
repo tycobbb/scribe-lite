@@ -1,9 +1,9 @@
 module Field exposing (Model, Action, init, update, view)
 
 import Dom.Size exposing (Boundary(..))
-import FieldStyles exposing (Classes(..), namespace, inline)
+import FieldStyles exposing (Classes(..), styles, inline, lineHeight)
 import Html exposing (..)
-import Html.Attributes exposing (id, maxlength)
+import Html.Attributes exposing (id, autofocus, maxlength)
 import Html.Events exposing (onWithOptions, onInput, keyCode)
 import Json.Decode as Decode
 import Json.Decode.Extra as DecodeExt
@@ -11,9 +11,6 @@ import Keys
 import Task
 
 -- constants
-lineHeight : Float
-lineHeight = 60
-
 characterLimit : Int
 characterLimit = 150
 
@@ -50,15 +47,17 @@ update action model =
 calculateHeight : String -> Cmd Action
 calculateHeight value =
   let
-    elementId =
-      if String.isEmpty value then "placeholder" else "shadow-text"
+    isEmpty =
+      String.isEmpty value
+    calculateCommand =
+      Dom.Size.height VisibleContentWithBordersAndMargins "shadow-input"
+        |> Task.attempt
+          (\result ->
+            case result of
+              Ok height -> Resize height
+              Err _ -> Resize 0.0)
   in
-    Dom.Size.height VisibleContentWithBordersAndMargins elementId
-      |> Task.attempt
-        (\result ->
-          case result of
-            Ok height -> Resize height
-            Err _ -> Resize 0.0)
+    if isEmpty then Cmd.none else calculateCommand
 
 -- events
 
@@ -82,7 +81,7 @@ filterIllegalKeys currentText action =
         |> Decode.map (\_ -> action None))
 
 -- view
-{ class } = namespace
+{ class, classes } = styles
 
 view : (Action -> a) -> Model -> Html a
 view action model =
@@ -91,23 +90,29 @@ view action model =
       characterLimit - (String.length model.value)
     isBlank =
       String.isEmpty model.value
-    hiddenWhen condition =
-      if condition then [ inline.hidden ] else []
+    shadowInputClasses =
+      classes
+        [ (Placeholder, True)
+        , (Hidden, not isBlank)
+        ]
   in
-    div [ class [Wrapper] ]
-      [ div [ class [ShadowInput] ]
-        [ span (id "placeholder" :: class [Placeholder] :: hiddenWhen (not isBlank))
+    div [ class Wrapper ]
+      [ div [ id "shadow-input", class ShadowInput ]
+        [ span [ shadowInputClasses ]
           [ text (toString characterLimit ++ " Characters") ]
-        , span (id "shadow-text" :: class [ShadowText] :: hiddenWhen isBlank)
-          [ text model.value ]
-        , span (class [CountAnchor] :: hiddenWhen isBlank)
-          [ div (class [Count] :: hiddenWhen isBlank)
-            [ text (toString charactersLeft) ]
+        , span [ classes [(Hidden, isBlank)] ]
+          [ span [ class ShadowText ]
+            [ text model.value ]
+          , span [ class CountAnchor ]
+            [ span [ class Count ]
+              [ text (toString charactersLeft) ]
+            ]
           ]
         ]
       , textarea
-        [ class [Input]
+        [ class Input
         , inline.height model.height
+        , autofocus True
         , maxlength characterLimit
         , filterIllegalKeys model.value action
         , onInput (action << Change)

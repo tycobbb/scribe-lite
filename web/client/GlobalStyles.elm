@@ -1,26 +1,44 @@
-module GlobalStyles exposing (css)
+module GlobalStyles exposing (styles)
 
 import Css exposing (..)
-import Css.Elements exposing (body, p)
-import Css.Namespace exposing (namespace)
+import Css.Elements exposing (body, p, textarea)
+import SharedStyles exposing (..)
+import StyleHelpers exposing (Styles, stylesNamed)
 
-css : Stylesheet
-css =
-  (stylesheet << namespace "global")
+fontFace : List Mixin -> Snippet
+fontFace =
+  selector "@font-face"
+
+fontSrc : String -> Mixin
+fontSrc src =
+  property "src" ("url(" ++ src ++ ")")
+
+styles : Styles c c1 m m1
+styles =
+  stylesNamed "global"
     [ body
-      [ property "font-family" "Montserrat"
+      [ fontMontserrat
+      , fontWeightRegular
+      , lineHeight (num 1.35)
+      , backgroundColor (hex "FFFEF5")
       ]
     , p
       [ margin (px 0)
       ]
-    , selector "@font-face"
-      [ property "font-family" "Montserrat"
-      , fontWeight (int 400)
-      , property "src" "url(/fonts/Montserrat-Regular.ttf)"
+    , textarea
+      [ fontFamily inherit
+      , fontSize inherit
+      , fontWeight inherit
+      , lineHeight (num 1.35)
       ]
-    , selector "@font-face"
-      [ property "font-family" "Montserrat"
-      , fontWeight (int 700)
-      , property "src" "url(/fonts/Montserrat-Bold.ttf)"
+    , fontFace
+      [ fontMontserrat
+      , fontWeightRegular
+      , fontSrc "/fonts/Montserrat-Regular.ttf"
+      ]
+    , fontFace
+      [ fontMontserrat
+      , fontWeightMedium
+      , fontSrc "/fonts/Montserrat-Medium.ttf"
       ]
     ]

@@ -9,18 +9,23 @@ import FieldStyles as Field
 
 port files : CssFileStructure -> Cmd msg
 
+vendored : List Css.Stylesheet
+vendored =
+  [ Css.Normalize.css
+  ]
+
 modules : List Css.Stylesheet
 modules =
-  [ Css.Normalize.css
-  , Global.css
-  , Main.css
-  , Field.css
-  ]
+  List.map .css
+    [ Global.styles
+    , Main.styles
+    , Field.styles
+    ]
 
 cssFiles : CssFileStructure
 cssFiles =
   Css.File.toFileStructure
-    [ ("app.css", Css.File.compile modules)
+    [ ("app.css", Css.File.compile (vendored ++ modules))
     ]
 
 main : CssCompilerProgram
