@@ -12,7 +12,7 @@ import Task
 
 -- constants
 lineHeight : Float
-lineHeight = 48
+lineHeight = 60
 
 characterLimit : Int
 characterLimit = 150
@@ -51,7 +51,7 @@ calculateHeight : String -> Cmd Action
 calculateHeight value =
   let
     elementId =
-      if String.isEmpty value then "placeholder" else "shadow-input"
+      if String.isEmpty value then "placeholder" else "shadow-text"
   in
     Dom.Size.height VisibleContentWithBordersAndMargins elementId
       |> Task.attempt
@@ -98,7 +98,7 @@ view action model =
       [ div [ class [ShadowInput] ]
         [ span (id "placeholder" :: class [Placeholder] :: hiddenWhen (not isBlank))
           [ text (toString characterLimit ++ " Characters") ]
-        , span (id "shadow-input" :: class [ShadowInput] :: hiddenWhen isBlank)
+        , span (id "shadow-text" :: class [ShadowText] :: hiddenWhen isBlank)
           [ text model.value ]
         , span (class [CountAnchor] :: hiddenWhen isBlank)
           [ div (class [Count] :: hiddenWhen isBlank)
