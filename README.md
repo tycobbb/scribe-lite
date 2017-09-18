@@ -1,20 +1,37 @@
 # Scribe
 
-To start your Phoenix app:
+## Table of Contents
 
-  * Install dependencies with `mix deps.get`
-  * Create and migrate your database with `mix ecto.create && mix ecto.migrate`
-  * Install Node.js dependencies with `npm install`
-  * Start Phoenix endpoint with `mix phoenix.server`
+- [Setup](#setup-)
+- [Development](#development-)
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+## Setup [↑](#table-of-contents)
 
-Ready to run in production? Please [check our deployment guides](http://www.phoenixframework.org/docs/deployment).
+Install any necessary global dependencies. Some packages may need to be installed using the package manager(s) appropriate for your system:
 
-## Learn more
+- yarn -> [installation](https://yarnpkg.com/en/docs/install)
+- elixir -> `brew install elixir`
+- elm -> `brew install elm`
+- elm-install -> `yarn global elm-github-install`
 
-  * Official website: http://www.phoenixframework.org/
-  * Guides: http://phoenixframework.org/docs/overview
-  * Docs: https://hexdocs.pm/phoenix
-  * Mailing list: http://groups.google.com/group/phoenix-talk
-  * Source: https://github.com/phoenixframework/phoenix
+Then install local dependencies:
+
+```sh
+$ mix deps.get
+$ yarn
+$ elm-install
+```
+
+## Development [↑](#table-of-contents)
+
+Make sure your database is created and migrated:
+
+```sh
+$ mix ecto.create && mix ecto.migrate
+```
+
+Then start the Phoenix server to serve the app on http://localhost:4000:
+
+```sh
+$ mix phoenix.server
+```
