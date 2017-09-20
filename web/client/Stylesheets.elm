@@ -3,9 +3,9 @@ port module Stylesheets exposing (files, main)
 import Css
 import Css.File exposing (CssFileStructure, CssCompilerProgram)
 import Css.Normalize
-import GlobalStyles as Global
-import MainStyles as Main
-import FieldStyles as Field
+import Styles.Global
+import MainStyles
+import FieldStyles
 
 port files : CssFileStructure -> Cmd msg
 
@@ -17,9 +17,9 @@ vendored =
 modules : List Css.Stylesheet
 modules =
   List.map .css
-    [ Global.styles
-    , Main.styles
-    , Field.styles
+    [ Styles.Global.styles
+    , MainStyles.styles
+    , FieldStyles.styles
     ]
 
 cssFiles : CssFileStructure

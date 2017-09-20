@@ -1,4 +1,4 @@
-module StyleHelpers exposing (..)
+module Styles.Helpers exposing (..)
 
 import Css
 import Css.Namespace

@@ -1,9 +1,9 @@
-module GlobalStyles exposing (styles)
+module Styles.Global exposing (styles)
 
 import Css exposing (..)
 import Css.Elements exposing (body, p, textarea)
-import SharedStyles exposing (..)
-import StyleHelpers exposing (Styles, stylesNamed)
+import Styles.Fonts exposing (..)
+import Styles.Helpers exposing (Styles, stylesNamed)
 
 fontFace : List Mixin -> Snippet
 fontFace =

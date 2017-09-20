@@ -1,4 +1,4 @@
-module SharedStyles exposing (..)
+module Styles.Fonts exposing (..)
 
 import Css exposing (..)
 

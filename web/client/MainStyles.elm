@@ -1,8 +1,8 @@
 module MainStyles exposing (Classes(..), styles)
 
 import Css exposing (..)
-import SharedStyles exposing (..)
-import StyleHelpers exposing (Styles, stylesNamed)
+import Styles.Fonts exposing (..)
+import Styles.Helpers exposing (Styles, stylesNamed)
 
 type Classes
   = Container

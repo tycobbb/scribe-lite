@@ -1,8 +1,8 @@
 module FieldStyles exposing (Classes(..), styles, inline, lineHeight)
 
 import Css exposing (..)
-import SharedStyles exposing (..)
-import StyleHelpers exposing (Rules, rules, Styles, stylesNamed)
+import Styles.Fonts exposing (..)
+import Styles.Helpers exposing (Rules, rules, Styles, stylesNamed)
 
 -- constants
 lineHeight : Float
