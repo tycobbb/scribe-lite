@@ -88,27 +88,21 @@ view action model =
   let
     charactersLeft =
       characterLimit - (String.length model.value)
-    isBlank =
-      String.isEmpty model.value
-    shadowInputClasses =
-      classes
-        [ (Placeholder, True)
-        , (Hidden, not isBlank)
-        ]
+    shadowInputContent =
+      if String.isEmpty model.value then
+        span [ class Placeholder ]
+          [ text (toString characterLimit ++ " Characters") ]
+      else
+        span [ class ShadowField ]
+          [ span [ class ShadowText ]
+            [ text model.value ]
+          , span [ class Count ]
+            [ text ("  " ++ toString charactersLeft) ]
+          ]
   in
     div [ class Wrapper ]
       [ div [ id "shadow-input", class ShadowInput ]
-        [ span [ shadowInputClasses ]
-          [ text (toString characterLimit ++ " Characters") ]
-        , span [ classes [(Hidden, isBlank)] ]
-          [ span [ class ShadowText ]
-            [ text model.value ]
-          , span [ class CountAnchor ]
-            [ span [ class Count ]
-              [ text (toString charactersLeft) ]
-            ]
-          ]
-        ]
+        [ shadowInputContent ]
       , textarea
         [ class Input
         , inline.height model.height

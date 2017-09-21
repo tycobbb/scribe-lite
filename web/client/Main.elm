@@ -55,6 +55,8 @@ view model =
           , p [ class Prompt ]
             [ text "When the tiny dumpling decided to jump across the river, it let out a sigh." ]
           , Field.view FieldAction model.field
+          , input [ class EmailField ]
+            [ text "foo" ]
           ]
         ]
       ]

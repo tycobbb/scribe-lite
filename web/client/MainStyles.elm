@@ -3,6 +3,7 @@ module MainStyles exposing (Classes(..), styles)
 import Css exposing (..)
 import Styles.Fonts exposing (..)
 import Styles.Helpers exposing (Styles, stylesNamed)
+import Styles.Mixins exposing (textField)
 
 type Classes
   = Container
@@ -12,6 +13,7 @@ type Classes
   | Text
   | Prompt
   | Author
+  | EmailField
 
 styles : Styles c c1 m m1
 styles =
@@ -46,5 +48,8 @@ styles =
       [ marginBottom (px 20)
       , fontSmall
       , color (hex "F2F1E7")
+      ]
+    , class EmailField
+      [ textField
       ]
     ]

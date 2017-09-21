@@ -3,6 +3,7 @@ module FieldStyles exposing (Classes(..), styles, inline, lineHeight)
 import Css exposing (..)
 import Styles.Fonts exposing (..)
 import Styles.Helpers exposing (Rules, rules, Styles, stylesNamed)
+import Styles.Mixins exposing (textField)
 
 -- constants
 lineHeight : Float
@@ -13,11 +14,10 @@ type Classes
   = Wrapper
   | Input
   | ShadowInput
+  | ShadowField
   | ShadowText
   | Placeholder
-  | CountAnchor
   | Count
-  | Hidden
 
 field : Mixin
 field =
@@ -36,15 +36,12 @@ styles =
       ]
     , class Input
       [ field
+      , textField
       , display block
       , width (pct 100)
       , marginBottom (px -lineHeight)
       , padding (px 0)
       , zIndex (int 1)
-      , borderStyle none
-      , outlineStyle none
-      , backgroundColor transparent
-      , cursor pointer
       , resize none
       ]
     , class ShadowInput
@@ -54,24 +51,18 @@ styles =
       , right (px 0)
       , property "pointer-events" "none"
       ]
-    , class ShadowText
+    , class ShadowField
       [ field
-      , color transparent
+      ]
+    , class ShadowText
+      [ color transparent
       ]
     , class Placeholder
       [ marginLeft (px 20)
       , color (hex "F2F1E7")
       ]
-    , class CountAnchor
-      [ position relative
-      ]
     , class Count
-      [ position absolute
-      , left (px 20)
-      , color (hex "F2F1E7")
-      ]
-    , class Hidden
-      [ display none
+      [ color (hex "F2F1E7")
       ]
     ]
 
@@ -81,6 +72,5 @@ inline :
   }
 
 inline =
-  { height =
-      px >> height >> List.singleton >> rules
+  { height = px >> height >> List.singleton >> rules
   }

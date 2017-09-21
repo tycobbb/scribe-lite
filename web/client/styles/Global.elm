@@ -1,7 +1,7 @@
 module Styles.Global exposing (styles)
 
 import Css exposing (..)
-import Css.Elements exposing (body, p, textarea)
+import Css.Elements exposing (body, p, textarea, input)
 import Styles.Fonts exposing (..)
 import Styles.Helpers exposing (Styles, stylesNamed)
 
@@ -12,6 +12,15 @@ fontFace =
 fontSrc : String -> Mixin
 fontSrc src =
   property "src" ("url(" ++ src ++ ")")
+
+inheritsTextStyle : Mixin
+inheritsTextStyle =
+  mixin
+    [ fontFamily inherit
+    , fontSize inherit
+    , fontWeight inherit
+    , lineHeight inherit
+    ]
 
 styles : Styles c c1 m m1
 styles =
@@ -26,11 +35,9 @@ styles =
       [ margin (px 0)
       ]
     , textarea
-      [ fontFamily inherit
-      , fontSize inherit
-      , fontWeight inherit
-      , lineHeight (num 1.35)
-      ]
+      [ inheritsTextStyle ]
+    , input
+      [ inheritsTextStyle ]
     , fontFace
       [ fontMontserrat
       , fontWeightRegular
