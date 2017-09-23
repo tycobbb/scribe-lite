@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Html exposing (..)
+import Html.Attributes exposing (..)
 import MainStyles exposing (Classes(..), styles)
 import Field
 
@@ -55,8 +56,22 @@ view model =
           , p [ class Prompt ]
             [ text "When the tiny dumpling decided to jump across the river, it let out a sigh." ]
           , Field.view FieldAction model.field
-          , input [ class EmailField ]
-            [ text "foo" ]
+          , input
+            [ class EmailField
+            , placeholder "E-mail Address (Optional)"
+            ] []
+          , div [ class Row ]
+            [ input
+              [ class NameField
+              , placeholder "Name to Display (Optional)"
+              ] []
+            , button [ class SubmitButton ]
+              [ span []
+                [ text "Submit"
+                , div [ class Chevron ] []
+                ]
+              ]
+            ]
           ]
         ]
       ]

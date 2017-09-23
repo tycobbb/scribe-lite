@@ -15,6 +15,7 @@
     "elm-css-webpack-loader": "^3.1.0",
     "elm-webpack-loader": "^4.3.1",
     "extract-text-webpack-plugin": "^2.1.2",
+    "postcss-loader": "^2.0.6",
     "style-loader": "^0.18.2",
     "webpack": "^2.6.1"
   }

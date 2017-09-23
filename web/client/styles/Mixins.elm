@@ -2,7 +2,6 @@ module Styles.Mixins exposing (..)
 
 import Css exposing (..)
 
--- fields
 textField : Mixin
 textField =
   mixin

@@ -29,10 +29,18 @@ module.exports = {
       test: /Stylesheets\.elm$/,
       use: ExtractTextPlugin.extract({
         fallback: 'style-loader',
-        use: [
-          'css-loader',
-          'elm-css-webpack-loader'
-        ]
+        use: [{
+          loader: 'css-loader'
+        }, {
+          loader: 'postcss-loader',
+          options: {
+            plugins: (loader) => [
+              require('autoprefixer')()
+            ]
+          }
+        }, {
+          loader: 'elm-css-webpack-loader'
+        }]
       })
     }]
   },
