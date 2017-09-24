@@ -57,6 +57,23 @@ view model =
   let
     date =
       "Friday May 24 (2017)"
+    submitRow =
+      if String.isEmpty model.email then
+        text ""
+      else
+        div [ class Row ]
+          [ input
+            [ class NameField
+            , onInput ChangeName
+            , placeholder "Name to Display (Optional)"
+            ] []
+          , button [ class SubmitButton ]
+            [ span []
+              [ text "Submit"
+              , div [ class Chevron ] []
+              ]
+            ]
+          ]
   in
     div [ class Container ]
       [ div [ class Header ]
@@ -71,21 +88,9 @@ view model =
           , input
             [ class EmailField
             , onInput ChangeEmail
-            , placeholder "E-mail Address (Optional)"
+            , placeholder "E-mail Address"
             ] []
-          , div [ class Row ]
-            [ input
-              [ class NameField
-              , onInput ChangeName
-              , placeholder "Name to Display (Optional)"
-              ] []
-            , button [ class SubmitButton ]
-              [ span []
-                [ text "Submit"
-                , div [ class Chevron ] []
-                ]
-              ]
-            ]
+          , submitRow
           ]
         ]
       ]

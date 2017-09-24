@@ -78,6 +78,7 @@ styles =
       , color gray
       , pseudoElement "placeholder"
         [ color lightGray
+        , property "transition" "padding-left 0.15s"
         , focus
           [ paddingLeft (px 10)
           ]
@@ -95,6 +96,7 @@ styles =
       , color gray
       , pseudoElement "placeholder"
         [ color lightGray
+        , property "transition" "padding-left 0.15s"
         , focus
           [ paddingLeft (px 10)
           ]

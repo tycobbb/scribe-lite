@@ -46,6 +46,7 @@ styles =
       , color black
       , pseudoElement "placeholder"
         [ color lightGray
+        , property "transition" "padding-left 0.15s"
         , focus
           [ paddingLeft (px 10)
           ]
