@@ -3,7 +3,7 @@ module Field exposing (Model, Action, init, update, view)
 import Dom.Size exposing (Boundary(..))
 import FieldStyles exposing (Classes(..), styles, inline, lineHeight)
 import Html exposing (..)
-import Html.Attributes exposing (id, autofocus, maxlength)
+import Html.Attributes exposing (id, placeholder, autofocus, maxlength)
 import Html.Events exposing (onWithOptions, onInput, keyCode)
 import Json.Decode as Decode
 import Json.Decode.Extra as DecodeExt
@@ -90,8 +90,7 @@ view action model =
       characterLimit - (String.length model.value)
     shadowInputContent =
       if String.isEmpty model.value then
-        span [ class Placeholder ]
-          [ text (toString characterLimit ++ " Characters") ]
+        text ""
       else
         span [ class ShadowField ]
           [ span [ class ShadowText ]
@@ -110,6 +109,7 @@ view action model =
         , maxlength characterLimit
         , filterIllegalKeys model.value action
         , onInput (action << Change)
+        , placeholder (toString characterLimit ++ " Characters")
         ]
         [ text model.value ]
       ]

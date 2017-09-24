@@ -17,7 +17,6 @@ type Classes
   | ShadowInput
   | ShadowField
   | ShadowText
-  | Placeholder
   | Count
 
 field : Mixin
@@ -45,6 +44,12 @@ styles =
       , zIndex (int 1)
       , resize none
       , color black
+      , pseudoElement "placeholder"
+        [ color lightGray
+        , focus
+          [ paddingLeft (px 10)
+          ]
+        ]
       ]
     , class ShadowInput
       [ position absolute
@@ -58,10 +63,6 @@ styles =
       ]
     , class ShadowText
       [ color transparent
-      ]
-    , class Placeholder
-      [ marginLeft (px 20)
-      , color lightGray
       ]
     , class Count
       [ color lightGray

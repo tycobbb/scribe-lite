@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onInput)
 import MainStyles exposing (Classes(..), styles)
 import Field
 
@@ -17,6 +18,8 @@ main =
 -- model
 type alias Model =
   { field: Field.Model
+  , email: String
+  , name: String
   }
 
 merge : (a -> b) -> (a, Cmd Field.Action) -> (b, Cmd Action)
@@ -25,17 +28,26 @@ merge combiner (field, cmd) =
 
 init : (Model, Cmd Action)
 init =
-  merge (\f -> { field = f }) Field.init
+  merge (\f ->
+    { field = f
+    , email = ""
+    , name = "" }) Field.init
 
 -- update
 type Action
   = FieldAction Field.Action
+  | ChangeEmail String
+  | ChangeName String
 
 update : Action -> Model -> (Model, Cmd Action)
 update action model =
   case action of
     FieldAction action ->
       merge (\f -> { model | field = f }) (Field.update action model.field)
+    ChangeEmail email ->
+      ({ model | email = email }, Cmd.none)
+    ChangeName name ->
+      ({ model | name = name }, Cmd.none)
 
 -- view
 { class } = styles
@@ -58,11 +70,13 @@ view model =
           , Field.view FieldAction model.field
           , input
             [ class EmailField
+            , onInput ChangeEmail
             , placeholder "E-mail Address (Optional)"
             ] []
           , div [ class Row ]
             [ input
               [ class NameField
+              , onInput ChangeName
               , placeholder "Name to Display (Optional)"
               ] []
             , button [ class SubmitButton ]

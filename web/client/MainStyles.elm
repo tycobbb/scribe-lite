@@ -78,6 +78,9 @@ styles =
       , color gray
       , pseudoElement "placeholder"
         [ color lightGray
+        , focus
+          [ paddingLeft (px 10)
+          ]
         ]
       ]
     , class Row
@@ -92,6 +95,9 @@ styles =
       , color gray
       , pseudoElement "placeholder"
         [ color lightGray
+        , focus
+          [ paddingLeft (px 10)
+          ]
         ]
       ]
     , class SubmitButton
