@@ -85,31 +85,38 @@ filterIllegalKeys currentText action =
 
 view : (Action -> a) -> Model -> Html a
 view action model =
+  div [ class Container ]
+    [ div [ id "shadow-input", class ShadowInput ]
+      [ shadowField model
+      ]
+    , field action model
+    ]
+
+shadowField : Model -> Html a
+shadowField model =
   let
     charactersLeft =
       characterLimit - (String.length model.value)
-    shadowInputContent =
-      if String.isEmpty model.value then
-        text ""
-      else
-        span [ class ShadowField ]
-          [ span [ class ShadowText ]
-            [ text model.value ]
-          , span [ class Count ]
-            [ text ("  " ++ toString charactersLeft) ]
-          ]
   in
-    div [ class Wrapper ]
-      [ div [ id "shadow-input", class ShadowInput ]
-        [ shadowInputContent ]
-      , textarea
-        [ class Input
-        , inline.height model.height
-        , autofocus True
-        , maxlength characterLimit
-        , filterIllegalKeys model.value action
-        , onInput (action << Change)
-        , placeholder (toString characterLimit ++ " Characters")
+    if String.isEmpty model.value then
+      text ""
+    else
+      span [ class ShadowField ]
+        [ span [ class ShadowText ]
+          [ text model.value ]
+        , span [ class Count ]
+          [ text ("  " ++ toString charactersLeft) ]
         ]
-        [ text model.value ]
-      ]
+
+field : (Action -> a) -> Model -> Html a
+field action model =
+  textarea
+    [ class Input
+    , inline.height model.height
+    , autofocus True
+    , maxlength characterLimit
+    , filterIllegalKeys model.value action
+    , onInput (action << Change)
+    , placeholder (toString characterLimit ++ " Characters")
+    ]
+    [ text model.value ]

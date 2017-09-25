@@ -11,7 +11,6 @@ type Classes
   = Container
   | Header
   | Content
-  | Text
   | Prompt
   | Author
   | EmailField
@@ -34,11 +33,6 @@ styles =
       , color Colors.lightGray
       ]
     , class Content
-      [ flex (int 1)
-      , flexDirection column
-      , justifyContent center
-      ]
-    , class Text
       [ flex (int 1)
       , displayFlex
       , flexDirection column

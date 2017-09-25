@@ -50,43 +50,53 @@ updateLine =
 
 view : (Action -> a) -> Model -> Html a
 view action model =
-  let
-    date =
-      "Friday May 24 (2017)"
-    submitRowClasses =
-      classes
-        [ (SubmitRow, True)
-        , (Visible, (not << String.isEmpty) model.email)
-        ]
-  in
-    div [ class Container ]
-      [ div [ class Header ]
-        [ text date ]
-      , div [ class Content ]
-        [ div [ class Text ]
-          [ p [ class Author ]
-            [ text "Gob Bluth" ]
-          , p [ class Prompt ]
-            [ text "When the tiny dumpling decided to jump across the river, it let out a sigh." ]
-          , Line.view (action << LineAction) model.line
-          , input
-            [ class EmailField
-            , onInput (action << ChangeEmail)
-            , placeholder "E-mail Address"
-            ] [ text model.email ]
-          , div [ submitRowClasses ]
-            [ input
-              [ class NameField
-              , onInput (action << ChangeName)
-              , placeholder "Name to Display (Optional)"
-              ] [ text model.name ]
-            , button [ class SubmitButton ]
-              [ span []
-                [ text "Submit"
-                , div [ class Chevron ] []
-                ]
-              ]
-            ]
-          ]
+  div [ class Container ]
+    [ div [ class Header ]
+      [ text "Friday May 24 (2017)" ]
+    , div [ class Content ]
+      [ p [ class Author ]
+        [ text "Gob Bluth" ]
+      , p [ class Prompt ]
+        [ text "When the tiny dumpling decided to jump across the river, it let out a sigh." ]
+      , Line.view (action << LineAction) model.line
+      , emailField action model
+      , submitRow model
+        [ nameField action model
+        , submitButton
         ]
       ]
+    ]
+
+emailField : (Action -> a) -> Model -> Html a
+emailField action model =
+  input
+    [ class EmailField
+    , onInput (action << ChangeEmail)
+    , placeholder "E-mail Address"
+    ] [ text model.email ]
+
+nameField : (Action -> a) -> Model -> Html a
+nameField action model =
+  input
+    [ class NameField
+    , onInput (action << ChangeName)
+    , placeholder "Name to Display (Optional)"
+    ] [ text model.name ]
+
+submitRow : Model -> List (Html a) -> Html a
+submitRow model =
+  div
+    [ classes
+      [ (SubmitRow, True)
+      , (Visible, (not << String.isEmpty) model.email)
+      ]
+    ]
+
+submitButton : Html a
+submitButton =
+  button [ class SubmitButton ]
+    [ span []
+      [ text "Submit"
+      , div [ class Chevron ] []
+      ]
+    ]

@@ -12,7 +12,7 @@ lineHeight = 81
 
 -- stylesheet
 type Classes
-  = Wrapper
+  = Container
   | Input
   | ShadowInput
   | ShadowField
@@ -22,7 +22,7 @@ type Classes
 styles : Styles c c1 m m1
 styles =
   stylesNamed "compose-line"
-    [ class Wrapper
+    [ class Container
       [ position relative
       , fontLarge
       ]
