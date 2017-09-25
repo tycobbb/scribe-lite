@@ -48,5 +48,6 @@ updateCompose =
 view : Model -> Html Action
 view model =
   div [ class Container ]
-    [ Compose.view ComposeAction model.compose
+    [ Compose.view model.compose
+        |> Html.map ComposeAction
     ]

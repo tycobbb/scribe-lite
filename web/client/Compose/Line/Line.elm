@@ -64,8 +64,8 @@ calculateHeight value =
 -- there's no simple way to selectively `preventDefault` in event handlers right
 -- now. solution lifted heavily from this issue:
 -- https://github.com/elm-lang/virtual-dom/issues/18
-filterIllegalKeys : String -> (Action -> a) -> Attribute a
-filterIllegalKeys currentText action =
+filterIllegalKeys : String -> Attribute Action
+filterIllegalKeys currentText =
   let
     options =
       { stopPropagation = False, preventDefault = True }
@@ -78,21 +78,21 @@ filterIllegalKeys currentText action =
     onWithOptions "keypress" options
       (keyCode
         |> Decode.andThen (wrapKey >> DecodeExt.fromResult)
-        |> Decode.map (\_ -> action None))
+        |> Decode.map (\_ -> None))
 
 -- view
 { class, classes } = styles
 
-view : (Action -> a) -> Model -> Html a
-view action model =
+view : Model -> Html Action
+view model =
   div [ class Container ]
     [ div [ id "shadow-input", class ShadowInput ]
       [ shadowField model
       ]
-    , field action model
+    , field model
     ]
 
-shadowField : Model -> Html a
+shadowField : Model -> Html Action
 shadowField model =
   let
     charactersLeft =
@@ -108,15 +108,15 @@ shadowField model =
           [ text ("  " ++ toString charactersLeft) ]
         ]
 
-field : (Action -> a) -> Model -> Html a
-field action model =
+field : Model -> Html Action
+field model =
   textarea
     [ class Input
     , inline.height model.height
     , autofocus True
     , maxlength characterLimit
-    , filterIllegalKeys model.value action
-    , onInput (action << Change)
+    , filterIllegalKeys model.value
+    , onInput Change
     , placeholder (toString characterLimit ++ " Characters")
     ]
     [ text model.value ]

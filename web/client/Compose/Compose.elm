@@ -35,21 +35,22 @@ update : Action -> Model -> (Model, Cmd Action)
 update action model =
   case action of
     LineAction lineAction ->
-      updateLine model (Line.update lineAction model.line)
+      Line.update lineAction model.line
+        |> setLine model
     ChangeEmail email ->
       ({ model | email = email }, Cmd.none)
     ChangeName name ->
       ({ model | name = name }, Cmd.none)
 
-updateLine : Model -> (Line.Model, Cmd Line.Action) -> (Model, Cmd Action)
-updateLine =
-  updateField (\model line -> { model | line = line }) LineAction
+setLine : Model -> (Line.Model, Cmd Line.Action) -> (Model, Cmd Action)
+setLine model (line, lineCmd) =
+  ({ model | line = line }, Cmd.map LineAction lineCmd)
 
 -- view
 { class, classes } = styles
 
-view : (Action -> a) -> Model -> Html a
-view action model =
+view : Model -> Html Action
+view model =
   div [ class Container ]
     [ div [ class Header ]
       [ text "Friday May 24 (2017)" ]
@@ -58,32 +59,33 @@ view action model =
         [ text "Gob Bluth" ]
       , p [ class Prompt ]
         [ text "When the tiny dumpling decided to jump across the river, it let out a sigh." ]
-      , Line.view (action << LineAction) model.line
-      , emailField action model
+      , Line.view model.line
+          |> Html.map LineAction
+      , emailField model
       , submitRow model
-        [ nameField action model
+        [ nameField model
         , submitButton
         ]
       ]
     ]
 
-emailField : (Action -> a) -> Model -> Html a
-emailField action model =
+emailField : Model -> Html Action
+emailField model =
   input
     [ class EmailField
-    , onInput (action << ChangeEmail)
+    , onInput ChangeEmail
     , placeholder "E-mail Address"
     ] [ text model.email ]
 
-nameField : (Action -> a) -> Model -> Html a
-nameField action model =
+nameField : Model -> Html Action
+nameField model =
   input
     [ class NameField
-    , onInput (action << ChangeName)
+    , onInput ChangeName
     , placeholder "Name to Display (Optional)"
     ] [ text model.name ]
 
-submitRow : Model -> List (Html a) -> Html a
+submitRow : Model -> List (Html Action) -> Html Action
 submitRow model =
   div
     [ classes
@@ -92,7 +94,7 @@ submitRow model =
       ]
     ]
 
-submitButton : Html a
+submitButton : Html Action
 submitButton =
   button [ class SubmitButton ]
     [ span []
