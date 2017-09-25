@@ -1,11 +1,11 @@
 module MainStyles exposing (Classes(..), styles)
 
 import Css exposing (..)
-import Css.Elements exposing (span)
+import Css.Elements exposing (span, div)
 import Styles.Fonts exposing (..)
-import Styles.Colors exposing (lightGray, gray, black)
 import Styles.Mixins exposing (textField)
 import Styles.Helpers exposing (Styles, stylesNamed)
+import Styles.Colors as Colors
 
 type Classes
   = Container
@@ -22,8 +22,8 @@ type Classes
   | SubmitButton
   | Chevron
 
-edge : Mixin
-edge =
+chevronLeg : Mixin
+chevronLeg =
   mixin
     [ property "content" "''"
     , display block
@@ -31,9 +31,16 @@ edge =
     , width (px 3)
     , height (px 20)
     , borderRadius (px 1.5)
-    , backgroundColor (hex "FFB6B6")
-    , hover
-      [ backgroundColor (hex "FFECD1")
+    ]
+
+chevronStyles : List Mixin -> Mixin
+chevronStyles styles =
+  mixin
+    [ descendants
+      [ class Chevron
+        [ before styles
+        , after styles
+        ]
       ]
     ]
 
@@ -48,7 +55,7 @@ styles =
       ]
     , class Header
       [ fontMedium
-      , color lightGray
+      , color Colors.lightGray
       ]
     , class Content
       [ flex (int 1)
@@ -64,19 +71,19 @@ styles =
     , class Prompt
       [ marginBottom (px 60)
       , fontLarge
-      , color (hex "F5E9CB")
+      , color Colors.accent
       ]
     , class Author
       [ marginBottom (px 20)
       , fontSmall
-      , color lightGray
+      , color Colors.lightGray
       ]
     , class EmailField
       [ textField
       , fontMedium
       , marginTop (px 80)
       , marginBottom (px 10)
-      , color gray
+      , color Colors.gray
       ]
     , class SubmitRow
       [ displayFlex
@@ -94,7 +101,7 @@ styles =
       [ flex (int 1)
       , textField
       , fontSmall
-      , color gray
+      , color Colors.gray
       ]
     , class SubmitButton
       [ fontMedium
@@ -102,10 +109,18 @@ styles =
       , border unset
       , backgroundImage unset
       , backgroundColor transparent
-      , color (hex "FFB6B6")
       , cursor pointer
+      , color Colors.primary
+      , property "transition" "color 0.15s"
+      , chevronStyles
+        [ backgroundColor Colors.primary
+        , property "transition" "background-color 0.15s"
+        ]
       , hover
-        [ color (hex "FFECD1")
+        [ color Colors.primaryHighlight
+        , chevronStyles
+          [ backgroundColor Colors.primaryHighlight
+          ]
         ]
       , focus
         [ outline none
@@ -121,14 +136,14 @@ styles =
       [ paddingLeft (px 10)
       , paddingRight (px 12)
       , before
-        [ edge
+        [ chevronLeg
         , transforms
           [ rotate (deg -45)
           , translateY (px 3)
           ]
         ]
       , after
-        [ edge
+        [ chevronLeg
         , bottom (px 0)
         , transforms
           [ rotate (deg 45)

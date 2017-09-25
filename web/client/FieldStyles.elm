@@ -4,7 +4,7 @@ import Css exposing (..)
 import Styles.Fonts exposing (..)
 import Styles.Helpers exposing (Rules, rules, Styles, stylesNamed)
 import Styles.Mixins exposing (textField)
-import Styles.Colors exposing (black, lightGray)
+import Styles.Colors as Colors
 
 -- constants
 lineHeight : Float
@@ -43,7 +43,7 @@ styles =
       , padding (px 0)
       , zIndex (int 1)
       , resize none
-      , color black
+      , color Colors.black
       ]
     , class ShadowInput
       [ position absolute
@@ -59,7 +59,7 @@ styles =
       [ color transparent
       ]
     , class Count
-      [ color lightGray
+      [ color Colors.lightGray
       ]
     ]
 
