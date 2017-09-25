@@ -5,7 +5,8 @@ import Css.File exposing (CssFileStructure, CssCompilerProgram)
 import Css.Normalize
 import Styles.Global
 import MainStyles
-import LineField.Styles
+import Compose.Styles
+import Compose.Line.Styles
 
 port files : CssFileStructure -> Cmd msg
 
@@ -19,7 +20,8 @@ modules =
   List.map .css
     [ Styles.Global.styles
     , MainStyles.styles
-    , LineField.Styles.styles
+    , Compose.Styles.styles
+    , Compose.Line.Styles.styles
     ]
 
 cssFiles : CssFileStructure

@@ -1,4 +1,4 @@
-module LineField.Styles exposing (Classes(..), styles, inline, lineHeight)
+module Compose.Line.Styles exposing (Classes(..), styles, inline, lineHeight)
 
 import Css exposing (..)
 import Styles.Fonts exposing (..)
@@ -19,17 +19,9 @@ type Classes
   | ShadowText
   | Count
 
-field : Mixin
-field =
-  mixin
-    [ overflow auto
-    , property "word-wrap" "break-word"
-    , property "white-space" "pre-wrap"
-    ]
-
 styles : Styles c c1 m m1
 styles =
-  stylesNamed "field"
+  stylesNamed "compose-line"
     [ class Wrapper
       [ position relative
       , fontLarge
@@ -61,6 +53,14 @@ styles =
     , class Count
       [ color Colors.lightGray
       ]
+    ]
+
+field : Mixin
+field =
+  mixin
+    [ overflow auto
+    , property "word-wrap" "break-word"
+    , property "white-space" "pre-wrap"
     ]
 
 -- inline

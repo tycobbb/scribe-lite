@@ -1,4 +1,4 @@
-module Keys exposing (..)
+module Compose.Line.Keys exposing (..)
 
 import Char exposing (KeyCode, toCode)
 

@@ -1,14 +1,14 @@
-module LineField.Element exposing (Model, Action, init, update, view)
+module Compose.Line.Line exposing (Model, Action, init, update, view)
 
 import Dom.Size exposing (Boundary(..))
-import LineField.Styles exposing (Classes(..), styles, inline, lineHeight)
 import Html exposing (..)
 import Html.Attributes exposing (id, placeholder, autofocus, maxlength)
 import Html.Events exposing (onWithOptions, onInput, keyCode)
 import Json.Decode as Decode
 import Json.Decode.Extra as DecodeExt
-import Keys
 import Task
+import Compose.Line.Styles exposing (Classes(..), styles, inline, lineHeight)
+import Compose.Line.Keys as Keys
 
 -- constants
 characterLimit : Int
@@ -25,7 +25,7 @@ init =
   { value = ""
   , height = lineHeight * 2
   }
-  ! [calculateHeight ""]
+  ! [ calculateHeight "" ]
 
 -- update
 type Action
