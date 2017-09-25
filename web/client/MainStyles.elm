@@ -16,7 +16,8 @@ type Classes
   | Prompt
   | Author
   | EmailField
-  | Row
+  | SubmitRow
+  | Visible
   | NameField
   | SubmitButton
   | Chevron
@@ -76,31 +77,24 @@ styles =
       , marginTop (px 80)
       , marginBottom (px 10)
       , color gray
-      , pseudoElement "placeholder"
-        [ color lightGray
-        , property "transition" "padding-left 0.15s"
-        , focus
-          [ paddingLeft (px 10)
-          ]
-        ]
       ]
-    , class Row
+    , class SubmitRow
       [ displayFlex
       , justifyContent spaceBetween
       , alignItems center
+      , property "transition" "opacity 0.2s, transform 0.2s"
+      , opacity (int 0)
+      , transform (translateY (px 20))
+      ]
+    , class Visible
+      [ opacity (int 1)
+      , transform none
       ]
     , class NameField
       [ flex (int 1)
       , textField
       , fontSmall
       , color gray
-      , pseudoElement "placeholder"
-        [ color lightGray
-        , property "transition" "padding-left 0.15s"
-        , focus
-          [ paddingLeft (px 10)
-          ]
-        ]
       ]
     , class SubmitButton
       [ fontMedium

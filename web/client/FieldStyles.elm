@@ -44,13 +44,6 @@ styles =
       , zIndex (int 1)
       , resize none
       , color black
-      , pseudoElement "placeholder"
-        [ color lightGray
-        , property "transition" "padding-left 0.15s"
-        , focus
-          [ paddingLeft (px 10)
-          ]
-        ]
       ]
     , class ShadowInput
       [ position absolute

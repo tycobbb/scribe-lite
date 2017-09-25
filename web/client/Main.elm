@@ -50,30 +50,18 @@ update action model =
       ({ model | name = name }, Cmd.none)
 
 -- view
-{ class } = styles
+{ class, classes } = styles
 
 view : Model -> Html Action
 view model =
   let
     date =
       "Friday May 24 (2017)"
-    submitRow =
-      if String.isEmpty model.email then
-        text ""
-      else
-        div [ class Row ]
-          [ input
-            [ class NameField
-            , onInput ChangeName
-            , placeholder "Name to Display (Optional)"
-            ] []
-          , button [ class SubmitButton ]
-            [ span []
-              [ text "Submit"
-              , div [ class Chevron ] []
-              ]
-            ]
-          ]
+    submitRowClasses =
+      classes
+        [ (SubmitRow, True)
+        , (Visible, (not << String.isEmpty) model.email)
+        ]
   in
     div [ class Container ]
       [ div [ class Header ]
@@ -90,7 +78,19 @@ view model =
             , onInput ChangeEmail
             , placeholder "E-mail Address"
             ] []
-          , submitRow
+          , div [ submitRowClasses ]
+            [ input
+              [ class NameField
+              , onInput ChangeName
+              , placeholder "Name to Display (Optional)"
+              ] []
+            , button [ class SubmitButton ]
+              [ span []
+                [ text "Submit"
+                , div [ class Chevron ] []
+                ]
+              ]
+            ]
           ]
         ]
       ]
