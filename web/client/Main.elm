@@ -4,7 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import MainStyles exposing (Classes(..), styles)
-import Field
+import LineField.Element as LineField
 
 main : Program Never Model Action
 main =
@@ -17,33 +17,33 @@ main =
 
 -- model
 type alias Model =
-  { field: Field.Model
+  { lineField: LineField.Model
   , email: String
   , name: String
   }
 
-merge : (a -> b) -> (a, Cmd Field.Action) -> (b, Cmd Action)
-merge combiner (field, cmd) =
-  (combiner field, Cmd.map (\a -> FieldAction a) cmd)
+merge : (a -> b) -> (a, Cmd LineField.Action) -> (b, Cmd Action)
+merge combiner (lineField, cmd) =
+  (combiner lineField, Cmd.map (\a -> LineFieldAction a) cmd)
 
 init : (Model, Cmd Action)
 init =
   merge (\f ->
-    { field = f
+    { lineField = f
     , email = ""
-    , name = "" }) Field.init
+    , name = "" }) LineField.init
 
 -- update
 type Action
-  = FieldAction Field.Action
+  = LineFieldAction LineField.Action
   | ChangeEmail String
   | ChangeName String
 
 update : Action -> Model -> (Model, Cmd Action)
 update action model =
   case action of
-    FieldAction action ->
-      merge (\f -> { model | field = f }) (Field.update action model.field)
+    LineFieldAction action ->
+      merge (\f -> { model | lineField = f }) (LineField.update action model.lineField)
     ChangeEmail email ->
       ({ model | email = email }, Cmd.none)
     ChangeName name ->
@@ -72,7 +72,7 @@ view model =
             [ text "Gob Bluth" ]
           , p [ class Prompt ]
             [ text "When the tiny dumpling decided to jump across the river, it let out a sigh." ]
-          , Field.view FieldAction model.field
+          , LineField.view LineFieldAction model.lineField
           , input
             [ class EmailField
             , onInput ChangeEmail

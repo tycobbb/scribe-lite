@@ -1,7 +1,7 @@
-module Field exposing (Model, Action, init, update, view)
+module LineField.Element exposing (Model, Action, init, update, view)
 
 import Dom.Size exposing (Boundary(..))
-import FieldStyles exposing (Classes(..), styles, inline, lineHeight)
+import LineField.Styles exposing (Classes(..), styles, inline, lineHeight)
 import Html exposing (..)
 import Html.Attributes exposing (id, placeholder, autofocus, maxlength)
 import Html.Events exposing (onWithOptions, onInput, keyCode)

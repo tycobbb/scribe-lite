@@ -1,4 +1,4 @@
-module FieldStyles exposing (Classes(..), styles, inline, lineHeight)
+module LineField.Styles exposing (Classes(..), styles, inline, lineHeight)
 
 import Css exposing (..)
 import Styles.Fonts exposing (..)
