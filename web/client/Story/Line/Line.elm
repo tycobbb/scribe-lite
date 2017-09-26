@@ -1,4 +1,4 @@
-module Compose.Line.Line exposing (Model, Action, init, update, view)
+module Story.Line.Line exposing (Model, Action, init, update, view)
 
 import Dom.Size exposing (Boundary(..))
 import Html exposing (..)
@@ -7,8 +7,8 @@ import Html.Events exposing (onWithOptions, onInput, keyCode)
 import Json.Decode as Decode
 import Json.Decode.Extra as DecodeExt
 import Task
-import Compose.Line.Styles exposing (Classes(..), styles, inline, lineHeight)
-import Compose.Line.Keys as Keys
+import Story.Line.Styles exposing (Classes(..), styles, inline, lineHeight)
+import Story.Line.Keys as Keys
 
 -- constants
 characterLimit : Int

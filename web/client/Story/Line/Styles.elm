@@ -1,4 +1,4 @@
-module Compose.Line.Styles exposing (Classes(..), styles, inline, lineHeight)
+module Story.Line.Styles exposing (Classes(..), styles, inline, lineHeight)
 
 import Css exposing (..)
 import Styles.Fonts exposing (..)
@@ -21,7 +21,7 @@ type Classes
 
 styles : Styles c c1 m m1
 styles =
-  stylesNamed "compose-line"
+  stylesNamed "Story-line"
     [ class Container
       [ position relative
       , fontLarge

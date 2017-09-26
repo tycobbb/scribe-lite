@@ -1,4 +1,4 @@
-module Compose.Styles exposing (Classes(..), styles)
+module Story.Styles exposing (Classes(..), styles)
 
 import Css exposing (..)
 import Css.Elements exposing (span, div)
@@ -22,7 +22,7 @@ type Classes
 
 styles : Styles c c1 m m1
 styles =
-  stylesNamed "compose"
+  stylesNamed "Story"
     [ class Container
       [ displayFlex
       , flexDirection column

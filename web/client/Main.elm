@@ -5,7 +5,7 @@ import Phoenix.Socket as Socket
 import Phoenix.Channel as Channel
 import Phoenix.Push as Push
 import MainStyles exposing (Classes(..), styles)
-import Compose.Compose as Compose
+import Story.Story as Story
 
 -- main
 main : Program Never Model Action
@@ -24,42 +24,35 @@ serverUrl = "ws://localhost:4000/socket"
 -- model
 type alias Model =
   { socket : Socket.Socket Action
-  , compose : Compose.Model
+  , story : Story.Model
   }
 
 init : (Model, Cmd Action)
 init =
   let
-    (socket, socketCmd) = initSocket
-    (compose, composeCmd) = Compose.init
+    (story, storyCmd) = Story.init
+    (socket, socketCmd) =
+      initSocket
+        |> Socket.join (Channel.map StoryAction Story.initChannel)
   in
     ( { socket = socket
-      , compose = compose
+      , story = story
       }
     , Cmd.batch
       [ Cmd.map SocketMsg socketCmd
-      , Cmd.map ComposeAction composeCmd
+      , Cmd.map StoryAction storyCmd
       ]
     )
 
-initSocket : (Socket.Socket Action, Cmd (Socket.Msg Action))
+initSocket : Socket.Socket msg
 initSocket =
-  let
-    channel =
-      Channel.init "story:unified"
-        |> Channel.onJoin (always (JoinStory))
-        |> Channel.onJoinError (always (ShowError "failed to join story"))
-  in
-    Socket.init "ws://localhost:4000/socket/websocket"
-      |> Socket.withDebug
-      |> Socket.join channel
+  Socket.init "ws://localhost:4000/socket/websocket"
+    |> Socket.withDebug
 
 -- update
 type Action
   = SocketMsg (Socket.Msg Action)
-  | ComposeAction Compose.Action
-  | JoinStory
-  | ShowError String
+  | StoryAction Story.Action
 
 update : Action -> Model -> (Model, Cmd Action)
 update action model =
@@ -67,21 +60,17 @@ update action model =
     SocketMsg msg ->
       Socket.update msg model.socket
         |> setSocket model
-    ComposeAction action ->
-      Compose.update action model.compose
-        |> setCompose model
-    JoinStory ->
-      let _ = Debug.log "joined story" in (model, Cmd.none)
-    ShowError message ->
-      let _ = Debug.log message in (model, Cmd.none)
+    StoryAction action ->
+      Story.update action model.story
+        |> setStory model
 
 setSocket : Model -> (Socket.Socket Action, Cmd (Socket.Msg Action) ) -> (Model, Cmd Action)
 setSocket model (field, cmd) =
   ({ model | socket = field }, Cmd.map SocketMsg cmd)
 
-setCompose : Model -> (Compose.Model, Cmd Compose.Action) -> (Model, Cmd Action)
-setCompose model (field, cmd) =
-  ({ model | compose = field }, Cmd.map ComposeAction cmd)
+setStory : Model -> (Story.Model, Cmd Story.Action) -> (Model, Cmd Action)
+setStory model (field, cmd) =
+  ({ model | story = field }, Cmd.map StoryAction cmd)
 
 -- subscriptions
 subscriptions : Model -> Sub Action
@@ -94,6 +83,6 @@ subscriptions model =
 view : Model -> Html Action
 view model =
   div [ class Container ]
-    [ Compose.view model.compose
-        |> Html.map ComposeAction
+    [ Story.view model.story
+        |> Html.map StoryAction
     ]

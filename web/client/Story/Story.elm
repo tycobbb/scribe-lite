@@ -1,10 +1,11 @@
-module Compose.Compose exposing (Model, Action, view, update, init)
+module Story.Story exposing (Model, Action, view, update, init, initChannel)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
-import Compose.Styles exposing (Classes(..), styles)
-import Compose.Line.Line as Line
+import Phoenix.Channel as Channel
+import Story.Styles exposing (Classes(..), styles)
+import Story.Line.Line as Line
 
 -- model
 type alias Model =
@@ -25,11 +26,19 @@ init =
     , Cmd.map LineAction lineCmd
     )
 
+initChannel : Channel.Channel Action
+initChannel =
+  Channel.init "story:unified"
+    |> Channel.onJoin (always (JoinStory))
+    |> Channel.onJoinError (always (ShowError "failed to join story"))
+
 -- update
 type Action
   = LineAction Line.Action
   | ChangeEmail String
   | ChangeName String
+  | JoinStory
+  | ShowError String
 
 update : Action -> Model -> (Model, Cmd Action)
 update action model =
@@ -41,6 +50,11 @@ update action model =
       ({ model | email = email }, Cmd.none)
     ChangeName name ->
       ({ model | name = name }, Cmd.none)
+    JoinStory ->
+      let _ = Debug.log "joined story" in (model, Cmd.none)
+    ShowError message ->
+      let _ = Debug.log message in (model, Cmd.none)
+
 
 setLine : Model -> (Line.Model, Cmd Line.Action) -> (Model, Cmd Action)
 setLine model (field, cmd) =

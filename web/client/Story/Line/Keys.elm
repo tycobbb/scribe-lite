@@ -1,4 +1,4 @@
-module Compose.Line.Keys exposing (..)
+module Story.Line.Keys exposing (..)
 
 import Char exposing (KeyCode, toCode)
 
