@@ -2,12 +2,12 @@ defmodule Scribe.UserSocket do
   use Phoenix.Socket
 
   # channels
-  channel "room:*", Scribe.RoomChannel
+  channel "story:*", Scribe.StoryChannel
 
   # transports
   transport :websocket, Phoenix.Transports.WebSocket
-  # transport :longpoll, Phoenix.Transports.LongPoll
 
+  # callbacks
   def connect(_params, socket) do
     {:ok, socket}
   end

@@ -2,8 +2,8 @@ module Main exposing (main)
 
 import Html exposing (..)
 import Phoenix.Socket as Socket
-import Phoenix.Channel
-import Phoenix.Push
+import Phoenix.Channel as Channel
+import Phoenix.Push as Push
 import MainStyles exposing (Classes(..), styles)
 import Compose.Compose as Compose
 
@@ -30,18 +30,36 @@ type alias Model =
 init : (Model, Cmd Action)
 init =
   let
+    (socket, socketCmd) = initSocket
     (compose, composeCmd) = Compose.init
   in
-    ( { socket = Socket.init "ws://localhost:4000/socket"
+    ( { socket = socket
       , compose = compose
       }
-    , Cmd.map ComposeAction composeCmd
+    , Cmd.batch
+      [ Cmd.map SocketMsg socketCmd
+      , Cmd.map ComposeAction composeCmd
+      ]
     )
+
+initSocket : (Socket.Socket Action, Cmd (Socket.Msg Action))
+initSocket =
+  let
+    channel =
+      Channel.init "story:unified"
+        |> Channel.onJoin (always (JoinStory))
+        |> Channel.onJoinError (always (ShowError "failed to join story"))
+  in
+    Socket.init "ws://localhost:4000/socket/websocket"
+      |> Socket.withDebug
+      |> Socket.join channel
 
 -- update
 type Action
   = SocketMsg (Socket.Msg Action)
   | ComposeAction Compose.Action
+  | JoinStory
+  | ShowError String
 
 update : Action -> Model -> (Model, Cmd Action)
 update action model =
@@ -52,6 +70,10 @@ update action model =
     ComposeAction action ->
       Compose.update action model.compose
         |> setCompose model
+    JoinStory ->
+      let _ = Debug.log "joined story" in (model, Cmd.none)
+    ShowError message ->
+      let _ = Debug.log message in (model, Cmd.none)
 
 setSocket : Model -> (Socket.Socket Action, Cmd (Socket.Msg Action) ) -> (Model, Cmd Action)
 setSocket model (field, cmd) =
