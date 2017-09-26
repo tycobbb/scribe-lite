@@ -14,6 +14,9 @@ import Compose.Line.Keys as Keys
 characterLimit : Int
 characterLimit = 150
 
+shadowInputId : String
+shadowInputId = "shadow-input"
+
 -- model
 type alias Model =
   { value: String
@@ -22,10 +25,11 @@ type alias Model =
 
 init : (Model, Cmd Action)
 init =
-  { value = ""
-  , height = lineHeight * 2
-  }
-  ! [ calculateHeight "" ]
+  ( { value = ""
+    , height = lineHeight * 2
+    }
+  , calculateHeight ""
+  )
 
 -- update
 type Action
@@ -46,18 +50,18 @@ update action model =
 -- commands
 calculateHeight : String -> Cmd Action
 calculateHeight value =
-  let
-    isEmpty =
-      String.isEmpty value
-    calculateCommand =
-      Dom.Size.height VisibleContentWithBordersAndMargins "shadow-input"
-        |> Task.attempt
-          (\result ->
-            case result of
-              Ok height -> Resize height
-              Err _ -> Resize 0.0)
-  in
-    if isEmpty then Cmd.none else calculateCommand
+  if String.isEmpty value
+    then Cmd.none
+    else Cmd.map Resize checkFieldHeight
+
+checkFieldHeight : Cmd Float
+checkFieldHeight =
+  Dom.Size.height VisibleContentWithBordersAndMargins shadowInputId
+    |> Task.attempt
+      (\result ->
+        case result of
+          Ok height -> height
+          Err _ -> 0.0)
 
 -- events
 
@@ -86,7 +90,7 @@ filterIllegalKeys currentText =
 view : Model -> Html Action
 view model =
   div [ class Container ]
-    [ div [ id "shadow-input", class ShadowInput ]
+    [ div [ id shadowInputId, class ShadowInput ]
       [ shadowField model
       ]
     , field model

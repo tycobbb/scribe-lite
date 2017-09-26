@@ -3,7 +3,6 @@ module Main exposing (main)
 import Html exposing (..)
 import MainStyles exposing (Classes(..), styles)
 import Compose.Compose as Compose
-import Helpers exposing (updateField)
 
 main : Program Never Model Action
 main =
@@ -24,9 +23,10 @@ init =
   let
     (compose, composeCmd) = Compose.init
   in
-    { compose = compose
-    }
-    ! [ Cmd.map ComposeAction composeCmd ]
+    ( { compose = compose
+      }
+    , Cmd.map ComposeAction composeCmd
+    )
 
 -- update
 type Action
@@ -36,11 +36,12 @@ update : Action -> Model -> (Model, Cmd Action)
 update action model =
   case action of
     ComposeAction action ->
-      updateCompose model (Compose.update action model.compose)
+      Compose.update action model.compose
+        |> setCompose model
 
-updateCompose : Model -> (Compose.Model, Cmd Compose.Action) -> (Model, Cmd Action)
-updateCompose =
-  updateField (\model compose -> { model | compose = compose }) ComposeAction
+setCompose : Model -> (Compose.Model, Cmd Compose.Action) -> (Model, Cmd Action)
+setCompose model (field, cmd) =
+  ({ model | compose = field }, Cmd.map ComposeAction cmd)
 
 -- view
 { class } = styles

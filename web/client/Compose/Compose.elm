@@ -5,7 +5,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Compose.Styles exposing (Classes(..), styles)
 import Compose.Line.Line as Line
-import Helpers exposing (updateField)
 
 -- model
 type alias Model =
@@ -19,11 +18,12 @@ init =
   let
     (line, lineCmd) = Line.init
   in
-    { line = line
-    , email = ""
-    , name = ""
-    }
-    ! [ Cmd.map LineAction lineCmd ]
+    ( { line = line
+      , email = ""
+      , name = ""
+      }
+    , Cmd.map LineAction lineCmd
+    )
 
 -- update
 type Action
@@ -43,8 +43,8 @@ update action model =
       ({ model | name = name }, Cmd.none)
 
 setLine : Model -> (Line.Model, Cmd Line.Action) -> (Model, Cmd Action)
-setLine model (line, lineCmd) =
-  ({ model | line = line }, Cmd.map LineAction lineCmd)
+setLine model (field, cmd) =
+  ({ model | line = field }, Cmd.map LineAction cmd)
 
 -- view
 { class, classes } = styles
