@@ -3,6 +3,8 @@ module Story.Story exposing (Model, Action, view, update, init, initChannel)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
+import Json.Encode as JE
+import Json.Decode as JD exposing (field)
 import Phoenix.Channel as Channel
 import Story.Styles exposing (Classes(..), styles)
 import Story.Line.Line as Line
@@ -10,6 +12,8 @@ import Story.Line.Line as Line
 -- model
 type alias Model =
   { line : Line.Model
+  , prompt : String
+  , author : String
   , email : String
   , name : String
   }
@@ -20,6 +24,8 @@ init =
     (line, lineCmd) = Line.init
   in
     ( { line = line
+      , prompt = ""
+      , author = ""
       , email = ""
       , name = ""
       }
@@ -29,16 +35,14 @@ init =
 initChannel : Channel.Channel Action
 initChannel =
   Channel.init "story:unified"
-    |> Channel.onJoin (always (JoinStory))
-    |> Channel.onJoinError (always (ShowError "failed to join story"))
+    |> Channel.onJoin JoinStory
 
 -- update
 type Action
   = LineAction Line.Action
   | ChangeEmail String
   | ChangeName String
-  | JoinStory
-  | ShowError String
+  | JoinStory JE.Value
 
 update : Action -> Model -> (Model, Cmd Action)
 update action model =
@@ -50,15 +54,32 @@ update action model =
       ({ model | email = email }, Cmd.none)
     ChangeName name ->
       ({ model | name = name }, Cmd.none)
-    JoinStory ->
-      let _ = Debug.log "joined story" in (model, Cmd.none)
-    ShowError message ->
-      let _ = Debug.log message in (model, Cmd.none)
-
+    JoinStory raw ->
+      case JD.decodeValue promptDecoder raw of
+        Ok prompt ->
+          setPrompt model prompt
+        Err _ ->
+          (model, Cmd.none)
 
 setLine : Model -> (Line.Model, Cmd Line.Action) -> (Model, Cmd Action)
 setLine model (field, cmd) =
   ({ model | line = field }, Cmd.map LineAction cmd)
+
+setPrompt : Model -> StoryPrompt -> (Model, Cmd Action)
+setPrompt model response =
+  ({ model | prompt = response.prompt, author = response.author }, Cmd.none)
+
+-- responses
+type alias StoryPrompt =
+  { prompt : String
+  , author : String
+  }
+
+promptDecoder : JD.Decoder StoryPrompt
+promptDecoder =
+  JD.map2 StoryPrompt
+    (field "prompt" JD.string)
+    (field "author" JD.string)
 
 -- view
 { class, classes } = styles
@@ -70,9 +91,9 @@ view model =
       [ text "Friday May 24 (2017)" ]
     , div [ class Content ]
       [ p [ class Author ]
-        [ text "Gob Bluth" ]
+        [ text model.author ]
       , p [ class Prompt ]
-        [ text "When the tiny dumpling decided to jump across the river, it let out a sigh." ]
+        [ text model.prompt ]
       , Line.view model.line
           |> Html.map LineAction
       , emailField model

@@ -9,16 +9,8 @@ defmodule Scribe.Router do
     plug :put_secure_browser_headers
   end
 
-  pipeline :api do
-    plug :accepts, ["json"]
-  end
-
   scope "/", Scribe do
     pipe_through :browser
     get "/", PageController, :index
   end
-
-  # scope "/api", Scribe do
-  #   pipe_through :api
-  # end
 end
