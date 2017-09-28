@@ -26,10 +26,10 @@ styles =
     [ class Container
       [ displayFlex
       , flexDirection column
-      , alignItems center
       ]
     , class Header
       [ fontMedium
+      , alignSelf center
       , color Colors.lightGray
       ]
     , class Content
@@ -50,18 +50,17 @@ styles =
       ]
     , class EmailField
       [ textField
+      , hidden
       , fontMedium
       , marginTop (px 80)
       , marginBottom (px 10)
       , color Colors.gray
       ]
     , class SubmitRow
-      [ displayFlex
+      [ hidden
+      , displayFlex
       , justifyContent spaceBetween
       , alignItems center
-      , property "transition" "opacity 0.2s, transform 0.2s"
-      , opacity (int 0)
-      , transform (translateY (px 20))
       ]
     , class Visible
       [ opacity (int 1)
@@ -121,6 +120,14 @@ styles =
           ]
         ]
       ]
+    ]
+
+hidden : Mixin
+hidden =
+  mixin
+    [ property "transition" "opacity 0.2s, transform 0.2s"
+    , opacity (int 0)
+    , transform (translateY (px 20))
     ]
 
 chevronLeg : Mixin

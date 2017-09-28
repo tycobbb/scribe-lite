@@ -107,7 +107,7 @@ view model =
 emailField : Model -> Html Action
 emailField model =
   input
-    [ class EmailField
+    [ EmailField |> showsAfter [model.line.value]
     , onInput ChangeEmail
     , placeholder "E-mail Address"
     ] [ text model.email ]
@@ -122,12 +122,7 @@ nameField model =
 
 submitRow : Model -> List (Html Action) -> Html Action
 submitRow model =
-  div
-    [ classes
-      [ (SubmitRow, True)
-      , (Visible, (not << String.isEmpty) model.email)
-      ]
-    ]
+  div [ SubmitRow |> showsAfter [model.line.value, model.email] ]
 
 submitButton : Html Action
 submitButton =
@@ -136,4 +131,11 @@ submitButton =
       [ text "Submit"
       , div [ class Chevron ] []
       ]
+    ]
+
+showsAfter : List String -> Classes -> Attribute m
+showsAfter values klass =
+  classes
+    [ (klass, True)
+    , (Visible, List.all (not << String.isEmpty) values)
     ]
