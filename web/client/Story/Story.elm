@@ -89,7 +89,7 @@ view model =
   div [ class Container ]
     [ div [ class Header ]
       [ text "Friday May 24 (2017)" ]
-    , div [ class Content ]
+    , content model
       [ p [ class Author ]
         [ text model.author ]
       , p [ class Prompt ]
@@ -103,6 +103,10 @@ view model =
         ]
       ]
     ]
+
+content : Model -> List (Html Action) -> Html Action
+content model =
+  div [ Content |> showsAfter [model.prompt] ]
 
 emailField : Model -> Html Action
 emailField model =

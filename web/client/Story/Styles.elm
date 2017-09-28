@@ -15,10 +15,10 @@ type Classes
   | Author
   | EmailField
   | SubmitRow
-  | Visible
   | NameField
   | SubmitButton
   | Chevron
+  | Visible
 
 styles : Styles c c1 m m1
 styles =
@@ -33,7 +33,8 @@ styles =
       , color Colors.lightGray
       ]
     , class Content
-      [ flex (int 1)
+      [ animatesVisibility
+      , flex (int 1)
       , displayFlex
       , flexDirection column
       , justifyContent center
@@ -50,21 +51,19 @@ styles =
       ]
     , class EmailField
       [ textField
-      , hidden
+      , animatesVisibility
       , fontMedium
       , marginTop (px 80)
       , marginBottom (px 10)
+      , transform (translateY (px 20))
       , color Colors.gray
       ]
     , class SubmitRow
-      [ hidden
+      [ animatesVisibility
       , displayFlex
       , justifyContent spaceBetween
       , alignItems center
-      ]
-    , class Visible
-      [ opacity (int 1)
-      , transform none
+      , transform (translateY (px 20))
       ]
     , class NameField
       [ flex (int 1)
@@ -120,14 +119,17 @@ styles =
           ]
         ]
       ]
+    , class Visible
+      [ opacity (int 1)
+      , transform none
+      ]
     ]
 
-hidden : Mixin
-hidden =
+animatesVisibility : Mixin
+animatesVisibility =
   mixin
     [ property "transition" "opacity 0.2s, transform 0.2s"
     , opacity (int 0)
-    , transform (translateY (px 20))
     ]
 
 chevronLeg : Mixin
