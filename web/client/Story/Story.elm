@@ -1,13 +1,18 @@
-module Story.Story exposing (Model, Action, view, update, init, initChannel)
+module Story.Story exposing (Model, Action, view, update, init)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
+import Html.Attributes exposing (placeholder)
+import Html.Events exposing (onInput, onSubmit)
 import Json.Encode as JE
 import Json.Decode as JD exposing (field)
 import Phoenix.Channel as Channel
+import Phoenix.Push as Push
 import Story.Styles exposing (Classes(..), styles)
 import Story.Line.Line as Line
+
+-- constants
+room : String
+room = "story:unified"
 
 -- model
 type alias Model =
@@ -18,7 +23,7 @@ type alias Model =
   , name : String
   }
 
-init : (Model, Cmd Action)
+init : (Model, Cmd Action, Channel.Channel Action)
 init =
   let
     (line, lineCmd) = Line.init
@@ -30,11 +35,12 @@ init =
       , name = ""
       }
     , Cmd.map LineAction lineCmd
+    , initChannel
     )
 
 initChannel : Channel.Channel Action
 initChannel =
-  Channel.init "story:unified"
+  Channel.init room
     |> Channel.onJoin JoinStory
 
 -- update
@@ -43,43 +49,64 @@ type Action
   | ChangeEmail String
   | ChangeName String
   | JoinStory JE.Value
+  | SubmitLine
 
-update : Action -> Model -> (Model, Cmd Action)
+type alias Update msg =
+  (Model, Cmd Action, Maybe (Push.Push msg))
+
+update : Action -> Model -> Update msg
 update action model =
   case action of
     LineAction lineAction ->
       Line.update lineAction model.line
         |> setLine model
     ChangeEmail email ->
-      ({ model | email = email }, Cmd.none)
+      ({ model | email = email }, Cmd.none, Nothing)
     ChangeName name ->
-      ({ model | name = name }, Cmd.none)
+      ({ model | name = name }, Cmd.none, Nothing)
     JoinStory raw ->
-      case JD.decodeValue promptDecoder raw of
-        Ok prompt ->
-          setPrompt model prompt
-        Err _ ->
-          (model, Cmd.none)
+      decodePrompt raw
+        |> setPrompt model
+    SubmitLine ->
+      (model, Cmd.none, Just (submitLine model))
 
-setLine : Model -> (Line.Model, Cmd Line.Action) -> (Model, Cmd Action)
+setLine : Model -> (Line.Model, Cmd Line.Action) -> Update msg
 setLine model (field, cmd) =
-  ({ model | line = field }, Cmd.map LineAction cmd)
+  ({ model | line = field }, Cmd.map LineAction cmd, Nothing)
 
-setPrompt : Model -> StoryPrompt -> (Model, Cmd Action)
-setPrompt model response =
-  ({ model | prompt = response.prompt, author = response.author }, Cmd.none)
+setPrompt : Model -> Result e StoryPrompt -> Update msg
+setPrompt model prompt =
+  case prompt of
+    Ok actual ->
+      ({ model | prompt = actual.prompt, author = actual.author }, Cmd.none, Nothing)
+    Err _ ->
+      (model, Cmd.none, Nothing)
 
--- responses
+-- request data
 type alias StoryPrompt =
   { prompt : String
   , author : String
   }
 
-promptDecoder : JD.Decoder StoryPrompt
-promptDecoder =
-  JD.map2 StoryPrompt
-    (field "prompt" JD.string)
-    (field "author" JD.string)
+decodePrompt : JD.Value -> Result String StoryPrompt
+decodePrompt =
+  JD.decodeValue
+    (JD.map2 StoryPrompt
+      (field "prompt" JD.string)
+      (field "author" JD.string))
+
+submitLine : Model -> Push.Push msg
+submitLine model =
+  Push.init "new:line" room
+    |> Push.withPayload (encodeLinePayload model)
+
+encodeLinePayload : Model -> JE.Value
+encodeLinePayload model =
+  JE.object
+    [ ("line", JE.string model.line.value)
+    , ("email", JE.string model.email)
+    , ("name", JE.string model.name)
+    ]
 
 -- view
 { class, classes } = styles
@@ -106,7 +133,10 @@ view model =
 
 content : Model -> List (Html Action) -> Html Action
 content model =
-  div [ Content |> showsAfter [model.prompt] ]
+  form
+    [ Content |> showsAfter [model.prompt]
+    , onSubmit SubmitLine
+    ]
 
 emailField : Model -> Html Action
 emailField model =

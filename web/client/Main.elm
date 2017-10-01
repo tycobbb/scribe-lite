@@ -30,10 +30,10 @@ type alias Model =
 init : (Model, Cmd Action)
 init =
   let
-    (story, storyCmd) = Story.init
+    (story, storyCmd, storyChannel) = Story.init
     (socket, socketCmd) =
       initSocket
-        |> Socket.join (Channel.map StoryAction Story.initChannel)
+        |> Socket.join (Channel.map StoryAction storyChannel)
   in
     ( { socket = socket
       , story = story
@@ -68,9 +68,28 @@ setSocket : Model -> (Socket.Socket Action, Cmd (Socket.Msg Action) ) -> (Model,
 setSocket model (field, cmd) =
   ({ model | socket = field }, Cmd.map SocketMsg cmd)
 
-setStory : Model -> (Story.Model, Cmd Story.Action) -> (Model, Cmd Action)
-setStory model (field, cmd) =
-  ({ model | story = field }, Cmd.map StoryAction cmd)
+setStory : Model -> (Story.Model, Cmd Story.Action, Maybe (Push.Push Story.Action)) -> (Model, Cmd Action)
+setStory model (field, cmd, push) =
+  let
+    update =
+      ({ model | story = field }, Cmd.map StoryAction cmd)
+  in
+    case push of
+      Just p -> sendPush update (Push.map StoryAction p)
+      Nothing -> update
+
+sendPush : (Model, Cmd Action) -> Push.Push Action -> (Model, Cmd Action)
+sendPush (model, cmd) push =
+  let
+    (socket, socketCmd) =
+      Socket.push push model.socket
+  in
+    ( { model | socket = socket }
+    , Cmd.batch
+      [ cmd
+      , Cmd.map SocketMsg socketCmd
+      ]
+     )
 
 -- subscriptions
 subscriptions : Model -> Sub Action
