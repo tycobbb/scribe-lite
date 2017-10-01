@@ -2,10 +2,9 @@ module Main exposing (main)
 
 import Html exposing (..)
 import Phoenix.Socket as Socket
-import Phoenix.Channel as Channel
-import Phoenix.Push as Push
 import MainStyles exposing (Classes(..), styles)
 import Story.Story as Story
+import Socket.Event
 
 -- main
 main : Program Never Model Action
@@ -19,42 +18,38 @@ main =
 
 -- constants
 serverUrl : String
-serverUrl = "ws://localhost:4000/socket"
+serverUrl = "ws://localhost:4000/socket/websocket"
 
--- model
+-- state
+type alias State =
+  (Model, Cmd Action)
+
 type alias Model =
   { socket : Socket.Socket Action
   , story : Story.Model
   }
 
-init : (Model, Cmd Action)
+init : State
 init =
   let
-    (story, storyCmd, storyChannel) = Story.init
-    (socket, socketCmd) =
-      initSocket
-        |> Socket.join (Channel.map StoryAction storyChannel)
-  in
-    ( { socket = socket
-      , story = story
-      }
-    , Cmd.batch
-      [ Cmd.map SocketMsg socketCmd
+    (story, storyCmd, storyEvent) =
+      Story.init
+    state =
+      ( { socket = initSocket
+        , story = story
+        }
       , Cmd.map StoryAction storyCmd
-      ]
-    )
-
-initSocket : Socket.Socket msg
-initSocket =
-  Socket.init "ws://localhost:4000/socket/websocket"
-    |> Socket.withDebug
+      )
+  in
+    state
+      |> sendEvent StoryAction storyEvent
 
 -- update
 type Action
   = SocketMsg (Socket.Msg Action)
   | StoryAction Story.Action
 
-update : Action -> Model -> (Model, Cmd Action)
+update : Action -> Model -> State
 update action model =
   case action of
     SocketMsg msg ->
@@ -68,28 +63,10 @@ setSocket : Model -> (Socket.Socket Action, Cmd (Socket.Msg Action) ) -> (Model,
 setSocket model (field, cmd) =
   ({ model | socket = field }, Cmd.map SocketMsg cmd)
 
-setStory : Model -> (Story.Model, Cmd Story.Action, Maybe (Push.Push Story.Action)) -> (Model, Cmd Action)
-setStory model (field, cmd, push) =
-  let
-    update =
-      ({ model | story = field }, Cmd.map StoryAction cmd)
-  in
-    case push of
-      Just p -> sendPush update (Push.map StoryAction p)
-      Nothing -> update
-
-sendPush : (Model, Cmd Action) -> Push.Push Action -> (Model, Cmd Action)
-sendPush (model, cmd) push =
-  let
-    (socket, socketCmd) =
-      Socket.push push model.socket
-  in
-    ( { model | socket = socket }
-    , Cmd.batch
-      [ cmd
-      , Cmd.map SocketMsg socketCmd
-      ]
-     )
+setStory : Model -> Story.State -> State
+setStory model (field, cmd, event) =
+  ({ model | story = field }, Cmd.map StoryAction cmd)
+    |> sendEvent StoryAction event
 
 -- subscriptions
 subscriptions : Model -> Sub Action
@@ -105,3 +82,24 @@ view model =
     [ Story.view model.story
         |> Html.map StoryAction
     ]
+
+-- socket
+initSocket : Socket.Socket msg
+initSocket =
+  Socket.init serverUrl
+    |> Socket.withDebug
+
+sendEvent : (m -> Action) -> Socket.Event.Event m -> State -> State
+sendEvent message event (model, cmd)  =
+  let
+    (socket, socketCmd) =
+      event
+        |> Socket.Event.map message
+        |> Socket.Event.send model.socket
+  in
+    ( { model | socket = socket }
+    , Cmd.batch
+      [ cmd
+      , Cmd.map SocketMsg socketCmd
+      ]
+     )
