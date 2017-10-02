@@ -1,7 +1,7 @@
 defmodule Scribe.StoryChannel do
-  use Phoenix.Channel
+  use Phoenix.Channel, log_join: true, log_handle_in: true
 
-  def join("story:unified", _message, socket) do
+  def join("story:" <> _id, _params, socket) do
     response = %{
       prompt: "When the tiny dumpling decided to jump across the river, it let out a sigh.",
       author: "Gob Bluth"
@@ -10,7 +10,7 @@ defmodule Scribe.StoryChannel do
     {:ok, response, socket}
   end
 
-  def join("story:" <> _story_id, _params, _socket) do
-    {:error, %{reason: "not found"}}
+  def handle_in("add:line", _message, socket) do
+    {:noreply, socket}
   end
 end

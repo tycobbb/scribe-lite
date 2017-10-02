@@ -57,25 +57,24 @@ type Action
   | SubmitLine
 
 update : Action -> Model -> State
-update action model =
-  case action of
-    LineAction lineAction ->
-      Line.update lineAction model.line
-        |> setLine model
-    ChangeEmail email ->
-      { model | email = email }
-        |> toState
-    ChangeName name ->
-      { model | name = name }
-        |> toState
-    JoinStory raw ->
-      decodePrompt raw
-        |> setPrompt model
-    SubmitLine ->
-      ( model
-      , Cmd.none
-      , submitLine model
-      )
+update action model = case action of
+  LineAction lineAction ->
+    Line.update lineAction model.line
+      |> setLine model
+  ChangeEmail email ->
+    { model | email = email }
+      |> toState
+  ChangeName name ->
+    { model | name = name }
+      |> toState
+  JoinStory raw ->
+    decodePrompt raw
+      |> setPrompt model
+  SubmitLine ->
+    ( model
+    , Cmd.none
+    , submitLine model
+    )
 
 setLine : Model -> (Line.Model, Cmd Line.Action) -> State
 setLine model (field, cmd) =
@@ -110,7 +109,7 @@ decodePrompt =
 
 submitLine : Model -> Socket.Event.Event Action
 submitLine model =
-  Push.init "new:line" room
+  Push.init "add:line" room
     |> Push.withPayload (encodeLinePayload model)
     |> Socket.Event.push
 
