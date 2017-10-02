@@ -1,4 +1,4 @@
-module Story.Story exposing (State, Model, Action, view, update, init)
+module Story.Story exposing (State, Model, Msg, view, update, init)
 
 import Html exposing (..)
 import Html.Attributes exposing (placeholder)
@@ -17,7 +17,7 @@ room = "story:unified"
 
 -- state
 type alias State =
-  (Model, Cmd Action, Socket.Event.Event Action)
+  (Model, Cmd Msg, Socket.Event.Event Msg)
 
 type alias Model =
   { line : Line.Model
@@ -38,28 +38,28 @@ init =
       , email = ""
       , name = ""
       }
-    , Cmd.map LineAction lineCmd
+    , Cmd.map LineMsg lineCmd
     , joinChannel
     )
 
-joinChannel : Socket.Event.Event Action
+joinChannel : Socket.Event.Event Msg
 joinChannel =
   Channel.init room
     |> Channel.onJoin JoinStory
     |> Socket.Event.join
 
 -- update
-type Action
-  = LineAction Line.Action
+type Msg
+  = LineMsg Line.Msg
   | ChangeEmail String
   | ChangeName String
   | JoinStory JE.Value
   | SubmitLine
 
-update : Action -> Model -> State
+update : Msg -> Model -> State
 update action model = case action of
-  LineAction lineAction ->
-    Line.update lineAction model.line
+  LineMsg lineMsg ->
+    Line.update lineMsg model.line
       |> setLine model
   ChangeEmail email ->
     { model | email = email }
@@ -76,10 +76,10 @@ update action model = case action of
     , submitLine model
     )
 
-setLine : Model -> (Line.Model, Cmd Line.Action) -> State
+setLine : Model -> (Line.Model, Cmd Line.Msg) -> State
 setLine model (field, cmd) =
   ( { model | line = field }
-  , Cmd.map LineAction cmd
+  , Cmd.map LineMsg cmd
   , Socket.Event.none
   )
 
@@ -107,7 +107,7 @@ decodePrompt =
       (field "prompt" JD.string)
       (field "author" JD.string))
 
-submitLine : Model -> Socket.Event.Event Action
+submitLine : Model -> Socket.Event.Event Msg
 submitLine model =
   Push.init "add:line" room
     |> Push.withPayload (encodeLinePayload model)
@@ -124,7 +124,7 @@ encodeLinePayload model =
 -- view
 { class, classes } = styles
 
-view : Model -> Html Action
+view : Model -> Html Msg
 view model =
   div [ class Container ]
     [ div [ class Header ]
@@ -135,7 +135,7 @@ view model =
       , p [ class Prompt ]
         [ text model.prompt ]
       , Line.view model.line
-          |> Html.map LineAction
+          |> Html.map LineMsg
       , emailField model
       , submitRow model
         [ nameField model
@@ -144,14 +144,14 @@ view model =
       ]
     ]
 
-content : Model -> List (Html Action) -> Html Action
+content : Model -> List (Html Msg) -> Html Msg
 content model =
   form
     [ Content |> showsAfter [model.prompt]
     , onSubmit SubmitLine
     ]
 
-emailField : Model -> Html Action
+emailField : Model -> Html Msg
 emailField model =
   input
     [ EmailField |> showsAfter [model.line.value]
@@ -159,7 +159,7 @@ emailField model =
     , placeholder "E-mail Address"
     ] [ text model.email ]
 
-nameField : Model -> Html Action
+nameField : Model -> Html Msg
 nameField model =
   input
     [ class NameField
@@ -167,11 +167,11 @@ nameField model =
     , placeholder "Name to Display (Optional)"
     ] [ text model.name ]
 
-submitRow : Model -> List (Html Action) -> Html Action
+submitRow : Model -> List (Html Msg) -> Html Msg
 submitRow model =
   div [ SubmitRow |> showsAfter [model.line.value, model.email] ]
 
-submitButton : Html Action
+submitButton : Html Msg
 submitButton =
   button [ class SubmitButton ]
     [ span []

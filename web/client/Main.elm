@@ -7,7 +7,7 @@ import Story.Story as Story
 import Socket.Event
 
 -- main
-main : Program Never Model Action
+main : Program Never Model Msg
 main =
   program
     { init = init
@@ -22,10 +22,10 @@ serverUrl = "ws://localhost:4000/socket/websocket"
 
 -- state
 type alias State =
-  (Model, Cmd Action)
+  (Model, Cmd Msg)
 
 type alias Model =
-  { socket : Socket.Socket Action
+  { socket : Socket.Socket Msg
   , story : Story.Model
   }
 
@@ -38,49 +38,49 @@ init =
       ( { socket = initSocket
         , story = story
         }
-      , Cmd.map StoryAction storyCmd
+      , Cmd.map StoryMsg storyCmd
       )
   in
     state
-      |> sendEvent StoryAction storyEvent
+      |> sendEvent StoryMsg storyEvent
 
 -- update
-type Action
-  = SocketMsg (Socket.Msg Action)
-  | StoryAction Story.Action
+type Msg
+  = SocketMsg (Socket.Msg Msg)
+  | StoryMsg Story.Msg
 
-update : Action -> Model -> State
+update : Msg -> Model -> State
 update action model =
   case action of
     SocketMsg msg ->
       Socket.update msg model.socket
         |> setSocket model
-    StoryAction action ->
+    StoryMsg action ->
       Story.update action model.story
         |> setStory model
 
-setSocket : Model -> (Socket.Socket Action, Cmd (Socket.Msg Action) ) -> (Model, Cmd Action)
+setSocket : Model -> (Socket.Socket Msg, Cmd (Socket.Msg Msg) ) -> (Model, Cmd Msg)
 setSocket model (field, cmd) =
   ({ model | socket = field }, Cmd.map SocketMsg cmd)
 
 setStory : Model -> Story.State -> State
 setStory model (field, cmd, event) =
-  ({ model | story = field }, Cmd.map StoryAction cmd)
-    |> sendEvent StoryAction event
+  ({ model | story = field }, Cmd.map StoryMsg cmd)
+    |> sendEvent StoryMsg event
 
 -- subscriptions
-subscriptions : Model -> Sub Action
+subscriptions : Model -> Sub Msg
 subscriptions model =
    Socket.listen model.socket SocketMsg
 
 -- view
 { class } = styles
 
-view : Model -> Html Action
+view : Model -> Html Msg
 view model =
   div [ class Container ]
     [ Story.view model.story
-        |> Html.map StoryAction
+        |> Html.map StoryMsg
     ]
 
 -- socket
@@ -89,7 +89,7 @@ initSocket =
   Socket.init serverUrl
     |> Socket.withDebug
 
-sendEvent : (m -> Action) -> Socket.Event.Event m -> State -> State
+sendEvent : (m -> Msg) -> Socket.Event.Event m -> State -> State
 sendEvent message event (model, cmd)  =
   let
     (socket, socketCmd) =

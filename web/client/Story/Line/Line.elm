@@ -1,4 +1,4 @@
-module Story.Line.Line exposing (Model, Action, init, update, view)
+module Story.Line.Line exposing (Model, Msg, init, update, view)
 
 import Dom.Size exposing (Boundary(..))
 import Html exposing (..)
@@ -23,7 +23,7 @@ type alias Model =
   , height: Float
   }
 
-init : (Model, Cmd Action)
+init : (Model, Cmd Msg)
 init =
   ( { value = ""
     , height = lineHeight * 2
@@ -32,12 +32,12 @@ init =
   )
 
 -- update
-type Action
+type Msg
   = None
   | Change String
   | Resize Float
 
-update : Action -> Model -> (Model, Cmd Action)
+update : Msg -> Model -> (Model, Cmd Msg)
 update action model =
   case action of
     None ->
@@ -48,7 +48,7 @@ update action model =
       ({ model | height = lineHeight + height }, Cmd.none)
 
 -- commands
-calculateHeight : String -> Cmd Action
+calculateHeight : String -> Cmd Msg
 calculateHeight value =
   if String.isEmpty value
     then Cmd.none
@@ -68,7 +68,7 @@ checkFieldHeight =
 -- there's no simple way to selectively `preventDefault` in event handlers right
 -- now. solution lifted heavily from this issue:
 -- https://github.com/elm-lang/virtual-dom/issues/18
-filterIllegalKeys : String -> Attribute Action
+filterIllegalKeys : String -> Attribute Msg
 filterIllegalKeys currentText =
   let
     options =
@@ -87,7 +87,7 @@ filterIllegalKeys currentText =
 -- view
 { class, classes } = styles
 
-view : Model -> Html Action
+view : Model -> Html Msg
 view model =
   div [ class Container ]
     [ div [ id shadowInputId, class ShadowInput ]
@@ -96,7 +96,7 @@ view model =
     , field model
     ]
 
-shadowField : Model -> Html Action
+shadowField : Model -> Html Msg
 shadowField model =
   let
     charactersLeft =
@@ -112,7 +112,7 @@ shadowField model =
           [ text ("  " ++ toString charactersLeft) ]
         ]
 
-field : Model -> Html Action
+field : Model -> Html Msg
 field model =
   textarea
     [ class Input
