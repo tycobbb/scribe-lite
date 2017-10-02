@@ -11,6 +11,6 @@ defmodule Scribe.StoryChannel do
   end
 
   def handle_in("add:line", _message, socket) do
-    {:noreply, socket}
+    {:reply, :ok, socket}
   end
 end

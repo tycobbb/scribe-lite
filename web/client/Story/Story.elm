@@ -1,10 +1,11 @@
-module Story.Story exposing (State, Model, Msg, view, update, init)
+module Story.Story exposing (State, Model, Msg, init, initEvent, view, update, updateEvent)
 
 import Html exposing (..)
 import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onInput, onSubmit)
 import Json.Encode as JE
 import Json.Decode as JD exposing (field)
+import Navigation
 import Phoenix.Channel as Channel
 import Phoenix.Push as Push
 import Story.Styles exposing (Classes(..), styles)
@@ -16,8 +17,7 @@ room : String
 room = "story:unified"
 
 -- state
-type alias State =
-  (Model, Cmd Msg, Socket.Event.Event Msg)
+type alias State = (Model, Cmd Msg)
 
 type alias Model =
   { line : Line.Model
@@ -39,11 +39,10 @@ init =
       , name = ""
       }
     , Cmd.map LineMsg lineCmd
-    , joinChannel
     )
 
-joinChannel : Socket.Event.Event Msg
-joinChannel =
+initEvent : Socket.Event.Event Msg
+initEvent =
   Channel.init room
     |> Channel.onJoin JoinStory
     |> Socket.Event.join
@@ -55,44 +54,45 @@ type Msg
   | ChangeName String
   | JoinStory JE.Value
   | SubmitLine
+  | SubmitOk JE.Value
 
 update : Msg -> Model -> State
-update action model = case action of
-  LineMsg lineMsg ->
-    Line.update lineMsg model.line
-      |> setLine model
-  ChangeEmail email ->
-    { model | email = email }
-      |> toState
-  ChangeName name ->
-    { model | name = name }
-      |> toState
-  JoinStory raw ->
-    decodePrompt raw
-      |> setPrompt model
-  SubmitLine ->
-    ( model
-    , Cmd.none
-    , submitLine model
-    )
+update msg model =
+  case msg of
+    LineMsg lineMsg ->
+      Line.update lineMsg model.line
+        |> setLine model
+    ChangeEmail email ->
+      ( { model | email = email }, Cmd.none )
+    ChangeName name ->
+      ( { model | name = name }, Cmd.none )
+    JoinStory raw ->
+      decodePrompt raw
+        |> setPrompt model
+    SubmitLine ->
+      ( model , Cmd.none )
+    SubmitOk _ ->
+      ( model, Navigation.modifyUrl "/thanks" )
 
-setLine : Model -> (Line.Model, Cmd Line.Msg) -> State
+setLine : Model -> Line.State -> State
 setLine model (field, cmd) =
-  ( { model | line = field }
-  , Cmd.map LineMsg cmd
-  , Socket.Event.none
-  )
+  ( { model | line = field } , Cmd.map LineMsg cmd )
 
 setPrompt : Model -> Result e StoryPrompt -> State
 setPrompt model result =
   result
     |> Result.map (\{prompt, author} -> { model | prompt = prompt, author = author })
     |> Result.withDefault model
-    |> toState
+    |> (\m -> (m, Cmd.none))
 
-toState : Model -> State
-toState model =
-  (model, Cmd.none, Socket.Event.none)
+-- socket events
+updateEvent : Msg -> Model -> Socket.Event.Event Msg
+updateEvent msg model =
+  case msg of
+    SubmitLine ->
+      submitLine model
+    _ ->
+      Socket.Event.none
 
 -- request data
 type alias StoryPrompt =
@@ -111,6 +111,7 @@ submitLine : Model -> Socket.Event.Event Msg
 submitLine model =
   Push.init "add:line" room
     |> Push.withPayload (encodeLinePayload model)
+    |> Push.onOk SubmitOk
     |> Socket.Event.push
 
 encodeLinePayload : Model -> JE.Value

@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Html exposing (..)
+import Navigation
 import Phoenix.Socket as Socket
 import MainStyles exposing (Classes(..), styles)
 import Story.Story as Story
@@ -9,7 +10,7 @@ import Socket.Event
 -- main
 main : Program Never Model Msg
 main =
-  program
+  Navigation.program UrlChange
     { init = init
     , view = view
     , update = update
@@ -21,18 +22,17 @@ serverUrl : String
 serverUrl = "ws://localhost:4000/socket/websocket"
 
 -- state
-type alias State =
-  (Model, Cmd Msg)
+type alias State = (Model, Cmd Msg)
 
 type alias Model =
   { socket : Socket.Socket Msg
   , story : Story.Model
   }
 
-init : State
-init =
+init : Navigation.Location -> State
+init _ =
   let
-    (story, storyCmd, storyEvent) =
+    (story, storyCmd) =
       Story.init
     state =
       ( { socket = initSocket
@@ -42,31 +42,35 @@ init =
       )
   in
     state
-      |> sendEvent StoryMsg storyEvent
+      |> sendEvent StoryMsg Story.initEvent
 
 -- update
 type Msg
-  = SocketMsg (Socket.Msg Msg)
+  = UrlChange Navigation.Location
   | StoryMsg Story.Msg
+  | SocketMsg (Socket.Msg Msg)
 
 update : Msg -> Model -> State
-update action model =
-  case action of
+update msg model =
+  case msg of
+    UrlChange location ->
+      let _ = Debug.log "now at" (toString location) in
+      ( model, Cmd.none )
+    StoryMsg msg ->
+      Story.update msg model.story
+        |> setStory model
+        |> sendEvent StoryMsg (Story.updateEvent msg model.story)
     SocketMsg msg ->
       Socket.update msg model.socket
         |> setSocket model
-    StoryMsg action ->
-      Story.update action model.story
-        |> setStory model
 
-setSocket : Model -> (Socket.Socket Msg, Cmd (Socket.Msg Msg) ) -> (Model, Cmd Msg)
+setSocket : Model -> (Socket.Socket Msg, Cmd (Socket.Msg Msg) ) -> State
 setSocket model (field, cmd) =
-  ({ model | socket = field }, Cmd.map SocketMsg cmd)
+  ( { model | socket = field }, Cmd.map SocketMsg cmd )
 
 setStory : Model -> Story.State -> State
-setStory model (field, cmd, event) =
-  ({ model | story = field }, Cmd.map StoryMsg cmd)
-    |> sendEvent StoryMsg event
+setStory model (field, cmd) =
+  ( { model | story = field }, Cmd.map StoryMsg cmd )
 
 -- subscriptions
 subscriptions : Model -> Sub Msg
@@ -90,11 +94,11 @@ initSocket =
     |> Socket.withDebug
 
 sendEvent : (m -> Msg) -> Socket.Event.Event m -> State -> State
-sendEvent message event (model, cmd)  =
+sendEvent msg event (model, cmd)  =
   let
     (socket, socketCmd) =
       event
-        |> Socket.Event.map message
+        |> Socket.Event.map msg
         |> Socket.Event.send model.socket
   in
     ( { model | socket = socket }

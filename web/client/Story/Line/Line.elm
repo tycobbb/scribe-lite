@@ -1,4 +1,4 @@
-module Story.Line.Line exposing (Model, Msg, init, update, view)
+module Story.Line.Line exposing (State, Model, Msg, init, update, view)
 
 import Dom.Size exposing (Boundary(..))
 import Html exposing (..)
@@ -17,13 +17,15 @@ characterLimit = 150
 shadowInputId : String
 shadowInputId = "shadow-input"
 
--- model
+-- state
+type alias State = (Model, Cmd Msg)
+
 type alias Model =
   { value: String
   , height: Float
   }
 
-init : (Model, Cmd Msg)
+init : State
 init =
   ( { value = ""
     , height = lineHeight * 2
@@ -37,15 +39,15 @@ type Msg
   | Change String
   | Resize Float
 
-update : Msg -> Model -> (Model, Cmd Msg)
-update action model =
-  case action of
+update : Msg -> Model -> State
+update msg model =
+  case msg of
     None ->
-      (model, Cmd.none)
+      ( model, Cmd.none )
     Change value ->
-      ({ model | value = value }, calculateHeight value)
+      ( { model | value = value }, calculateHeight value )
     Resize height ->
-      ({ model | height = lineHeight + height }, Cmd.none)
+      ( { model | height = lineHeight + height }, Cmd.none )
 
 -- commands
 calculateHeight : String -> Cmd Msg
