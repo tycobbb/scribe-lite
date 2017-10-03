@@ -4,6 +4,7 @@ import Html exposing (..)
 import Navigation
 import Phoenix.Socket as Socket
 import MainStyles exposing (Classes(..), styles)
+import Router exposing (Route)
 import Story.Story as Story
 import Socket.Event
 
@@ -25,29 +26,23 @@ serverUrl = "ws://localhost:4000/socket/websocket"
 type alias State = (Model, Cmd Msg)
 
 type alias Model =
-  { socket : Socket.Socket Msg
-  , story : Story.Model
+  { scene : Scene
+  , socket : Socket.Socket Msg
   }
 
 init : Navigation.Location -> State
 init _ =
-  let
-    (story, storyCmd) =
-      Story.init
-    state =
-      ( { socket = initSocket
-        , story = story
-        }
-      , Cmd.map StoryMsg storyCmd
-      )
-  in
-    state
-      |> sendEvent StoryMsg Story.initEvent
+  ( { scene = None
+    , socket = initSocket
+    }
+  , Cmd.none
+  )
 
 -- update
 type Msg
   = UrlChange Navigation.Location
-  | StoryMsg Story.Msg
+  | SceneMsg1 SceneMsg
+  -- | StoryMsg Story.Msg
   | SocketMsg (Socket.Msg Msg)
 
 update : Msg -> Model -> State
@@ -56,10 +51,12 @@ update msg model =
     UrlChange location ->
       let _ = Debug.log "now at" (toString location) in
       ( model, Cmd.none )
-    StoryMsg msg ->
-      Story.update msg model.story
-        |> setStory model
-        |> sendEvent StoryMsg (Story.updateEvent msg model.story)
+    SceneMsg1 _ ->
+      ( model, Cmd.none )
+    -- StoryMsg msg ->
+    --   Story.update msg model.story
+    --     |> setStory model
+    --     |> sendEvent StoryMsg (Story.updateEvent msg model.story)
     SocketMsg msg ->
       Socket.update msg model.socket
         |> setSocket model
@@ -68,9 +65,9 @@ setSocket : Model -> (Socket.Socket Msg, Cmd (Socket.Msg Msg) ) -> State
 setSocket model (field, cmd) =
   ( { model | socket = field }, Cmd.map SocketMsg cmd )
 
-setStory : Model -> Story.State -> State
-setStory model (field, cmd) =
-  ( { model | story = field }, Cmd.map StoryMsg cmd )
+-- setStory : Model -> Story.State -> State
+-- setStory model (field, cmd) =
+--   ( { model | story = field }, Cmd.map StoryMsg cmd )
 
 -- subscriptions
 subscriptions : Model -> Sub Msg
@@ -83,9 +80,72 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
   div [ class Container ]
-    [ Story.view model.story
-        |> Html.map StoryMsg
-    ]
+    []
+    -- [ Story.view model.story
+    --     |> Html.map StoryMsg
+    -- ]
+
+-- scene
+type Scene
+  = Story
+  | Thanks
+  | None
+
+type SceneMsg
+  = StoryMsg Story.Msg
+
+-- scene : Router.Route -> Scene
+-- scene route =
+--   case route of
+--     Router.Story ->
+--       let
+--         (model, cmd) = Story.init
+--       in
+--         Story model
+--           -- { initCmd = Story.init
+--           -- , initEvent = Story.initEvent
+--           -- , update = Story.update
+--           -- , updateEvent = Story.updateEvent
+--           -- , view = Story.view
+--           -- }
+--     Router.Thanks ->
+--       None
+
+initS : ( { b | scene : a }, Cmd SceneMsg ) -> ( { b | scene : Scene }, Cmd SceneMsg )
+initS (model, cmd) =
+  let
+    (story, storyCmd) = Story.init
+  in
+    ( { model | scene = Story }
+    , Cmd.batch
+      [ cmd
+      , Cmd.map StoryMsg storyCmd
+      ]
+    )
+
+updateS : (Story.Model, Story.Msg) -> State -> State
+updateS (story, storyMsg) (model, cmd) =
+  let
+    (story_, storyCmd) = Story.update storyMsg story
+    event = Story.updateEvent storyMsg story
+      |> Socket.Event.map StoryMsg
+      |> Socket.Event.map SceneMsg1
+
+  in
+    ( { model | scene = Story }
+    , Cmd.batch
+      [ cmd
+      , Cmd.map StoryMsg storyCmd
+          |> Cmd.map SceneMsg1
+      ]
+    )
+    |> sendEvent event
+
+viewS : Story.Model -> Html Msg
+viewS story =
+  Story.view story
+    |> Html.map StoryMsg
+    |> Html.map SceneMsg1
 
 -- socket
 initSocket : Socket.Socket msg
@@ -93,13 +153,11 @@ initSocket =
   Socket.init serverUrl
     |> Socket.withDebug
 
-sendEvent : (m -> Msg) -> Socket.Event.Event m -> State -> State
-sendEvent msg event (model, cmd)  =
+sendEvent : Socket.Event.Event Msg -> State -> State
+sendEvent event (model, cmd)  =
   let
     (socket, socketCmd) =
-      event
-        |> Socket.Event.map msg
-        |> Socket.Event.send model.socket
+      Socket.Event.send model.socket event
   in
     ( { model | socket = socket }
     , Cmd.batch
