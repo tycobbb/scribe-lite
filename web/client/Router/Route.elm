@@ -1,4 +1,4 @@
-module Router exposing (Route(..), route)
+module Router.Route exposing (Route(..), route)
 
 import Navigation
 import UrlParser as Url exposing ((</>), s, top)

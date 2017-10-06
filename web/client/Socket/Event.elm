@@ -11,15 +11,6 @@ type Event m
   | None
 
 -- events
-join : Channel.Channel m -> Event m
-join = Join
-
-leave : String -> Event m
-leave = Leave
-
-push : Push.Push m -> Event m
-push = Push
-
 none : Event m
 none = None
 

@@ -45,7 +45,7 @@ initEvent : Socket.Event.Event Msg
 initEvent =
   Channel.init room
     |> Channel.onJoin JoinStory
-    |> Socket.Event.join
+    |> Socket.Event.Join
 
 -- update
 type Msg
@@ -112,7 +112,7 @@ submitLine model =
   Push.init "add:line" room
     |> Push.withPayload (encodeLinePayload model)
     |> Push.onOk SubmitOk
-    |> Socket.Event.push
+    |> Socket.Event.Push
 
 encodeLinePayload : Model -> JE.Value
 encodeLinePayload model =

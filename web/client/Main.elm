@@ -4,8 +4,8 @@ import Html exposing (..)
 import Navigation
 import Phoenix.Socket as Socket
 import MainStyles exposing (Classes(..), styles)
-import Router exposing (Route)
-import Story.Story as Story
+import Router.Route as Route
+import Router.Scene as Scene
 import Socket.Event
 
 -- main
@@ -26,37 +26,35 @@ serverUrl = "ws://localhost:4000/socket/websocket"
 type alias State = (Model, Cmd Msg)
 
 type alias Model =
-  { scene : Scene
+  { scene : Scene.Model
   , socket : Socket.Socket Msg
   }
 
 init : Navigation.Location -> State
-init _ =
-  ( { scene = None
-    , socket = initSocket
-    }
-  , Cmd.none
-  )
+init location =
+  setLocation location
+    ( { scene = Scene.None
+      , socket = initSocket
+      }
+    , Cmd.none
+    )
 
 -- update
 type Msg
   = UrlChange Navigation.Location
-  | SceneMsg1 SceneMsg
-  -- | StoryMsg Story.Msg
+  | SceneMsg Scene.Msg
   | SocketMsg (Socket.Msg Msg)
 
 update : Msg -> Model -> State
 update msg model =
   case msg of
     UrlChange location ->
-      let _ = Debug.log "now at" (toString location) in
-      ( model, Cmd.none )
-    SceneMsg1 _ ->
-      ( model, Cmd.none )
-    -- StoryMsg msg ->
-    --   Story.update msg model.story
-    --     |> setStory model
-    --     |> sendEvent StoryMsg (Story.updateEvent msg model.story)
+      setLocation location ( model, Cmd.none )
+    SceneMsg msg ->
+      setScene
+        (Scene.update msg model.scene)
+        (Scene.updateEvent msg)
+        ( model, Cmd.none )
     SocketMsg msg ->
       Socket.update msg model.socket
         |> setSocket model
@@ -64,10 +62,6 @@ update msg model =
 setSocket : Model -> (Socket.Socket Msg, Cmd (Socket.Msg Msg) ) -> State
 setSocket model (field, cmd) =
   ( { model | socket = field }, Cmd.map SocketMsg cmd )
-
--- setStory : Model -> Story.State -> State
--- setStory model (field, cmd) =
---   ( { model | story = field }, Cmd.map StoryMsg cmd )
 
 -- subscriptions
 subscriptions : Model -> Sub Msg
@@ -80,72 +74,33 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
   div [ class Container ]
-    []
-    -- [ Story.view model.story
-    --     |> Html.map StoryMsg
-    -- ]
+    [ Scene.view model.scene
+        |> Html.map SceneMsg
+    ]
 
--- scene
-type Scene
-  = Story
-  | Thanks
-  | None
+-- routing
+setLocation : Navigation.Location -> State -> State
+setLocation location =
+  setScene
+    (Scene.init (Route.route location))
+    (Scene.initEvent)
 
-type SceneMsg
-  = StoryMsg Story.Msg
-
--- scene : Router.Route -> Scene
--- scene route =
---   case route of
---     Router.Story ->
---       let
---         (model, cmd) = Story.init
---       in
---         Story model
---           -- { initCmd = Story.init
---           -- , initEvent = Story.initEvent
---           -- , update = Story.update
---           -- , updateEvent = Story.updateEvent
---           -- , view = Story.view
---           -- }
---     Router.Thanks ->
---       None
-
-initS : ( { b | scene : a }, Cmd SceneMsg ) -> ( { b | scene : Scene }, Cmd SceneMsg )
-initS (model, cmd) =
+setScene : Scene.State -> (Scene.Model -> Socket.Event.Event Scene.Msg) -> State -> State
+setScene (scene, sceneCmd) getEvent (model, cmd) =
   let
-    (story, storyCmd) = Story.init
+    event =
+      getEvent scene
+        |> Socket.Event.map SceneMsg
+    state =
+      ( { model | scene = scene }
+      , Cmd.batch
+        [ cmd
+        , Cmd.map SceneMsg sceneCmd
+        ]
+      )
   in
-    ( { model | scene = Story }
-    , Cmd.batch
-      [ cmd
-      , Cmd.map StoryMsg storyCmd
-      ]
-    )
-
-updateS : (Story.Model, Story.Msg) -> State -> State
-updateS (story, storyMsg) (model, cmd) =
-  let
-    (story_, storyCmd) = Story.update storyMsg story
-    event = Story.updateEvent storyMsg story
-      |> Socket.Event.map StoryMsg
-      |> Socket.Event.map SceneMsg1
-
-  in
-    ( { model | scene = Story }
-    , Cmd.batch
-      [ cmd
-      , Cmd.map StoryMsg storyCmd
-          |> Cmd.map SceneMsg1
-      ]
-    )
-    |> sendEvent event
-
-viewS : Story.Model -> Html Msg
-viewS story =
-  Story.view story
-    |> Html.map StoryMsg
-    |> Html.map SceneMsg1
+    state |>
+      sendEvent event
 
 -- socket
 initSocket : Socket.Socket msg
