@@ -1,9 +1,9 @@
 module Story.Line.Line exposing (State, Model, Msg, init, update, view)
 
-import Dom.Size exposing (Boundary(..))
 import Html exposing (..)
 import Html.Attributes exposing (id, placeholder, autofocus, maxlength)
 import Html.Events exposing (onWithOptions, onInput, keyCode)
+import Dom.Size exposing (Boundary(..))
 import Json.Decode as Decode
 import Json.Decode.Extra as DecodeExt
 import Task

@@ -7,6 +7,7 @@ import MainStyles exposing (Classes(..), styles)
 import Router.Route as Route
 import Router.Scene as Scene
 import Socket.Event
+import Helpers exposing (withCmd, withoutCmd, joinCmd)
 
 -- main
 main : Program Never Model Msg
@@ -31,13 +32,14 @@ type alias Model =
   }
 
 init : Navigation.Location -> State
-init location =
-  setLocation location
-    ( { scene = Scene.None
-      , socket = initSocket
-      }
-    , Cmd.none
-    )
+init =
+  setLocation (withoutCmd initModel)
+
+initModel : Model
+initModel =
+  { scene = Scene.None
+  , socket = initSocket
+  }
 
 -- update
 type Msg
@@ -49,24 +51,24 @@ update : Msg -> Model -> State
 update msg model =
   case msg of
     UrlChange location ->
-      setLocation location ( model, Cmd.none )
+      location
+        |> setLocation (withoutCmd model)
     SceneMsg msg ->
-      setScene
-        (Scene.update msg model.scene)
-        (Scene.updateEvent msg)
-        ( model, Cmd.none )
+      Scene.update msg model.scene
+        |> setScene (withoutCmd model)
     SocketMsg msg ->
       Socket.update msg model.socket
         |> setSocket model
 
 setSocket : Model -> (Socket.Socket Msg, Cmd (Socket.Msg Msg) ) -> State
 setSocket model (field, cmd) =
-  ( { model | socket = field }, Cmd.map SocketMsg cmd )
+  { model | socket = field }
+    |> withCmd (Cmd.map SocketMsg cmd)
 
 -- subscriptions
 subscriptions : Model -> Sub Msg
 subscriptions model =
-   Socket.listen model.socket SocketMsg
+  Socket.listen model.socket SocketMsg
 
 -- view
 { class } = styles
@@ -79,28 +81,21 @@ view model =
     ]
 
 -- routing
-setLocation : Navigation.Location -> State -> State
-setLocation location =
-  setScene
-    (Scene.init (Route.route location))
-    (Scene.initEvent)
+setLocation : State -> Navigation.Location -> State
+setLocation state location =
+  Scene.init (Route.route location)
+    |> setScene state
 
-setScene : Scene.State -> (Scene.Model -> Socket.Event.Event Scene.Msg) -> State -> State
-setScene (scene, sceneCmd) getEvent (model, cmd) =
+setScene : State -> Scene.State -> State
+setScene (model, cmd) (scene, sceneCmd, sceneEvent) =
   let
     event =
-      getEvent scene
+      sceneEvent
         |> Socket.Event.map SceneMsg
-    state =
-      ( { model | scene = scene }
-      , Cmd.batch
-        [ cmd
-        , Cmd.map SceneMsg sceneCmd
-        ]
-      )
   in
-    state |>
-      sendEvent event
+    ( { model | scene = scene }, cmd )
+      |> joinCmd (Cmd.map SceneMsg sceneCmd)
+      |> sendEvent event
 
 -- socket
 initSocket : Socket.Socket msg
@@ -114,9 +109,5 @@ sendEvent event (model, cmd)  =
     (socket, socketCmd) =
       Socket.Event.send model.socket event
   in
-    ( { model | socket = socket }
-    , Cmd.batch
-      [ cmd
-      , Cmd.map SocketMsg socketCmd
-      ]
-     )
+    ( { model | socket = socket }, cmd )
+      |> joinCmd (Cmd.map SocketMsg socketCmd)

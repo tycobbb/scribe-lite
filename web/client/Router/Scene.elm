@@ -1,13 +1,14 @@
-module Router.Scene exposing (State, Model(..), Msg, init, initEvent, update, updateEvent, view)
+module Router.Scene exposing (State, Model(..), Msg, init, update, view)
 
 import Html exposing (Html)
 import Router.Route as Route
 import Story.Story as Story
-import Socket.Event
+import Socket.Event exposing (Event)
+import Helpers exposing (withoutEffects)
 
 -- state
 type alias State =
-  ( Model, Cmd Msg )
+  ( Model, Cmd Msg, Event Msg )
 
 type Model
   = Story Story.Model
@@ -16,33 +17,21 @@ type Model
 type Msg
   = StoryMsg Story.Msg
 
-toState : (a -> Model) -> (b -> Msg) -> ( a, Cmd b ) -> State
-toState asModel asMsg (submodel, msg) =
-  ( asModel submodel, Cmd.map asMsg msg )
-
-toEvent : (m -> Msg) -> Socket.Event.Event m -> Socket.Event.Event Msg
-toEvent toMsg =
-  Socket.Event.map toMsg
-
-toView : (a -> msg) -> Html a -> Html msg
-toView toMsg =
-  Html.map toMsg
+toState : (a -> Model) -> (b -> Msg) -> ( a, Cmd b, Event b ) -> State
+toState asModel asMsg (submodel, cmd, event) =
+  ( asModel submodel
+  , Cmd.map asMsg cmd
+  , Socket.Event.map asMsg event
+  )
 
 -- init
-init : Route.Route -> ( Model, Cmd Msg )
+init : Route.Route -> State
 init route =
   case route of
     Route.Story ->
       toState Story StoryMsg (Story.init)
     Route.Thanks ->
-      ( None, Cmd.none )
-
-initEvent : Model -> Socket.Event.Event Msg
-initEvent scene =
-  case scene of
-    Story _ ->
-      toEvent StoryMsg (Story.initEvent)
-    _ -> Socket.Event.none
+      withoutEffects None
 
 -- update
 update : Msg -> Model -> State
@@ -51,21 +40,13 @@ update msg scene =
     (StoryMsg msg, Story model) ->
       toState Story StoryMsg (Story.update msg model)
     _ ->
-      (scene, Cmd.none)
-
-updateEvent : Msg -> Model -> Socket.Event.Event Msg
-updateEvent msg scene =
-  case ( msg, scene ) of
-    (StoryMsg msg, Story model) ->
-      toEvent StoryMsg (Story.updateEvent msg model)
-    _ ->
-      Socket.Event.none
+      withoutEffects scene
 
 -- view
 view : Model -> Html Msg
 view scene =
   case scene of
     Story model ->
-      toView StoryMsg (Story.view model)
+      Html.map StoryMsg (Story.view model)
     _ ->
       Html.text ""
