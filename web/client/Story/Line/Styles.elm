@@ -1,7 +1,7 @@
 module Story.Line.Styles exposing (Classes(..), styles, inline, lineHeight)
 
 import Css exposing (..)
-import Styles.Fonts exposing (..)
+import Styles.Fonts exposing (fontLarge)
 import Styles.Helpers exposing (Rules, rules, Styles, stylesNamed)
 import Styles.Mixins exposing (textField)
 import Styles.Colors as Colors
@@ -21,7 +21,7 @@ type Classes
 
 styles : Styles c c1 m m1
 styles =
-  stylesNamed "Story-line"
+  stylesNamed "StoryLine"
     [ class Container
       [ position relative
       , fontLarge

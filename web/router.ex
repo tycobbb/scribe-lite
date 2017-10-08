@@ -11,6 +11,6 @@ defmodule Scribe.Router do
 
   scope "/", Scribe do
     pipe_through :browser
-    get "/", PageController, :index
+    get "/*rest", PageController, :index
   end
 end

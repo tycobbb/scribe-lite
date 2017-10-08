@@ -3,7 +3,6 @@ module Main exposing (main)
 import Html exposing (..)
 import Navigation
 import Phoenix.Socket as Socket
-import MainStyles exposing (Classes(..), styles)
 import Router.Route as Route
 import Router.Scene as Scene
 import Socket.Event
@@ -71,14 +70,10 @@ subscriptions model =
   Socket.listen model.socket SocketMsg
 
 -- view
-{ class } = styles
-
 view : Model -> Html Msg
 view model =
-  div [ class Container ]
-    [ Scene.view model.scene
-        |> Html.map SceneMsg
-    ]
+  Scene.view model.scene
+    |> Html.map SceneMsg
 
 -- routing
 setLocation : State -> Navigation.Location -> State

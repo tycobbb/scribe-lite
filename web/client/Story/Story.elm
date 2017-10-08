@@ -18,7 +18,7 @@ room : String
 room = "story:unified"
 
 -- state
-type alias State = (Model, Cmd Msg, Event Msg)
+type alias State = ( Model, Cmd Msg, Event Msg )
 
 type alias Model =
   { line : Line.Model
@@ -83,7 +83,7 @@ update msg model =
       ( model, Cmd.none )
         |> withEvent (submitLine model)
     SubmitOk _ ->
-      ( model, Navigation.modifyUrl "/thanks" )
+      ( model, Navigation.newUrl "/thanks" )
         |> withoutEvent
 
 setLine : Model -> Line.State -> (Model, Cmd Msg)
@@ -132,7 +132,7 @@ encodeLinePayload model =
 
 view : Model -> Html Msg
 view model =
-  div [ class Container ]
+  div [ class Scene ]
     [ div [ class Header ]
       [ text "Friday May 24 (2017)" ]
     , content model

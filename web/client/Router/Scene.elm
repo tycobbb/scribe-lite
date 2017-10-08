@@ -3,6 +3,7 @@ module Router.Scene exposing (State, Model(..), Msg, init, update, view)
 import Html exposing (Html)
 import Router.Route as Route
 import Story.Story as Story
+import Thanks.Thanks as Thanks
 import Socket.Event exposing (Event)
 import Helpers exposing (withoutEffects)
 
@@ -12,10 +13,12 @@ type alias State =
 
 type Model
   = Story Story.Model
+  | Thanks
   | None
 
 type Msg
   = StoryMsg Story.Msg
+  | ThanksMsg
 
 toState : (a -> Model) -> (b -> Msg) -> ( a, Cmd b, Event b ) -> State
 toState asModel asMsg (submodel, cmd, event) =
@@ -31,7 +34,7 @@ init route =
     Route.Story ->
       toState Story StoryMsg (Story.init)
     Route.Thanks ->
-      withoutEffects None
+      withoutEffects Thanks
 
 -- update
 update : Msg -> Model -> State
@@ -48,5 +51,7 @@ view scene =
   case scene of
     Story model ->
       Html.map StoryMsg (Story.view model)
+    Thanks ->
+      Thanks.view ThanksMsg
     _ ->
       Html.text ""

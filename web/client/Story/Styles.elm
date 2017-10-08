@@ -3,12 +3,12 @@ module Story.Styles exposing (Classes(..), styles)
 import Css exposing (..)
 import Css.Elements exposing (span, div)
 import Styles.Fonts exposing (..)
-import Styles.Mixins exposing (textField)
+import Styles.Mixins exposing (scene, textField)
 import Styles.Helpers exposing (Styles, stylesNamed)
 import Styles.Colors as Colors
 
 type Classes
-  = Container
+  = Scene
   | Header
   | Content
   | Prompt
@@ -23,9 +23,9 @@ type Classes
 styles : Styles c c1 m m1
 styles =
   stylesNamed "Story"
-    [ class Container
-      [ displayFlex
-      , flexDirection column
+    [ class Scene
+      [ scene
+      , backgroundColor Colors.secondaryBackground
       ]
     , class Header
       [ fontMedium
@@ -42,7 +42,7 @@ styles =
     , class Prompt
       [ marginBottom (px 60)
       , fontLarge
-      , color Colors.accent
+      , color Colors.secondary
       ]
     , class Author
       [ marginBottom (px 20)

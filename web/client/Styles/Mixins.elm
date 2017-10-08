@@ -3,6 +3,15 @@ module Styles.Mixins exposing (..)
 import Css exposing (..)
 import Styles.Colors exposing (lightGray)
 
+scene : Mixin
+scene =
+  mixin
+    [ flex (int 1)
+    , displayFlex
+    , flexDirection column
+    , padding2 (px 60) (px 85)
+    ]
+
 textField : Mixin
 textField =
   mixin

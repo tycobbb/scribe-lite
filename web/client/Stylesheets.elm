@@ -4,9 +4,9 @@ import Css
 import Css.File exposing (CssFileStructure, CssCompilerProgram)
 import Css.Normalize
 import Styles.Global
-import MainStyles
 import Story.Styles
 import Story.Line.Styles
+import Thanks.Styles
 
 port files : CssFileStructure -> Cmd msg
 
@@ -19,9 +19,9 @@ modules : List Css.Stylesheet
 modules =
   List.map .css
     [ Styles.Global.styles
-    , MainStyles.styles
     , Story.Styles.styles
     , Story.Line.Styles.styles
+    , Thanks.Styles.styles
     ]
 
 cssFiles : CssFileStructure

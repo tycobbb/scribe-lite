@@ -4,7 +4,6 @@ import Css exposing (..)
 import Css.Elements exposing (body, p, textarea, input)
 import Styles.Fonts exposing (..)
 import Styles.Helpers exposing (Styles, stylesNamed)
-import Styles.Colors as Colors
 
 fontFace : List Mixin -> Snippet
 fontFace =
@@ -30,7 +29,10 @@ styles =
       [ fontMontserrat
       , fontWeightRegular
       , lineHeight (num 1.35)
-      , backgroundColor Colors.background
+      ]
+    , id "container"
+      [ displayFlex
+      , height (vh 100)
       ]
     , p
       [ margin (px 0)
