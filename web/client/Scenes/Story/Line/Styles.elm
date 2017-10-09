@@ -1,4 +1,4 @@
-module Story.Line.Styles exposing (Classes(..), styles, inline, lineHeight)
+module Scenes.Story.Line.Styles exposing (Classes(..), styles, inline, lineHeight)
 
 import Css exposing (..)
 import Styles.Fonts exposing (fontLarge)

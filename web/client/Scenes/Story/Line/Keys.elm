@@ -1,4 +1,4 @@
-module Story.Line.Keys exposing (..)
+module Scenes.Story.Line.Keys exposing (..)
 
 import Char exposing (KeyCode, toCode)
 

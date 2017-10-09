@@ -1,7 +1,7 @@
-module Thanks.Thanks exposing (view)
+module Scenes.Thanks.Thanks exposing (view)
 
 import Html exposing (..)
-import Thanks.Styles exposing (Classes(..), styles)
+import Scenes.Thanks.Styles exposing (Classes(..), styles)
 
 -- view
 { class, classes } = styles

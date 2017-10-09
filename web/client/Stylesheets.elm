@@ -3,10 +3,10 @@ port module Stylesheets exposing (files, main)
 import Css
 import Css.File exposing (CssFileStructure, CssCompilerProgram)
 import Css.Normalize
-import Styles.Global
-import Story.Styles
-import Story.Line.Styles
-import Thanks.Styles
+import Styles.Global as Global
+import Scenes.Story.Styles as Story
+import Scenes.Story.Line.Styles as StoryLine
+import Scenes.Thanks.Styles as Thanks
 
 port files : CssFileStructure -> Cmd msg
 
@@ -18,10 +18,10 @@ vendored =
 modules : List Css.Stylesheet
 modules =
   List.map .css
-    [ Styles.Global.styles
-    , Story.Styles.styles
-    , Story.Line.Styles.styles
-    , Thanks.Styles.styles
+    [ Global.styles
+    , Story.styles
+    , StoryLine.styles
+    , Thanks.styles
     ]
 
 cssFiles : CssFileStructure

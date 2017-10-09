@@ -1,4 +1,4 @@
-module Story.Line.Line exposing (State, Model, Msg, init, update, view)
+module Scenes.Story.Line.Line exposing (State, Model, Msg, init, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (id, placeholder, autofocus, maxlength)
@@ -7,8 +7,8 @@ import Dom.Size exposing (Boundary(..))
 import Json.Decode as Decode
 import Json.Decode.Extra as DecodeExt
 import Task
-import Story.Line.Styles exposing (Classes(..), styles, inline, lineHeight)
-import Story.Line.Keys as Keys
+import Scenes.Story.Line.Styles exposing (Classes(..), styles, inline, lineHeight)
+import Scenes.Story.Line.Keys as Keys
 
 -- constants
 characterLimit : Int

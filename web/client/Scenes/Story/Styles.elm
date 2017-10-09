@@ -1,4 +1,4 @@
-module Story.Styles exposing (Classes(..), styles)
+module Scenes.Story.Styles exposing (Classes(..), styles)
 
 import Css exposing (..)
 import Css.Elements exposing (span, div)

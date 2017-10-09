@@ -1,4 +1,4 @@
-module Story.Story exposing (State, Model, Msg, init, view, update)
+module Scenes.Story.Story exposing (State, Model, Msg, init, view, update)
 
 import Html exposing (..)
 import Html.Attributes exposing (placeholder)
@@ -8,8 +8,8 @@ import Json.Decode as JD exposing (field)
 import Navigation
 import Phoenix.Channel as Channel
 import Phoenix.Push as Push
-import Story.Styles exposing (Classes(..), styles)
-import Story.Line.Line as Line
+import Scenes.Story.Styles exposing (Classes(..), styles)
+import Scenes.Story.Line.Line as Line
 import Socket.Event exposing (Event)
 import Helpers exposing (withCmd, withoutCmd, withEvent, withoutEvent)
 

@@ -1,4 +1,4 @@
-module Thanks.Styles exposing (Classes(..), styles)
+module Scenes.Thanks.Styles exposing (Classes(..), styles)
 
 import Css exposing (..)
 import Styles.Colors as Colors

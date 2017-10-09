@@ -2,8 +2,8 @@ module Router.Scene exposing (State, Model(..), Msg, init, update, view)
 
 import Html exposing (Html)
 import Router.Route as Route
-import Story.Story as Story
-import Thanks.Thanks as Thanks
+import Scenes.Story.Story as Story
+import Scenes.Thanks.Thanks as Thanks
 import Socket.Event exposing (Event)
 import Helpers exposing (withoutEffects)
 
