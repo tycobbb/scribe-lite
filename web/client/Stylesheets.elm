@@ -4,6 +4,7 @@ import Css
 import Css.File exposing (CssFileStructure, CssCompilerProgram)
 import Css.Normalize
 import Styles.Global as Global
+import Views.Button as Button
 import Scenes.Story.Styles as Story
 import Scenes.Story.Line.Styles as StoryLine
 import Scenes.Thanks.Styles as Thanks
@@ -19,6 +20,7 @@ modules : List Css.Stylesheet
 modules =
   List.map .css
     [ Global.styles
+    , Button.styles
     , Story.styles
     , StoryLine.styles
     , Thanks.styles

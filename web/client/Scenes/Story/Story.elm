@@ -10,6 +10,7 @@ import Phoenix.Channel as Channel
 import Phoenix.Push as Push
 import Scenes.Story.Styles exposing (Classes(..), styles)
 import Scenes.Story.Line.Line as Line
+import Views.Button as Button
 import Socket.Event exposing (Event)
 import Helpers exposing (withCmd, withoutCmd, withEvent, withoutEvent)
 
@@ -145,7 +146,7 @@ view model =
       , emailField model
       , submitRow model
         [ nameField model
-        , submitButton
+        , Button.view "Submit" False
         ]
       ]
     ]
@@ -176,15 +177,6 @@ nameField model =
 submitRow : Model -> List (Html Msg) -> Html Msg
 submitRow model =
   div [ SubmitRow |> showsAfter [model.line.value, model.email] ]
-
-submitButton : Html Msg
-submitButton =
-  button [ class SubmitButton ]
-    [ span []
-      [ text "Submit"
-      , div [ class Chevron ] []
-      ]
-    ]
 
 showsAfter : List String -> Classes -> Attribute m
 showsAfter values klass =

@@ -19,7 +19,7 @@ type Classes
   | ShadowText
   | Count
 
-styles : Styles c c1 m m1
+styles : Styles c m
 styles =
   stylesNamed "StoryLine"
     [ class Container

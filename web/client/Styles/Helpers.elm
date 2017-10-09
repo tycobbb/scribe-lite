@@ -14,13 +14,13 @@ rules =
   Css.asPairs >> Html.Attributes.style
 
 -- namespace
-type alias Styles c c1 m m1 =
+type alias Styles c m =
   { css : Css.Stylesheet
   , class : c -> Html.Attribute m
-  , classes : List (c1, Bool) -> Html.Attribute m1
+  , classes : List (c, Bool) -> Html.Attribute m
   }
 
-stylesNamed : String -> List Css.Snippet -> Styles c c1 m m1
+stylesNamed : String -> List Css.Snippet -> Styles c m
 stylesNamed namespace mixins =
   let
     stylesheet =

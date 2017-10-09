@@ -9,8 +9,9 @@ import Styles.Helpers exposing (Styles, stylesNamed)
 type Classes
   = Scene
   | Message
+  | Button
 
-styles : Styles c c1 m m1
+styles : Styles c m
 styles =
   stylesNamed "Thanks"
     [ class Scene
@@ -25,5 +26,8 @@ styles =
           [ marginTop (px 45)
           ]
         ]
+      ]
+    , class Button
+      [ marginTop (px 65)
       ]
     ]

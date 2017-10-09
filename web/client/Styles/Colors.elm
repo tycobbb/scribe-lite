@@ -14,6 +14,10 @@ secondary : Css.Color
 secondary =
   hex "F5E9CB"
 
+secondaryHighlight : Css.Color
+secondaryHighlight =
+  hex "FCF6E5"
+
 secondaryBackground : Css.Color
 secondaryBackground =
   hex "FFFEF5"

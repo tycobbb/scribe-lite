@@ -1,7 +1,6 @@
 module Scenes.Story.Styles exposing (Classes(..), styles)
 
 import Css exposing (..)
-import Css.Elements exposing (span, div)
 import Styles.Fonts exposing (..)
 import Styles.Mixins exposing (scene, textField)
 import Styles.Helpers exposing (Styles, stylesNamed)
@@ -16,11 +15,9 @@ type Classes
   | EmailField
   | SubmitRow
   | NameField
-  | SubmitButton
-  | Chevron
   | Visible
 
-styles : Styles c c1 m m1
+styles : Styles c m
 styles =
   stylesNamed "Story"
     [ class Scene
@@ -71,54 +68,6 @@ styles =
       , fontSmall
       , color Colors.gray
       ]
-    , class SubmitButton
-      [ fontMedium
-      , padding (px 0)
-      , border unset
-      , backgroundImage unset
-      , backgroundColor transparent
-      , cursor pointer
-      , color Colors.primary
-      , property "transition" "color 0.15s"
-      , chevronStyles
-        [ backgroundColor Colors.primary
-        , property "transition" "background-color 0.15s"
-        ]
-      , hover
-        [ color Colors.primaryHighlight
-        , chevronStyles
-          [ backgroundColor Colors.primaryHighlight
-          ]
-        ]
-      , focus
-        [ outline none
-        ]
-      , children
-        [ span
-          [ displayFlex
-          , position relative
-          ]
-        ]
-      ]
-    , class Chevron
-      [ paddingLeft (px 10)
-      , paddingRight (px 12)
-      , before
-        [ chevronLeg
-        , transforms
-          [ rotate (deg -45)
-          , translateY (px 3)
-          ]
-        ]
-      , after
-        [ chevronLeg
-        , bottom (px 0)
-        , transforms
-          [ rotate (deg 45)
-          , translateY (px -3)
-          ]
-        ]
-      ]
     , class Visible
       [ opacity (int 1)
       , transform none
@@ -130,26 +79,4 @@ animatesVisibility =
   mixin
     [ property "transition" "opacity 0.2s, transform 0.2s"
     , opacity (int 0)
-    ]
-
-chevronLeg : Mixin
-chevronLeg =
-  mixin
-    [ property "content" "''"
-    , display block
-    , position absolute
-    , width (px 3)
-    , height (px 20)
-    , borderRadius (px 1.5)
-    ]
-
-chevronStyles : List Mixin -> Mixin
-chevronStyles styles =
-  mixin
-    [ descendants
-      [ class Chevron
-        [ before styles
-        , after styles
-        ]
-      ]
     ]

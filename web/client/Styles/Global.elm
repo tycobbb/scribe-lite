@@ -22,7 +22,7 @@ inheritsTextStyle =
     , lineHeight inherit
     ]
 
-styles : Styles c c1 m m1
+styles : Styles c m
 styles =
   stylesNamed "global"
     [ body
