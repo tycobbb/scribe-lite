@@ -1,5 +1,8 @@
 module Helpers exposing (..)
 
+import Process
+import Task
+import Time
 import Socket.Event exposing (Event)
 
 -- Effects
@@ -30,3 +33,14 @@ withEvent event ( model, cmd ) =
 withoutEvent : ( a, Cmd m ) -> ( a, Cmd m, Event m )
 withoutEvent =
   withEvent Socket.Event.none
+
+-- Timers
+delay : Float -> a -> Cmd a
+delay time msg =
+  Process.sleep (Time.millisecond * time)
+    |> Task.andThen (always (Task.succeed msg))
+    |> Task.perform identity
+
+async : m -> Cmd m
+async =
+  delay 17

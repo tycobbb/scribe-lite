@@ -3,6 +3,7 @@ port module Stylesheets exposing (files, main)
 import Css
 import Css.File exposing (CssFileStructure, CssCompilerProgram)
 import Css.Normalize
+import MainStyles as Main
 import Styles.Global as Global
 import Views.Button as Button
 import Scenes.Story.Styles as Story
@@ -21,6 +22,7 @@ modules =
   List.map .css
     [ Global.styles
     , Button.styles
+    , Main.styles
     , Story.styles
     , StoryLine.styles
     , Thanks.styles

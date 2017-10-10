@@ -6,7 +6,8 @@ import Phoenix.Socket as Socket
 import Router.Route as Route
 import Router.Scene as Scene
 import Socket.Event
-import Helpers exposing (withCmd, withoutCmd, joinCmd)
+import MainStyles exposing (Classes(..), styles)
+import Helpers exposing (withCmd, withoutCmd, joinCmd, async, delay)
 
 -- main
 main : Program Never Model Msg
@@ -20,44 +21,64 @@ main =
 
 -- constants
 serverUrl : String
-serverUrl = "ws://localhost:4000/socket/websocket"
+serverUrl =
+  "ws://localhost:4000/socket/websocket"
 
 -- state
-type alias State = (Model, Cmd Msg)
+type alias State = ( Model, Cmd Msg )
 
 type alias Model =
-  { scene : Scene.Model
+  { stage : Stage
   , socket : Socket.Socket Msg
   }
 
+type Stage
+  = Active Scene.Model
+  | TransitionWait Scene.Model Scene.Model
+  | Transition Scene.Model Scene.Model
+  | Blank
+
 init : Navigation.Location -> State
-init =
-  setLocation (withoutCmd initModel)
+init location =
+  initScene location
+    |> setScene Active (withoutCmd initModel)
 
 initModel : Model
 initModel =
-  { scene = Scene.None
+  { stage = Blank
   , socket = initSocket
   }
 
 -- update
 type Msg
   = UrlChange Navigation.Location
+  | StartTransition
+  | EndTransition
   | SceneMsg Scene.Msg
   | SocketMsg (Socket.Msg Msg)
 
 update : Msg -> Model -> State
 update msg model =
-  case msg of
-    UrlChange location ->
-      location
-        |> setLocation (withoutCmd model)
-    SceneMsg msg ->
-      Scene.update msg model.scene
-        |> setScene (withoutCmd model)
-    SocketMsg msg ->
+  case (msg, model.stage) of
+    ( UrlChange location, Active scene ) ->
+      initScene location
+        |> setScene (TransitionWait scene) (withoutCmd model)
+        |> joinCmd (async StartTransition)
+    ( SocketMsg msg, _ ) ->
       Socket.update msg model.socket
         |> setSocket model
+    ( SceneMsg msg, Active scene ) ->
+      Scene.update msg scene
+        |> setScene Active (withoutCmd model)
+    ( StartTransition, TransitionWait scene nextScene ) ->
+      { model | stage = Transition scene nextScene }
+        |> withoutCmd
+        -- |> withCmd (delay 200 EndTransition)
+    ( EndTransition, Transition _ nextScene ) ->
+      withoutCmd { model | stage = Active nextScene }
+    _ ->
+      withoutCmd model
+
 
 setSocket : Model -> (Socket.Socket Msg, Cmd (Socket.Msg Msg) ) -> State
 setSocket model (field, cmd) =
@@ -70,25 +91,56 @@ subscriptions model =
   Socket.listen model.socket SocketMsg
 
 -- view
+{ class } = styles
+
 view : Model -> Html Msg
 view model =
-  Scene.view model.scene
-    |> Html.map SceneMsg
+  div [ class Stage ]
+    (viewStage model.stage)
+
+viewStage : Stage -> List (Html Msg)
+viewStage stage =
+  case stage of
+    Active scene ->
+      [ viewScene scene True
+      ]
+    TransitionWait scene nextScene ->
+      [ viewScene scene True
+      , viewScene nextScene False
+      ]
+    Transition scene nextScene ->
+      [ viewScene scene False
+      , viewScene nextScene True
+      ]
+    Blank ->
+      [ text ""
+      ]
+
+viewScene : Scene.Model -> Bool -> Html Msg
+viewScene scene isVisible =
+  section
+    [ styles.classes
+      [ ( Scene, True )
+      , ( Visible, isVisible )
+      ]
+    ]
+    [ Scene.view scene
+        |> Html.map SceneMsg
+    ]
 
 -- routing
-setLocation : State -> Navigation.Location -> State
-setLocation state location =
+initScene : Navigation.Location -> Scene.State
+initScene location =
   Scene.init (Route.route location)
-    |> setScene state
 
-setScene : State -> Scene.State -> State
-setScene (model, cmd) (scene, sceneCmd, sceneEvent) =
+setScene : (Scene.Model -> Stage) -> State -> Scene.State -> State
+setScene asStage (model, cmd) (scene, sceneCmd, sceneEvent) =
   let
     event =
       sceneEvent
         |> Socket.Event.map SceneMsg
   in
-    ( { model | scene = scene }, cmd )
+    ( { model | stage = asStage scene }, cmd )
       |> joinCmd (Cmd.map SceneMsg sceneCmd)
       |> sendEvent event
 

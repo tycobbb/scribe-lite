@@ -14,7 +14,6 @@ type alias State =
 type Model
   = Story Story.Model
   | Thanks
-  | None
 
 type Msg
   = StoryMsg Story.Msg
@@ -53,5 +52,3 @@ view scene =
       Html.map StoryMsg (Story.view model)
     Thanks ->
       Thanks.view ThanksMsg
-    _ ->
-      Html.text ""
