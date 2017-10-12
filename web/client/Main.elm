@@ -6,7 +6,7 @@ import Phoenix.Socket as Socket
 import Router.Route as Route
 import Router.Scene as Scene
 import Socket.Event
-import MainStyles exposing (Classes(..), styles, inline)
+import MainStyles exposing (Classes(..), styles, inline, duration)
 import Helpers exposing (withCmd, withoutCmd, joinCmd, async, delay)
 
 -- main
@@ -73,6 +73,7 @@ update msg model =
     ( StartTransition, TransitionWait scene nextScene ) ->
       { model | stage = Transition scene nextScene }
         |> withoutCmd
+        -- |> withCmd (delay duration EndTransition)
     ( EndTransition, Transition _ nextScene ) ->
       withoutCmd { model | stage = Active nextScene }
     _ ->

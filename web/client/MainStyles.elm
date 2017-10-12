@@ -1,4 +1,4 @@
-module MainStyles exposing (Classes(..), styles, inline)
+module MainStyles exposing (Classes(..), styles, inline, duration)
 
 import Css exposing (..)
 import Styles.Helpers exposing (Styles, Rules, stylesNamed, rules)
@@ -6,6 +6,9 @@ import Styles.Helpers exposing (Styles, Rules, stylesNamed, rules)
 -- constants
 translation : number
 translation = 50
+
+duration : number
+duration = 300
 
 -- stylesheet
 type Classes
@@ -20,7 +23,7 @@ styles =
     [ class Stage
       [ flex (int 1)
       , position relative
-      , property "transition" "background-color 0.3s"
+      , transition ["background-color"]
       ]
     , class Scene
       [ displayFlex
@@ -29,7 +32,7 @@ styles =
       , bottom (px 0)
       , left (px 0)
       , right (px 0)
-      , property "transition" "top 0.3s, opacity 0.3s"
+      , transition ["top", "opacity"]
       ]
     , class SceneIn
       [ top (px translation)
@@ -40,6 +43,18 @@ styles =
       , opacity (int 0)
       ]
     ]
+
+transition : List String -> Mixin
+transition attributes =
+  let
+    durationPart =
+      " " ++ toString duration ++ "ms"
+    toTransition =
+      (flip String.append) durationPart
+  in
+    attributes
+      |> List.map toTransition >> String.join ", "
+      |> property "transition"
 
 -- inline
 inline : { backgroundColor : ColorValue c -> Rules m }
