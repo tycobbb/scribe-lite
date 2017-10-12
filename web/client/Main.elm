@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Html exposing (..)
+import Html.Attributes exposing (id)
 import Navigation
 import Phoenix.Socket as Socket
 import Router.Route as Route
@@ -33,15 +34,20 @@ type alias Model =
   }
 
 type Stage
-  = Active Scene.Model
-  | TransitionWait Scene.Model Scene.Model
-  | Transition Scene.Model Scene.Model
+  = Active IndexedScene
+  | TransitionWait IndexedScene IndexedScene
+  | Transition IndexedScene IndexedScene
   | Blank
+
+type alias IndexedScene =
+  { model : Scene.Model
+  , index : Int
+  }
 
 init : Navigation.Location -> State
 init location =
   initScene location
-    |> setScene Active (withoutCmd initModel)
+    |> setScene 0 Active (withoutCmd initModel)
 
 initModel : Model
 initModel =
@@ -62,18 +68,18 @@ update msg model =
   case (msg, model.stage) of
     ( UrlChange location, Active scene ) ->
       initScene location
-        |> setScene (TransitionWait scene) (withoutCmd model)
+        |> setScene (scene.index + 1) (TransitionWait scene) (withoutCmd model)
         |> joinCmd (async StartTransition)
     ( SocketMsg msg, _ ) ->
       Socket.update msg model.socket
         |> setSocket model
     ( SceneMsg msg, Active scene ) ->
-      Scene.update msg scene
-        |> setScene Active (withoutCmd model)
+      Scene.update msg scene.model
+        |> setScene scene.index Active (withoutCmd model)
     ( StartTransition, TransitionWait scene nextScene ) ->
       { model | stage = Transition scene nextScene }
-        |> withoutCmd
-        -- |> withCmd (delay duration EndTransition)
+        -- |> withoutCmd
+        |> withCmd (delay duration EndTransition)
     ( EndTransition, Transition _ nextScene ) ->
       withoutCmd { model | stage = Active nextScene }
     _ ->
@@ -115,13 +121,15 @@ view { stage } =
         [ text ""
         ]
 
-viewStage : Scene.Model -> List (Html m) -> Html m
-viewStage { color } =
-  div [ class Stage, inline.backgroundColor color ]
+viewStage : IndexedScene -> List (Html m) -> Html m
+viewStage { model } =
+  div [ class Stage, inline.backgroundColor model.color ]
 
-viewScene : Scene.Model -> Maybe Classes -> Html Msg
-viewScene scene animation =
+viewScene : IndexedScene -> Maybe Classes -> Html Msg
+viewScene { model, index } animation =
   let
+    identifier =
+      "scene-" ++ toString index
     classes =
       case animation of
         Just animation ->
@@ -132,8 +140,8 @@ viewScene scene animation =
         Nothing ->
           styles.class Scene
   in
-    section [ classes ]
-      [ Scene.view scene
+    section [ id identifier, classes ]
+      [ Scene.view model
           |> Html.map SceneMsg
       ]
 
@@ -142,14 +150,18 @@ initScene : Navigation.Location -> Scene.State
 initScene location =
   Scene.init (Route.route location)
 
-setScene : (Scene.Model -> Stage) -> State -> Scene.State -> State
-setScene asStage (model, cmd) (scene, sceneCmd, sceneEvent) =
+setScene : Int -> (IndexedScene -> Stage) -> State -> Scene.State -> State
+setScene index asStage (model, cmd) (scene, sceneCmd, sceneEvent) =
   let
+    indexedScene =
+      { model = scene
+      , index = index
+      }
     event =
       sceneEvent
         |> Socket.Event.map SceneMsg
   in
-    ( { model | stage = asStage scene }, cmd )
+    ( { model | stage = asStage indexedScene }, cmd )
       |> joinCmd (Cmd.map SceneMsg sceneCmd)
       |> sendEvent event
 
