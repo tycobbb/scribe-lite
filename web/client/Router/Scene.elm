@@ -1,6 +1,7 @@
-module Router.Scene exposing (State, Model(..), Msg, init, update, view)
+module Router.Scene exposing (State, Model, Msg, init, update, view)
 
 import Html exposing (Html)
+import Css exposing (Color)
 import Router.Route as Route
 import Scenes.Story.Story as Story
 import Scenes.Thanks.Thanks as Thanks
@@ -11,7 +12,12 @@ import Helpers exposing (withoutEffects)
 type alias State =
   ( Model, Cmd Msg, Event Msg )
 
-type Model
+type alias Model =
+  { scene : Scene
+  , color : Color
+  }
+
+type Scene
   = Story Story.Model
   | Thanks
 
@@ -19,9 +25,9 @@ type Msg
   = StoryMsg Story.Msg
   | ThanksMsg
 
-toState : (a -> Model) -> (b -> Msg) -> ( a, Cmd b, Event b ) -> State
-toState asModel asMsg (submodel, cmd, event) =
-  ( asModel submodel
+toState : (a -> Scene) -> (b -> Msg) -> (( a, Cmd b, Event b ), Color) -> State
+toState asScene asMsg ((submodel, cmd, event), color) =
+  ( { scene = asScene submodel, color = color }
   , Cmd.map asMsg cmd
   , Socket.Event.map asMsg event
   )
@@ -31,24 +37,27 @@ init : Route.Route -> State
 init route =
   case route of
     Route.Story ->
-      toState Story StoryMsg (Story.init)
+      ( Story.init, Story.background )
+        |> toState Story StoryMsg
     Route.Thanks ->
-      withoutEffects Thanks
+      { scene = Thanks, color = Thanks.background }
+        |> withoutEffects
 
 -- update
 update : Msg -> Model -> State
-update msg scene =
-  case ( msg, scene ) of
-    (StoryMsg msg, Story model) ->
-      toState Story StoryMsg (Story.update msg model)
+update msg model =
+  case ( msg, model.scene ) of
+    ( StoryMsg msg, Story story ) ->
+      ( Story.update msg story, model.color )
+        |> toState Story StoryMsg
     _ ->
-      withoutEffects scene
+      withoutEffects model
 
 -- view
 view : Model -> Html Msg
-view scene =
+view { scene } =
   case scene of
-    Story model ->
-      Html.map StoryMsg (Story.view model)
+    Story story ->
+      Html.map StoryMsg (Story.view story)
     Thanks ->
       Thanks.view ThanksMsg

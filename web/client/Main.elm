@@ -6,7 +6,7 @@ import Phoenix.Socket as Socket
 import Router.Route as Route
 import Router.Scene as Scene
 import Socket.Event
-import MainStyles exposing (Classes(..), styles)
+import MainStyles exposing (Classes(..), styles, inline)
 import Helpers exposing (withCmd, withoutCmd, joinCmd, async, delay)
 
 -- main
@@ -73,7 +73,6 @@ update msg model =
     ( StartTransition, TransitionWait scene nextScene ) ->
       { model | stage = Transition scene nextScene }
         |> withoutCmd
-        -- |> withCmd (delay 200 EndTransition)
     ( EndTransition, Transition _ nextScene ) ->
       withoutCmd { model | stage = Active nextScene }
     _ ->
@@ -94,39 +93,48 @@ subscriptions model =
 { class } = styles
 
 view : Model -> Html Msg
-view model =
-  div [ class Stage ]
-    (viewStage model.stage)
-
-viewStage : Stage -> List (Html Msg)
-viewStage stage =
+view { stage } =
   case stage of
     Active scene ->
-      [ viewScene scene True
-      ]
+      viewStage scene
+        [ viewScene scene Nothing
+        ]
     TransitionWait scene nextScene ->
-      [ viewScene scene True
-      , viewScene nextScene False
-      ]
+      viewStage scene
+        [ viewScene scene Nothing
+        , viewScene nextScene (Just SceneIn)
+        ]
     Transition scene nextScene ->
-      [ viewScene scene False
-      , viewScene nextScene True
-      ]
+      viewStage nextScene
+        [ viewScene scene (Just SceneOut)
+        , viewScene nextScene Nothing
+        ]
     Blank ->
-      [ text ""
-      ]
+      div [ class Stage ]
+        [ text ""
+        ]
 
-viewScene : Scene.Model -> Bool -> Html Msg
-viewScene scene isVisible =
-  section
-    [ styles.classes
-      [ ( Scene, True )
-      , ( Visible, isVisible )
+viewStage : Scene.Model -> List (Html m) -> Html m
+viewStage { color } =
+  div [ class Stage, inline.backgroundColor color ]
+
+viewScene : Scene.Model -> Maybe Classes -> Html Msg
+viewScene scene animation =
+  let
+    classes =
+      case animation of
+        Just animation ->
+          styles.classes
+            [ ( Scene, True )
+            , ( animation, True )
+            ]
+        Nothing ->
+          styles.class Scene
+  in
+    section [ classes ]
+      [ Scene.view scene
+          |> Html.map SceneMsg
       ]
-    ]
-    [ Scene.view scene
-        |> Html.map SceneMsg
-    ]
 
 -- routing
 initScene : Navigation.Location -> Scene.State

@@ -64,10 +64,7 @@ field =
     ]
 
 -- inline
-inline :
-  { height : Float -> Rules m
-  }
-
+inline : { height : Float -> Rules m }
 inline =
   { height = px >> height >> List.singleton >> rules
   }

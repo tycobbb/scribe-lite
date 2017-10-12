@@ -1,8 +1,9 @@
-module Scenes.Story.Story exposing (State, Model, Msg, init, view, update)
+module Scenes.Story.Story exposing (State, Model, Msg, init, view, update, background)
 
 import Html exposing (..)
 import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onInput, onSubmit)
+import Css exposing (Color)
 import Json.Encode as JE
 import Json.Decode as JD exposing (field)
 import Navigation
@@ -12,11 +13,17 @@ import Scenes.Story.Styles exposing (Classes(..), styles)
 import Scenes.Story.Line.Line as Line
 import Views.Button as Button
 import Socket.Event exposing (Event)
+import Styles.Colors as Colors
 import Helpers exposing (withCmd, withoutCmd, withEvent, withoutEvent)
 
 -- constants
 room : String
-room = "story:unified"
+room =
+  "story:unified"
+
+background : Color
+background =
+  Colors.secondaryBackground
 
 -- state
 type alias State = ( Model, Cmd Msg, Event Msg )

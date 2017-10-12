@@ -1,8 +1,15 @@
-module Scenes.Thanks.Thanks exposing (view)
+module Scenes.Thanks.Thanks exposing (view, background)
 
 import Html exposing (..)
+import Css exposing (Color)
 import Scenes.Thanks.Styles exposing (Classes(..), styles)
 import Views.Button as Button
+import Styles.Colors as Colors
+
+-- constants
+background : Color
+background =
+  Colors.primary
 
 -- view
 { class, classes } = styles

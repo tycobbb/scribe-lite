@@ -16,7 +16,6 @@ styles =
   stylesNamed "Thanks"
     [ class Scene
       [ scene
-      , backgroundColor Colors.primary
       ]
     , class Message
       [ fontLarge

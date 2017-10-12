@@ -22,7 +22,6 @@ styles =
   stylesNamed "Story"
     [ class Scene
       [ scene
-      , backgroundColor Colors.secondaryBackground
       ]
     , class Header
       [ fontMedium
