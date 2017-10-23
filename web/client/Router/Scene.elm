@@ -23,7 +23,7 @@ type Scene
 
 type Msg
   = StoryMsg Story.Msg
-  | ThanksMsg
+  | ThanksMsg Thanks.Msg
 
 toState : (a -> Scene) -> (b -> Msg) -> (( a, Cmd b, Event b ), Color) -> State
 toState asScene asMsg ((submodel, cmd, event), color) =
@@ -50,6 +50,8 @@ update msg model =
     ( StoryMsg msg, Story story ) ->
       ( Story.update msg story, model.color )
         |> toState Story StoryMsg
+    ( ThanksMsg msg, Thanks ) ->
+      ( Thanks, Thanks.update msg )
     _ ->
       withoutEffects model
 
@@ -60,4 +62,4 @@ view { scene } =
     Story story ->
       Html.map StoryMsg (Story.view story)
     Thanks ->
-      Thanks.view ThanksMsg
+      Html.map ThanksMsg Thanks.view

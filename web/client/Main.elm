@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Html exposing (..)
-import Html.Attributes exposing (id)
+import Html.Keyed as Keyed
 import Navigation
 import Phoenix.Socket as Socket
 import Router.Route as Route
@@ -78,7 +78,6 @@ update msg model =
         |> setScene scene.index Active (withoutCmd model)
     ( StartTransition, TransitionWait scene nextScene ) ->
       { model | stage = Transition scene nextScene }
-        -- |> withoutCmd
         |> withCmd (delay duration EndTransition)
     ( EndTransition, Transition _ nextScene ) ->
       withoutCmd { model | stage = Active nextScene }
@@ -103,33 +102,40 @@ view : Model -> Html Msg
 view { stage } =
   case stage of
     Active scene ->
-      viewStage scene
-        [ viewScene scene Nothing
+      keyedStage scene
+        [ keyedScene scene Nothing
         ]
     TransitionWait scene nextScene ->
-      viewStage scene
-        [ viewScene scene Nothing
-        , viewScene nextScene (Just SceneIn)
+      keyedStage scene
+        [ keyedScene scene Nothing
+        , keyedScene nextScene (Just SceneIn)
         ]
     Transition scene nextScene ->
-      viewStage nextScene
-        [ viewScene scene (Just SceneOut)
-        , viewScene nextScene Nothing
+      keyedStage nextScene
+        [ keyedScene scene (Just SceneOut)
+        , keyedScene nextScene Nothing
         ]
     Blank ->
       div [ class Stage ]
         [ text ""
         ]
 
-viewStage : IndexedScene -> List (Html m) -> Html m
-viewStage { model } =
-  div [ class Stage, inline.backgroundColor model.color ]
+keyedStage : IndexedScene -> List ( String, Html m ) -> Html m
+keyedStage { model } =
+  Keyed.node "div"
+    [ class Stage
+    , inline.backgroundColor model.color
+    ]
 
-viewScene : IndexedScene -> Maybe Classes -> Html Msg
-viewScene { model, index } animation =
+keyedScene : IndexedScene -> Maybe Classes -> ( String, Html Msg )
+keyedScene { model, index } animation =
+  ( "scene-" ++ toString index
+  , scene model animation
+  )
+
+scene : Scene.Model -> Maybe Classes -> Html Msg
+scene model animation =
   let
-    identifier =
-      "scene-" ++ toString index
     classes =
       case animation of
         Just animation ->
@@ -140,7 +146,7 @@ viewScene { model, index } animation =
         Nothing ->
           styles.class Scene
   in
-    section [ id identifier, classes ]
+    section [ classes ]
       [ Scene.view model
           |> Html.map SceneMsg
       ]

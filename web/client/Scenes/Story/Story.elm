@@ -143,7 +143,7 @@ view model =
   div [ class Scene ]
     [ div [ class Header ]
       [ text "Friday May 24 (2017)" ]
-    , content model
+    , lineForm model
       [ p [ class Author ]
         [ text model.author ]
       , p [ class Prompt ]
@@ -158,8 +158,8 @@ view model =
       ]
     ]
 
-content : Model -> List (Html Msg) -> Html Msg
-content model =
+lineForm : Model -> List (Html Msg) -> Html Msg
+lineForm model =
   form
     [ Content |> showsAfter [model.prompt]
     , onSubmit SubmitLine
