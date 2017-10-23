@@ -1,12 +1,14 @@
-module Scenes.Thanks.Thanks exposing (Model, Msg, view, update, background)
+module Scenes.Thanks.Thanks exposing (Model, Msg, init, view, update, background)
 
 import Html exposing (..)
 import Html.Events exposing (onClick)
 import Css exposing (Color)
 import Navigation
+import Socket.Event exposing (Event)
 import Scenes.Thanks.Styles exposing (Classes(..), styles)
 import Views.Button as Button
 import Styles.Colors as Colors
+import Helpers exposing (withoutEvent, withoutEffects)
 
 -- constants
 background : Color
@@ -14,27 +16,29 @@ background =
   Colors.primary
 
 -- init
-type Model
-  = None
+type alias State = ( Model, Cmd Msg, Event Msg )
+type Model = None
 
-init : Model
-init = None
+init : State
+init =
+  withoutEffects None
 
 -- update
 type Msg
   = RefreshPage
 
-update : a -> Msg -> ( Model, Cmd m )
-update model msg =
+update : Msg -> Model -> State
+update msg _ =
   case msg of
     RefreshPage ->
       ( None, Navigation.newUrl "/" )
+        |> withoutEvent
 
 -- view
 { class } = styles
 
-view : Html Msg
-view =
+view : Model -> Html Msg
+view _ =
   div [ class Scene ]
     [ p [ class Message ]
       [ text "Thanks for writing" ]

@@ -19,7 +19,7 @@ type alias Model =
 
 type Scene
   = Story Story.Model
-  | Thanks
+  | Thanks Thanks.Model
 
 type Msg
   = StoryMsg Story.Msg
@@ -40,8 +40,8 @@ init route =
       ( Story.init, Story.background )
         |> toState Story StoryMsg
     Route.Thanks ->
-      { scene = Thanks, color = Thanks.background }
-        |> withoutEffects
+      ( Thanks.init, Thanks.background )
+        |> toState Thanks ThanksMsg
 
 -- update
 update : Msg -> Model -> State
@@ -50,8 +50,9 @@ update msg model =
     ( StoryMsg msg, Story story ) ->
       ( Story.update msg story, model.color )
         |> toState Story StoryMsg
-    ( ThanksMsg msg, Thanks ) ->
-      ( Thanks, Thanks.update msg )
+    ( ThanksMsg msg, Thanks thanks ) ->
+      ( Thanks.update msg thanks, model.color )
+        |> toState Thanks ThanksMsg
     _ ->
       withoutEffects model
 
@@ -61,5 +62,5 @@ view { scene } =
   case scene of
     Story story ->
       Html.map StoryMsg (Story.view story)
-    Thanks ->
-      Html.map ThanksMsg Thanks.view
+    Thanks thanks ->
+      Html.map ThanksMsg (Thanks.view thanks)
