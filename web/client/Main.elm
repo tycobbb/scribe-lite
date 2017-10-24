@@ -60,10 +60,10 @@ type alias IndexedScene =
 -- update
 type Msg
   = UrlChange Navigation.Location
+  | SocketMsg (Socket.Msg Msg)
+  | SceneMsg Int Scene.Msg
   | StartTransition
   | EndTransition
-  | SceneMsg Scene.Msg
-  | SocketMsg (Socket.Msg Msg)
 
 update : Msg -> Model -> State
 update msg model =
@@ -71,22 +71,45 @@ update msg model =
     ( UrlChange location, Active scene ) ->
       initScene location
         |> withIndex (scene.index + 1)
-        |> setScene (TransitionWait scene) (withoutCmd model)
-        |> joinCmd (async StartTransition)
+        |> setScene (Transition scene) (withoutCmd model)
+        |> joinCmd (delay duration EndTransition)
     ( SocketMsg msg, _ ) ->
       Socket.update msg model.socket
         |> setSocket model
-    ( SceneMsg msg, Active scene ) ->
-      Scene.update msg scene.model
-        |> withIndex scene.index
+    ( SceneMsg index msg, Active scene ) ->
+      updateScene msg scene
         |> setScene Active (withoutCmd model)
+    ( SceneMsg index msg, TransitionWait scene nextScene ) ->
+      if index == scene.index then
+        updateScene msg scene
+          |> setScene ((flip TransitionWait) nextScene) (withoutCmd model)
+      else if index == nextScene.index then
+        updateScene msg nextScene
+          |> setScene (TransitionWait scene) (withoutCmd model)
+      else
+        withoutCmd model
+    ( SceneMsg index msg, Transition scene nextScene ) ->
+      if index == scene.index then
+        updateScene msg scene
+          |> setScene ((flip Transition) nextScene) (withoutCmd model)
+      else if index == nextScene.index then
+        updateScene msg nextScene
+          |> setScene (Transition scene) (withoutCmd model)
+      else
+        withoutCmd model
     ( StartTransition, TransitionWait scene nextScene ) ->
       { model | stage = Transition scene nextScene }
         |> withCmd (delay duration EndTransition)
     ( EndTransition, Transition _ nextScene ) ->
-      withoutCmd { model | stage = Active nextScene }
+      { model | stage = Active nextScene }
+        |> withoutCmd
     _ ->
       withoutCmd model
+
+updateScene : Scene.Msg -> IndexedScene -> Indexed Scene.Model Scene.Msg
+updateScene msg scene =
+  Scene.update msg scene.model
+    |> withIndex scene.index
 
 setSocket : Model -> (Socket.Socket Msg, Cmd (Socket.Msg Msg) ) -> State
 setSocket model (field, cmd) =
@@ -131,27 +154,24 @@ keyedStage { model } =
     ]
 
 keyedScene : IndexedScene -> Maybe Classes -> ( String, Html Msg )
-keyedScene { model, index } animation =
-  ( "scene-" ++ toString index
-  , scene model animation
+keyedScene scene animation =
+  ( "scene-" ++ toString scene.index
+  , sceneView scene animation
   )
 
-scene : Scene.Model -> Maybe Classes -> Html Msg
-scene model animation =
+sceneView : IndexedScene -> Maybe Classes -> Html Msg
+sceneView scene animation =
   let
-    classes =
-      case animation of
-        Just animation ->
-          styles.classes
-            [ ( Scene, True )
-            , ( animation, True )
-            ]
-        Nothing ->
-          styles.class Scene
+    asMessage =
+      SceneMsg scene.index
+    classList =
+      [ Just Scene , animation ]
+        |> List.filterMap identity
+        |> List.map (\a -> ( a, True ))
   in
-    section [ classes ]
-      [ Scene.view model
-          |> Html.map SceneMsg
+    section [ styles.classes classList ]
+      [ Scene.view scene.model
+          |> Html.map asMessage
       ]
 
 -- routing
@@ -162,13 +182,12 @@ initScene location =
 setScene : (IndexedScene -> Stage) -> State -> Indexed Scene.Model Scene.Msg -> State
 setScene asStage (model, cmd) (scene, sceneCmd, sceneEvent) =
   let
-    event =
-      sceneEvent
-        |> Socket.Event.map SceneMsg
+    asMessage =
+      SceneMsg scene.index
   in
     ( { model | stage = asStage scene }, cmd )
-      |> joinCmd (Cmd.map SceneMsg sceneCmd)
-      |> sendEvent event
+      |> joinCmd (Cmd.map asMessage sceneCmd)
+      |> sendEvent (Socket.Event.map asMessage sceneEvent)
 
 -- socket
 initSocket : Socket.Socket msg

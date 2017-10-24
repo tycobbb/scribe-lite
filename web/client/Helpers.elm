@@ -9,6 +9,14 @@ import Socket.Event exposing (Event)
 type alias State a m =
   ( a, Cmd m, Event m )
 
+-- Indexing
+type alias Indexed a m =
+  ( { index : Int , model : a }, Cmd m, Event m )
+
+withIndex : Int -> State a m -> Indexed a m
+withIndex index ( model, cmd, event ) =
+  ( { index = index, model = model }, cmd, event )
+
 -- Effects
 withoutEffects : a -> State a m
 withoutEffects =
@@ -48,11 +56,3 @@ delay time msg =
 async : m -> Cmd m
 async =
   delay 17
-
--- indexing
-type alias Indexed a m =
-  ( { index : Int , model : a }, Cmd m, Event m )
-
-withIndex : Int -> State a m -> Indexed a m
-withIndex index ( model, cmd, event ) =
-  ( { index = index, model = model }, cmd, event )
