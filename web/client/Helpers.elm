@@ -5,8 +5,12 @@ import Task
 import Time
 import Socket.Event exposing (Event)
 
+-- State
+type alias State a m =
+  ( a, Cmd m, Event m )
+
 -- Effects
-withoutEffects : a -> ( a, Cmd m, Event m )
+withoutEffects : a -> State a m
 withoutEffects =
   withoutCmd >> withoutEvent
 
@@ -20,17 +24,17 @@ withoutCmd =
   withCmd Cmd.none
 
 joinCmd : Cmd m -> ( a, Cmd m ) -> ( a, Cmd m )
-joinCmd otherCmd (model, cmd) =
+joinCmd otherCmd ( model, cmd ) =
   ( model
   , Cmd.batch [ cmd , otherCmd ]
   )
 
 -- Socket.Event
-withEvent : Event m -> ( a, Cmd m ) -> ( a, Cmd m, Event m )
+withEvent : Event m -> ( a, Cmd m ) -> State a m
 withEvent event ( model, cmd ) =
   ( model, cmd, event )
 
-withoutEvent : ( a, Cmd m ) -> ( a, Cmd m, Event m )
+withoutEvent : ( a, Cmd m ) -> State a m
 withoutEvent =
   withEvent Socket.Event.none
 
@@ -44,3 +48,11 @@ delay time msg =
 async : m -> Cmd m
 async =
   delay 17
+
+-- indexing
+type alias Indexed a m =
+  ( { index : Int , model : a }, Cmd m, Event m )
+
+withIndex : Int -> State a m -> Indexed a m
+withIndex index ( model, cmd, event ) =
+  ( { index = index, model = model }, cmd, event )

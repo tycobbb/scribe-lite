@@ -8,7 +8,7 @@ import Router.Route as Route
 import Router.Scene as Scene
 import Socket.Event
 import MainStyles exposing (Classes(..), styles, inline, duration)
-import Helpers exposing (withCmd, withoutCmd, joinCmd, async, delay)
+import Helpers exposing (Indexed, withCmd, withoutCmd, joinCmd, withIndex, async, delay)
 
 -- main
 main : Program Never Model Msg
@@ -33,6 +33,19 @@ type alias Model =
   , socket : Socket.Socket Msg
   }
 
+init : Navigation.Location -> State
+init location =
+  initScene location
+    |> withIndex 0
+    |> setScene Active (withoutCmd initModel)
+
+initModel : Model
+initModel =
+  { stage = Blank
+  , socket = initSocket
+  }
+
+-- stage
 type Stage
   = Active IndexedScene
   | TransitionWait IndexedScene IndexedScene
@@ -40,19 +53,8 @@ type Stage
   | Blank
 
 type alias IndexedScene =
-  { model : Scene.Model
-  , index : Int
-  }
-
-init : Navigation.Location -> State
-init location =
-  initScene location
-    |> setScene 0 Active (withoutCmd initModel)
-
-initModel : Model
-initModel =
-  { stage = Blank
-  , socket = initSocket
+  { index : Int
+  , model : Scene.Model
   }
 
 -- update
@@ -68,14 +70,16 @@ update msg model =
   case (msg, model.stage) of
     ( UrlChange location, Active scene ) ->
       initScene location
-        |> setScene (scene.index + 1) (TransitionWait scene) (withoutCmd model)
+        |> withIndex (scene.index + 1)
+        |> setScene (TransitionWait scene) (withoutCmd model)
         |> joinCmd (async StartTransition)
     ( SocketMsg msg, _ ) ->
       Socket.update msg model.socket
         |> setSocket model
     ( SceneMsg msg, Active scene ) ->
       Scene.update msg scene.model
-        |> setScene scene.index Active (withoutCmd model)
+        |> withIndex scene.index
+        |> setScene Active (withoutCmd model)
     ( StartTransition, TransitionWait scene nextScene ) ->
       { model | stage = Transition scene nextScene }
         |> withCmd (delay duration EndTransition)
@@ -83,7 +87,6 @@ update msg model =
       withoutCmd { model | stage = Active nextScene }
     _ ->
       withoutCmd model
-
 
 setSocket : Model -> (Socket.Socket Msg, Cmd (Socket.Msg Msg) ) -> State
 setSocket model (field, cmd) =
@@ -156,18 +159,14 @@ initScene : Navigation.Location -> Scene.State
 initScene location =
   Scene.init (Route.route location)
 
-setScene : Int -> (IndexedScene -> Stage) -> State -> Scene.State -> State
-setScene index asStage (model, cmd) (scene, sceneCmd, sceneEvent) =
+setScene : (IndexedScene -> Stage) -> State -> Indexed Scene.Model Scene.Msg -> State
+setScene asStage (model, cmd) (scene, sceneCmd, sceneEvent) =
   let
-    indexedScene =
-      { model = scene
-      , index = index
-      }
     event =
       sceneEvent
         |> Socket.Event.map SceneMsg
   in
-    ( { model | stage = asStage indexedScene }, cmd )
+    ( { model | stage = asStage scene }, cmd )
       |> joinCmd (Cmd.map SceneMsg sceneCmd)
       |> sendEvent event
 

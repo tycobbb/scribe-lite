@@ -44,7 +44,7 @@ init =
   in
     initModel line
       |> withCmd (Cmd.map LineMsg lineCmd)
-      |> withEvent initEvent
+      |> withEvent joinStory
 
 initModel : Line.Model -> Model
 initModel line =
@@ -54,12 +54,6 @@ initModel line =
   , email = ""
   , name = ""
   }
-
-initEvent : Socket.Event.Event Msg
-initEvent =
-  Channel.init room
-    |> Channel.onJoin JoinStory
-    |> Socket.Event.Join
 
 -- update
 type Msg
@@ -92,7 +86,7 @@ update msg model =
         |> withEvent (submitLine model)
     SubmitOk _ ->
       ( model, Navigation.newUrl "/thanks" )
-        |> withoutEvent
+        |> withEvent leaveStory
 
 setLine : Model -> Line.State -> (Model, Cmd Msg)
 setLine model (field, cmd) =
@@ -107,6 +101,24 @@ setPrompt model result =
     |> Result.withDefault model
     |> withoutCmd
 
+-- events
+joinStory : Socket.Event.Event Msg
+joinStory =
+  Channel.init room
+    |> Channel.onJoin JoinStory
+    |> Socket.Event.Join
+
+submitLine : Model -> Socket.Event.Event Msg
+submitLine model =
+  Push.init "add:line" room
+    |> Push.withPayload (encodeLinePayload model)
+    |> Push.onOk SubmitOk
+    |> Socket.Event.Push
+
+leaveStory : Socket.Event.Event Msg
+leaveStory =
+  Socket.Event.Leave room
+
 -- request data
 type alias StoryPrompt =
   { prompt : String
@@ -119,13 +131,6 @@ decodePrompt =
     (JD.map2 StoryPrompt
       (field "prompt" JD.string)
       (field "author" JD.string))
-
-submitLine : Model -> Socket.Event.Event Msg
-submitLine model =
-  Push.init "add:line" room
-    |> Push.withPayload (encodeLinePayload model)
-    |> Push.onOk SubmitOk
-    |> Socket.Event.Push
 
 encodeLinePayload : Model -> JE.Value
 encodeLinePayload model =
