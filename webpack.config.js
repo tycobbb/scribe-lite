@@ -22,7 +22,8 @@ module.exports = {
       use: {
         loader: 'elm-webpack-loader',
         options: {
-          cwd: path.resolve('./')
+          cwd: path.resolve('./'),
+          debug: true
         }
       }
     }, {
