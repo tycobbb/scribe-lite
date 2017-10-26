@@ -75,8 +75,8 @@ update msg model =
   case (msg, model.stage) of
     ( UrlChange location, Active scene ) ->
       withoutCmd model
-        |> setScene (stageFrom scene Transition) (initScene location (scene.index + 1))
-        |> joinCmd (delay duration EndTransition)
+        |> setScene (stageFrom scene TransitionWait) (initScene location (scene.index + 1))
+        |> joinCmd (async StartTransition)
     ( SocketMsg msg, _ ) ->
       withoutCmd model
         |> setSocket (Socket.update msg model.socket)
