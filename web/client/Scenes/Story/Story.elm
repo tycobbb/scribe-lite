@@ -14,7 +14,7 @@ import Scenes.Story.Line.Line as Line
 import Views.Button as Button
 import Socket.Event exposing (Event)
 import Styles.Colors as Colors
-import Helpers exposing (withCmd, withoutCmd, withEvent, withoutEvent)
+import Helpers exposing (Change, withCmd, withoutCmd, withEvent, withoutEvent, withoutEffects)
 
 -- constants
 room : String
@@ -26,7 +26,8 @@ background =
   Colors.secondaryBackground
 
 -- state
-type alias State = ( Model, Cmd Msg, Event Msg )
+type alias State =
+  Change Model Msg
 
 type alias Model =
   { line : Line.Model
@@ -72,50 +73,50 @@ update msg model =
         |> setLine model
         |> withoutEvent
     ChangeEmail email ->
-      ( { model | email = email }, Cmd.none )
-        |> withoutEvent
+      { model | email = email }
+        |> withoutEffects
     ChangeName name ->
-      ( { model | name = name }, Cmd.none )
-        |> withoutEvent
+      { model | name = name }
+        |> withoutEffects
     JoinStory raw ->
       decodePrompt raw
         |> setPrompt model
-        |> withoutEvent
+        |> withoutEffects
     SubmitLine ->
-      ( model, Cmd.none )
+      model
+        |> withoutCmd
         |> withEvent (submitLine model)
     SubmitOk _ ->
-      ( model, Navigation.newUrl "/thanks" )
+      model
+        |> withCmd (Navigation.newUrl "/thanks")
         |> withEvent leaveStory
 
 setLine : Model -> Line.State -> (Model, Cmd Msg)
 setLine model (field, cmd) =
-  ( { model | line = field }
-  , Cmd.map LineMsg cmd
-  )
+  { model | line = field }
+    |> withCmd (Cmd.map LineMsg cmd)
 
-setPrompt : Model -> Result e StoryPrompt -> (Model, Cmd Msg)
+setPrompt : Model -> Result e StoryPrompt -> Model
 setPrompt model result =
   result
     |> Result.map (\{ prompt, author } -> { model | prompt = prompt, author = author })
     |> Result.withDefault model
-    |> withoutCmd
 
 -- events
-joinStory : Socket.Event.Event Msg
+joinStory : Event Msg
 joinStory =
   Channel.init room
     |> Channel.onJoin JoinStory
     |> Socket.Event.Join
 
-submitLine : Model -> Socket.Event.Event Msg
+submitLine : Model -> Event Msg
 submitLine model =
   Push.init "add:line" room
     |> Push.withPayload (encodeLinePayload model)
     |> Push.onOk SubmitOk
     |> Socket.Event.Push
 
-leaveStory : Socket.Event.Event Msg
+leaveStory : Event Msg
 leaveStory =
   Socket.Event.Leave room
 

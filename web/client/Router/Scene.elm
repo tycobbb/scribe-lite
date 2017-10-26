@@ -5,12 +5,11 @@ import Css exposing (Color)
 import Router.Route as Route
 import Scenes.Story.Story as Story
 import Scenes.Thanks.Thanks as Thanks
-import Socket.Event exposing (Event)
-import Helpers exposing (withoutEffects)
+import Helpers exposing (Change, mapChange, withoutEffects)
 
 -- state
 type alias State =
-  ( Model, Cmd Msg, Event Msg )
+  Change Model Msg
 
 type alias Model =
   { scene : Scene
@@ -25,42 +24,47 @@ type Msg
   = StoryMsg Story.Msg
   | ThanksMsg Thanks.Msg
 
-toState : (a -> Scene) -> (b -> Msg) -> (( a, Cmd b, Event b ), Color) -> State
-toState asScene asMsg ((submodel, cmd, event), color) =
-  ( { scene = asScene submodel, color = color }
-  , Cmd.map asMsg cmd
-  , Socket.Event.map asMsg event
-  )
+toState : (a -> Scene) -> (m -> Msg) -> Color -> Change a m -> Change Model Msg
+toState asModel asMsg color =
+  (mapChange asModel asMsg) >> (setColor color)
 
 -- init
 init : Route.Route -> State
 init route =
   case route of
     Route.Story ->
-      ( Story.init, Story.background )
-        |> toState Story StoryMsg
+      Story.init
+        |> toState Story StoryMsg Story.background
     Route.Thanks ->
-      ( Thanks.init, Thanks.background )
-        |> toState Thanks ThanksMsg
+      Thanks.init
+        |> toState Thanks ThanksMsg Thanks.background
 
 -- update
 update : Msg -> Model -> State
 update msg model =
   case ( msg, model.scene ) of
     ( StoryMsg msg, Story story ) ->
-      ( Story.update msg story, model.color )
-        |> toState Story StoryMsg
+      Story.update msg story
+        |> toState Story StoryMsg Story.background
     ( ThanksMsg msg, Thanks thanks ) ->
-      ( Thanks.update msg thanks, model.color )
-        |> toState Thanks ThanksMsg
+      Thanks.update msg thanks
+        |> toState Thanks ThanksMsg Thanks.background
     _ ->
       withoutEffects model
+
+setColor : Color -> Change Scene Msg -> Change Model Msg
+setColor color { model, effects } =
+  { model = Model model color
+  , effects = effects
+  }
 
 -- view
 view : Model -> Html Msg
 view { scene } =
   case scene of
     Story story ->
-      Html.map StoryMsg (Story.view story)
+      Story.view story
+        |> Html.map StoryMsg
     Thanks thanks ->
-      Html.map ThanksMsg (Thanks.view thanks)
+      Thanks.view thanks
+        |> Html.map ThanksMsg

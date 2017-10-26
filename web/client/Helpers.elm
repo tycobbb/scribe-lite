@@ -5,22 +5,37 @@ import Task
 import Time
 import Socket.Event exposing (Event)
 
--- State
-type alias State a m =
-  ( a, Cmd m, Event m )
+-- Types
+type alias Change a m =
+  { model : a
+  , effects : Effects m
+  }
 
--- Indexing
-type alias Indexed a m =
-  ( { index : Int , model : a }, Cmd m, Event m )
+type alias Indexed a =
+  { index : Int
+  , model : a
+  }
 
-withIndex : Int -> State a m -> Indexed a m
-withIndex index ( model, cmd, event ) =
-  ( { index = index, model = model }, cmd, event )
+type alias Effects m =
+  ( Cmd m, Event m )
 
--- Effects
-withoutEffects : a -> State a m
+-- Change
+withoutEffects : a -> Change a m
 withoutEffects =
   withoutCmd >> withoutEvent
+
+mapChange : (a -> b) -> (m -> m1) -> Change a m -> Change b m1
+mapChange asModel asMsg { model, effects } =
+  { model = asModel model
+  , effects = mapEffects asMsg effects
+  }
+
+-- Effects
+mapEffects : (m -> m1) -> Effects m -> Effects m1
+mapEffects asMsg ( cmd, event ) =
+  ( Cmd.map asMsg cmd
+  , Socket.Event.map asMsg event
+  )
 
 -- Cmd
 withCmd : Cmd m -> a -> ( a, Cmd m )
@@ -38,13 +53,22 @@ joinCmd otherCmd ( model, cmd ) =
   )
 
 -- Socket.Event
-withEvent : Event m -> ( a, Cmd m ) -> State a m
+withEvent : Event m -> ( a, Cmd m ) -> Change a m
 withEvent event ( model, cmd ) =
-  ( model, cmd, event )
+  { model = model
+  , effects = ( cmd, event )
+  }
 
-withoutEvent : ( a, Cmd m ) -> State a m
+withoutEvent : ( a, Cmd m ) -> Change a m
 withoutEvent =
   withEvent Socket.Event.none
+
+-- Indexing
+withIndex : Int -> Change a m -> Change (Indexed a) m
+withIndex index { model, effects } =
+  { model = Indexed index model
+  , effects = effects
+  }
 
 -- Timers
 delay : Float -> a -> Cmd a

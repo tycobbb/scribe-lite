@@ -4,11 +4,10 @@ import Html exposing (..)
 import Html.Events exposing (onClick)
 import Css exposing (Color)
 import Navigation
-import Socket.Event exposing (Event)
 import Scenes.Thanks.Styles exposing (Classes(..), styles)
 import Views.Button as Button
 import Styles.Colors as Colors
-import Helpers exposing (withoutEvent, withoutEffects)
+import Helpers exposing (Change, withCmd, withoutEvent, withoutEffects)
 
 -- constants
 background : Color
@@ -16,8 +15,11 @@ background =
   Colors.primary
 
 -- init
-type alias State = ( Model, Cmd Msg, Event Msg )
-type Model = None
+type alias State
+  = Change Model Msg
+
+type Model
+  = None
 
 init : State
 init =
@@ -31,7 +33,8 @@ update : Msg -> Model -> State
 update msg _ =
   case msg of
     RefreshPage ->
-      ( None, Navigation.newUrl "/" )
+      None
+        |> withCmd (Navigation.newUrl "/")
         |> withoutEvent
 
 -- view
