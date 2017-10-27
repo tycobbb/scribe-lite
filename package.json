@@ -1,6 +1,10 @@
 {
-  "repository": {},
-  "license": "MIT",
+  "name": "scribe",
+  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/wzrad/scribe-lite"
+  },
+  "license": "GPL-3.0",
   "scripts": {
     "build": "webpack",
     "watch": "webpack --watch --progress --color"
@@ -12,7 +16,9 @@
   "devDependencies": {
     "copy-webpack-plugin": "^4.0.1",
     "css-loader": "^0.28.4",
+    "elm-analyse": "^0.11.0",
     "elm-css-webpack-loader": "^3.1.0",
+    "elm-format": "^0.6.1-alpha",
     "elm-webpack-loader": "^4.3.1",
     "extract-text-webpack-plugin": "^2.1.2",
     "postcss-loader": "^2.0.6",

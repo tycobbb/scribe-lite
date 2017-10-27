@@ -13,7 +13,7 @@ type alias Change a m =
 
 type alias Indexed a =
   { index : Int
-  , model : a
+  , item : a
   }
 
 type alias Effects m =
@@ -64,6 +64,10 @@ withoutEvent =
   withEvent Socket.Event.none
 
 -- Indexing
+indexable : (Indexed a -> b) -> Int -> a -> b
+indexable other index =
+  (Indexed index) >> other
+
 withIndex : Int -> Change a m -> Change (Indexed a) m
 withIndex index { model, effects } =
   { model = Indexed index model

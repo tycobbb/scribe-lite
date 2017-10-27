@@ -8,7 +8,7 @@ import Router.Route as Route
 import Router.Scene as Scene
 import Socket.Event
 import MainStyles exposing (Classes(..), styles, inline, duration)
-import Helpers exposing (Change, Effects, Indexed, withCmd, withoutCmd, joinCmd, withIndex, mapEffects, async, delay)
+import Helpers exposing (..)
 
 -- main
 main : Program Never Model Msg
@@ -48,8 +48,7 @@ initModel =
 -- stage
 type Stage
   = Active IndexedScene
-  | TransitionWait IndexedScenes
-  | Transition IndexedScenes
+  | Transition Bool IndexedScenes
   | Blank
 
 type alias IndexedScenes =
@@ -58,15 +57,13 @@ type alias IndexedScenes =
   }
 
 type alias IndexedScene =
-  { index : Int
-  , model : Scene.Model
-  }
+  Indexed Scene.Model
 
 -- update
 type Msg
   = UrlChange Navigation.Location
   | SocketMsg (Socket.Msg Msg)
-  | SceneMsg Int Scene.Msg
+  | SceneMsg (Indexed Scene.Msg)
   | StartTransition
   | EndTransition
 
@@ -75,24 +72,21 @@ update msg model =
   case (msg, model.stage) of
     ( UrlChange location, Active scene ) ->
       withoutCmd model
-        |> setScene (stageFrom scene TransitionWait) (initScene location (scene.index + 1))
+        |> setScene (stageFrom scene (Transition False)) (initScene location (scene.index + 1))
         |> joinCmd (async StartTransition)
     ( SocketMsg msg, _ ) ->
       withoutCmd model
         |> setSocket (Socket.update msg model.socket)
-    ( SceneMsg index msg, Active scene ) ->
+    ( SceneMsg msg, Active scene ) ->
       withoutCmd model
-        |> setScene Active (updateScene msg scene)
-    ( SceneMsg index msg, TransitionWait scenes ) ->
+        |> updateScene Active msg scene
+    ( SceneMsg msg, Transition isActive scenes ) ->
       withoutCmd model
-        |> updateScenes TransitionWait index msg scenes
-    ( SceneMsg index msg, Transition scenes ) ->
-      withoutCmd model
-        |> updateScenes Transition index msg scenes
-    ( StartTransition, TransitionWait scenes ) ->
-      { model | stage = Transition scenes }
+        |> updateScenes (Transition isActive) msg scenes
+    ( StartTransition, Transition False scenes ) ->
+      { model | stage = Transition True scenes }
         |> withCmd (delay duration EndTransition)
-    ( EndTransition, Transition scenes ) ->
+    ( EndTransition, Transition True scenes ) ->
       { model | stage = Active scenes.nextScene }
         |> withoutCmd
     _ ->
@@ -113,12 +107,12 @@ view { stage } =
       keyedStage scene
         [ keyedScene scene Nothing
         ]
-    TransitionWait { scene, nextScene } ->
+    Transition False { scene, nextScene } ->
       keyedStage scene
         [ keyedScene scene Nothing
         , keyedScene nextScene (Just SceneIn)
         ]
-    Transition { scene, nextScene } ->
+    Transition True { scene, nextScene } ->
       keyedStage nextScene
         [ keyedScene scene (Just SceneOut)
         , keyedScene nextScene Nothing
@@ -129,10 +123,10 @@ view { stage } =
         ]
 
 keyedStage : IndexedScene -> List ( String, Html m ) -> Html m
-keyedStage { model } =
+keyedStage { item } =
   Keyed.node "div"
     [ class Stage
-    , inline.backgroundColor model.color
+    , inline.backgroundColor item.color
     ]
 
 keyedScene : IndexedScene -> Maybe Classes -> ( String, Html Msg )
@@ -143,18 +137,17 @@ keyedScene scene animation =
 
 sceneView : IndexedScene -> Maybe Classes -> Html Msg
 sceneView scene animation =
-  let
-    asMessage =
-      SceneMsg scene.index
-    classList =
-      [ Just Scene, animation ]
-        |> List.filterMap identity
-        |> List.map (\a -> ( a, True ))
-  in
-    section [ styles.classes classList ]
-      [ Scene.view scene.model
-          |> Html.map asMessage
-      ]
+  section [ sceneClasses animation ]
+    [ Scene.view scene.item
+        |> Html.map (indexable SceneMsg scene.index)
+    ]
+
+sceneClasses : Maybe Classes -> Attribute m
+sceneClasses animation =
+  [ Just Scene, animation ]
+    |> List.filterMap identity
+    |> List.map (\a -> ( a, True ))
+    |> styles.classes
 
 -- scenes
 initScene : Navigation.Location -> Int -> Change IndexedScene Scene.Msg
@@ -164,32 +157,33 @@ initScene location index =
 
 setScene : (IndexedScene -> Stage) -> Change IndexedScene Scene.Msg -> State -> State
 setScene asStage sceneState ( model, cmd ) =
-  let
-    asMsg =
-      (SceneMsg sceneState.model.index)
-  in
-    { model | stage = asStage sceneState.model }
-      |> withCmd cmd
-      |> joinEffects (mapEffects asMsg sceneState.effects)
+  { model | stage = asStage sceneState.model }
+    |> withCmd cmd
+    |> joinEffects (mapEffects (asSceneMsg sceneState.model.index) sceneState.effects)
 
-updateScenes : (IndexedScenes -> Stage) -> Int -> Scene.Msg -> IndexedScenes -> State -> State
-updateScenes asStage index msg { scene, nextScene } =
-  if index == scene.index then
-    setScene (stageTo nextScene asStage) (updateScene msg scene)
-  else if index == nextScene.index then
-    setScene (stageFrom scene asStage) (updateScene msg nextScene)
+updateScenes : (IndexedScenes -> Stage) -> Indexed Scene.Msg -> IndexedScenes -> State -> State
+updateScenes asStage msg { scene, nextScene } =
+  if msg.index == scene.index then
+    updateScene (stageTo nextScene asStage) msg scene
+  else if msg.index == nextScene.index then
+    updateScene (stageFrom scene asStage) msg nextScene
   else
     identity
 
-updateScene : Scene.Msg -> IndexedScene -> Change IndexedScene Scene.Msg
-updateScene msg scene =
-  Scene.update msg scene.model
+updateScene : (IndexedScene -> Stage) -> Indexed Scene.Msg -> IndexedScene -> State -> State
+updateScene asStage msg scene =
+  Scene.update msg.item scene.item
     |> withIndex scene.index
+    |> setScene asStage
 
 joinEffects : Effects Msg -> State -> State
 joinEffects ( cmd, event ) =
   joinCmd cmd
     >> sendEvent event
+
+asSceneMsg : Int -> Scene.Msg -> Msg
+asSceneMsg =
+  indexable SceneMsg
 
 -- socket
 initSocket : Socket.Socket msg
