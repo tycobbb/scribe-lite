@@ -1,10 +1,10 @@
 use Mix.Config
 
-# general application configuration
+# configure application
 config :scribe,
   ecto_repos: [Scribe.Repo]
 
-# configures the endpoint
+# configure endpoint
 config :scribe, Scribe.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "eiUHlp7TGDdi1WHFuhl66clhniPfQAkpYpucp9nDP8K5mHaT5vKJ2WHO9bNwnH1D",
@@ -17,10 +17,10 @@ config :scribe, Scribe.Endpoint,
     adapter: Phoenix.PubSub.PG2
   ]
 
-# configures elixir's Logger
+# configures logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
-# import environment specific config.
+# configure by environment
 import_config "#{Mix.env}.exs"
