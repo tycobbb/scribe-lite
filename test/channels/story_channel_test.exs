@@ -25,9 +25,19 @@ defmodule Scribe.StoryChannelTest do
       {:ok, socket: socket}
     end
 
-    test "add:line replies with status ok", %{socket: socket} do
-      ref = push(socket, "add:line", %{"hello" => "there"})
+    test "add:line inserts a new line", %{socket: socket} do
+      line = %{
+        text: "test line",
+        email: "test@email.com"
+      }
+
+      ref = push(socket, "add:line", %{
+        "text" => line.text,
+        "email" => line.email
+      })
+
       assert_reply(ref, :ok)
+      assert line == Scribe.Line |> first |> Repo.one |> Map.take(Map.keys(line))
     end
   end
 end

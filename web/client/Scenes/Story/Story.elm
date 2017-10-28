@@ -136,7 +136,7 @@ decodePrompt =
 encodeLinePayload : Model -> JE.Value
 encodeLinePayload model =
   JE.object
-    [ ("line", JE.string model.line.value)
+    [ ("text", JE.string model.line.value)
     , ("email", JE.string model.email)
     , ("name", JE.string model.name)
     ]
