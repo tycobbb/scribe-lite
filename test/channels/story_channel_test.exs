@@ -1,7 +1,7 @@
-require IEx
-
 defmodule Scribe.StoryChannelTest do
   use Scribe.ChannelCase
+
+  alias Scribe.Line
 
   def join do
     socket()
@@ -9,13 +9,35 @@ defmodule Scribe.StoryChannelTest do
   end
 
   describe "#join/3" do
-    test "story:unified responds with the story data" do
-      {_, response, _ } = join()
+    test "story:unified responds with the last line" do
+      other_attrs = %{
+        text: "join/3 first line",
+        email: "test@email.com",
+        name: "test name"
+      }
 
-      assert(response == %{
-        prompt: "When the tiny dumpling decided to jump across the river, it let out a sigh.",
-        author: "Gob Bluth"
-      })
+      %Line{}
+        |> Line.changeset(other_attrs)
+        |> Repo.insert()
+
+      attrs = %{
+        text: "join/3 last line",
+        email: "test@email.com",
+        name: "test name"
+      }
+
+      %Line{}
+        |> Line.changeset(attrs)
+        |> Repo.insert()
+
+      {_, response, _} = join()
+
+      assert(response == Map.take(attrs, [:text, :name]))
+    end
+
+    test "story:unified responds with nil for the first line" do
+      {_, response, _} = join()
+      assert(response == nil)
     end
   end
 
@@ -26,18 +48,20 @@ defmodule Scribe.StoryChannelTest do
     end
 
     test "add:line inserts a new line", %{socket: socket} do
-      line = %{
-        text: "test line",
-        email: "test@email.com"
+      attrs = %{
+        text: "handle_in/3 test line",
+        email: "test@email.com",
+        name: "test name"
       }
 
       ref = push(socket, "add:line", %{
-        "text" => line.text,
-        "email" => line.email
+        "text" => attrs.text,
+        "email" => attrs.email,
+        "name" => attrs.name
       })
 
       assert_reply(ref, :ok)
-      assert line == Scribe.Line |> first |> Repo.one |> Map.take(Map.keys(line))
+      assert attrs == Line |> first |> Repo.one |> Map.take(Map.keys(attrs))
     end
   end
 end

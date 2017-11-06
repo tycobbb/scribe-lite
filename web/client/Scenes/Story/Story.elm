@@ -99,8 +99,8 @@ setLine model (field, cmd) =
 setPrompt : Model -> Result e StoryPrompt -> Model
 setPrompt model result =
   result
-    |> Result.map (\{ prompt, author } -> { model | prompt = prompt, author = author })
-    |> Result.withDefault model
+    |> Result.map (\{ text, name } -> { model | prompt = text, author = name })
+    |> Result.withDefault { model | prompt = "You're starting from a blank slate." }
 
 -- events
 joinStory : Event Msg
@@ -112,7 +112,7 @@ joinStory =
 submitLine : Model -> Event Msg
 submitLine model =
   Push.init "add:line" room
-    |> Push.withPayload (encodeLinePayload model)
+    |> Push.withPayload (encodeLine model)
     |> Push.onOk SubmitOk
     |> Socket.Event.Push
 
@@ -122,19 +122,19 @@ leaveStory =
 
 -- request data
 type alias StoryPrompt =
-  { prompt : String
-  , author : String
+  { text : String
+  , name : String
   }
 
 decodePrompt : JD.Value -> Result String StoryPrompt
 decodePrompt =
   JD.decodeValue
     (JD.map2 StoryPrompt
-      (field "prompt" JD.string)
-      (field "author" JD.string))
+      (field "text" JD.string)
+      (field "name" JD.string))
 
-encodeLinePayload : Model -> JE.Value
-encodeLinePayload model =
+encodeLine : Model -> JE.Value
+encodeLine model =
   JE.object
     [ ("text", JE.string model.line.value)
     , ("email", JE.string model.email)
