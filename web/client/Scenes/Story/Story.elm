@@ -168,18 +168,33 @@ view model =
 
 lineForm : Model -> List (Html Msg) -> Html Msg
 lineForm model =
-  form
-    [ Body |> showsAfter [model.prompt]
-    , onSubmit SubmitLine
-    ]
+  if List.all (not << String.isEmpty) [model.prompt] then
+    form
+      [ class Body
+      , onSubmit SubmitLine
+      ]
+  else
+    (\_ -> text "")
 
 emailField : Model -> Html Msg
 emailField model =
-  input
-    [ EmailField |> showsAfter [model.line.value]
-    , onInput ChangeEmail
-    , placeholder "E-mail Address"
-    ] [ text model.email ]
+  if List.all (not << String.isEmpty) [model.line.value] then
+    input
+      [ class EmailField
+      , onInput ChangeEmail
+      , placeholder "E-mail Address"
+      ]
+      [ text model.email
+      ]
+    else
+      text ""
+
+submitRow : Model -> List (Html Msg) -> Html Msg
+submitRow model =
+  if List.all (not << String.isEmpty) [model.line.value, model.email] then
+    div [ class SubmitRow ]
+  else
+    (\_ -> text "")
 
 nameField : Model -> Html Msg
 nameField model =
@@ -187,11 +202,9 @@ nameField model =
     [ class NameField
     , onInput ChangeName
     , placeholder "Name to Display (Optional)"
-    ] [ text model.name ]
-
-submitRow : Model -> List (Html Msg) -> Html Msg
-submitRow model =
-  div [ SubmitRow |> showsAfter [model.line.value, model.email] ]
+    ]
+    [ text model.name
+    ]
 
 showsAfter : List String -> Classes -> Attribute m
 showsAfter values klass =

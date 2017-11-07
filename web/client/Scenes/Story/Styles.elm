@@ -81,5 +81,4 @@ animatesVisibility : Style
 animatesVisibility =
   batch
     [ property "transition" "opacity 0.2s, transform 0.2s"
-    , opacity (int 0)
     ]
