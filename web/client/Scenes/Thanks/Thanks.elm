@@ -43,10 +43,12 @@ update msg _ =
 view : Model -> Html Msg
 view _ =
   div [ class Scene ]
-    [ p [ class Message ]
-      [ text "Thanks for writing" ]
-    , p [ class Message ]
-      [ text "At 8PM tonight, today's story will be e-mailed to you." ]
-    , div [ class Button, onClick RefreshPage ]
-      [ Button.view "Refresh Page" True ]
+    [ div [ class Content ]
+      [ p [ class Message ]
+        [ text "Thanks for writing" ]
+      , p [ class Message ]
+        [ text "At 8PM tonight, today's story will be e-mailed to you." ]
+      , div [ class Button, onClick RefreshPage ]
+        [ Button.view "Refresh Page" True ]
+      ]
     ]

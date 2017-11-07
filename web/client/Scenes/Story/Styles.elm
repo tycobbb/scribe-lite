@@ -2,14 +2,15 @@ module Scenes.Story.Styles exposing (Classes(..), styles)
 
 import Css exposing (..)
 import Styles.Fonts exposing (..)
-import Styles.Mixins exposing (scene, textField)
+import Styles.Mixins exposing (scene, sceneContent, textField)
 import Styles.Helpers exposing (Styles, stylesNamed)
 import Styles.Colors as Colors
 
 type Classes
   = Scene
-  | Header
   | Content
+  | Header
+  | Body
   | Prompt
   | Author
   | EmailField
@@ -23,12 +24,15 @@ styles =
     [ class Scene
       [ scene
       ]
+    , class Content
+      [ sceneContent
+      ]
     , class Header
       [ fontMedium
       , alignSelf center
       , color Colors.lightGray
       ]
-    , class Content
+    , class Body
       [ animatesVisibility
       , flex (int 1)
       , displayFlex
@@ -73,9 +77,9 @@ styles =
       ]
     ]
 
-animatesVisibility : Mixin
+animatesVisibility : Style
 animatesVisibility =
-  mixin
+  batch
     [ property "transition" "opacity 0.2s, transform 0.2s"
     , opacity (int 0)
     ]

@@ -9,7 +9,7 @@ import Html.CssHelpers exposing (Namespace, withNamespace)
 -- inline rules
 type alias Rules m = Html.Attribute m
 
-rules : List Css.Mixin -> Rules m
+rules : List Css.Style -> Rules m
 rules =
   Css.asPairs >> Html.Attributes.style
 

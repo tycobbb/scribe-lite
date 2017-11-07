@@ -3,18 +3,27 @@ module Styles.Mixins exposing (..)
 import Css exposing (..)
 import Styles.Colors exposing (lightGray)
 
-scene : Mixin
+scene : Style
 scene =
-  mixin
-    [ flex (int 1)
-    , displayFlex
+  batch
+    [ displayFlex
     , flexDirection column
-    , padding2 (px 60) (px 85)
+    , width (vw 100)
+    , height (vh 100)
+    , minHeight minContent
     ]
 
-textField : Mixin
+sceneContent : Style
+sceneContent =
+  batch
+    [ displayFlex
+    , flexDirection column
+    , margin2 (px 60) (px 85)
+    ]
+
+textField : Style
 textField =
-  mixin
+  batch
     [ borderStyle none
     , outlineStyle none
     , backgroundColor transparent

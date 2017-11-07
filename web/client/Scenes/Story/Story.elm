@@ -147,19 +147,21 @@ encodeLine model =
 view : Model -> Html Msg
 view model =
   div [ class Scene ]
-    [ div [ class Header ]
-      [ text "Friday May 24 (2017)" ]
-    , lineForm model
-      [ p [ class Author ]
-        [ text model.author ]
-      , p [ class Prompt ]
-        [ text model.prompt ]
-      , Line.view model.line
-          |> Html.map LineMsg
-      , emailField model
-      , submitRow model
-        [ nameField model
-        , Button.view "Submit" False
+    [ div [ class Content ]
+      [ div [ class Header ]
+        [ text "Friday May 24 (2017)" ]
+      , lineForm model
+        [ p [ class Author ]
+          [ text model.author ]
+        , p [ class Prompt ]
+          [ text model.prompt ]
+        , Line.view model.line
+            |> Html.map LineMsg
+        , emailField model
+        , submitRow model
+          [ nameField model
+          , Button.view "Submit" False
+          ]
         ]
       ]
     ]
@@ -167,7 +169,7 @@ view model =
 lineForm : Model -> List (Html Msg) -> Html Msg
 lineForm model =
   form
-    [ Content |> showsAfter [model.prompt]
+    [ Body |> showsAfter [model.prompt]
     , onSubmit SubmitLine
     ]
 

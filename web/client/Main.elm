@@ -109,13 +109,13 @@ view { stage } =
         ]
     Transition False { scene, nextScene } ->
       keyedStage scene
-        [ keyedScene scene Nothing
+        [ keyedScene scene (Just SceneReady)
         , keyedScene nextScene (Just SceneIn)
         ]
     Transition True { scene, nextScene } ->
       keyedStage nextScene
         [ keyedScene scene (Just SceneOut)
-        , keyedScene nextScene Nothing
+        , keyedScene nextScene (Just SceneReady)
         ]
     Blank ->
       div [ class Stage ]

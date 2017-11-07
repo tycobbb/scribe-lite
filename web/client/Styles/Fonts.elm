@@ -3,37 +3,37 @@ module Styles.Fonts exposing (..)
 import Css exposing (..)
 
 -- names (prefer font mixins below)
-fontMontserrat : Css.Mixin
+fontMontserrat : Style
 fontMontserrat =
   fontFamilies [ "Montserrat" ]
 
 -- weights (prefer font mixins below)
-fontWeightRegular : Css.Mixin
+fontWeightRegular : Style
 fontWeightRegular =
   fontWeight (int 400)
 
-fontWeightMedium : Css.Mixin
+fontWeightMedium : Style
 fontWeightMedium =
   fontWeight (int 600)
 
 -- fonts
-fontSmall : Css.Mixin
+fontSmall : Style
 fontSmall =
-  mixin
+  batch
     [ fontSize (px 24)
     , fontWeightRegular
     ]
 
-fontMedium : Css.Mixin
+fontMedium : Style
 fontMedium =
-  mixin
+  batch
     [ fontSize (px 32)
     , fontWeightRegular
     ]
 
-fontLarge : Css.Mixin
+fontLarge : Style
 fontLarge =
-  mixin
+  batch
     [ fontSize (px 60)
     , fontWeightMedium
     ]

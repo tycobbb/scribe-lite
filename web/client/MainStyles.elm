@@ -14,6 +14,7 @@ duration = 300
 type Classes
   = Stage
   | Scene
+  | SceneReady
   | SceneIn
   | SceneOut
 
@@ -21,15 +22,15 @@ styles : Styles c m
 styles =
   stylesNamed "Main"
     [ class Stage
-      [ flex (int 1)
-      , position relative
+      [ position relative
       , transition ["background-color"]
       ]
     , class Scene
-      [ displayFlex
-      , position absolute
+      [
+      ]
+    , class SceneReady
+      [ position absolute
       , top (px 0)
-      , bottom (px 0)
       , left (px 0)
       , right (px 0)
       , transition ["top", "opacity"]
@@ -44,7 +45,7 @@ styles =
       ]
     ]
 
-transition : List String -> Mixin
+transition : List String -> Style
 transition attributes =
   let
     durationPart =

@@ -3,11 +3,12 @@ module Scenes.Thanks.Styles exposing (Classes(..), styles)
 import Css exposing (..)
 import Styles.Colors as Colors
 import Styles.Fonts exposing (fontLarge)
-import Styles.Mixins exposing (scene)
+import Styles.Mixins exposing (scene, sceneContent)
 import Styles.Helpers exposing (Styles, stylesNamed)
 
 type Classes
   = Scene
+  | Content
   | Message
   | Button
 
@@ -16,6 +17,10 @@ styles =
   stylesNamed "Thanks"
     [ class Scene
       [ scene
+      , justifyContent center
+      ]
+    , class Content
+      [ sceneContent
       ]
     , class Message
       [ fontLarge

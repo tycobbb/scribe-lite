@@ -77,9 +77,9 @@ styles =
       ]
     ]
 
-chevronLeg : Mixin
+chevronLeg : Style
 chevronLeg =
-  mixin
+  batch
     [ property "content" "''"
     , display block
     , position absolute
@@ -88,9 +88,9 @@ chevronLeg =
     , borderRadius (px 1.5)
     ]
 
-chevronStyles : List Mixin -> Mixin
+chevronStyles : List Style -> Style
 chevronStyles styles =
-  mixin
+  batch
     [ descendants
       [ class Chevron
         [ before styles
@@ -99,9 +99,9 @@ chevronStyles styles =
       ]
     ]
 
-setColor : ColorValue c -> ColorValue c1 -> Mixin
+setColor : ColorValue c -> ColorValue c1 -> Style
 setColor base highlight =
-  mixin
+  batch
     [ color base
     , chevronStyles
       [ backgroundColor base

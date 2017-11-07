@@ -55,9 +55,9 @@ styles =
       ]
     ]
 
-field : Mixin
+field : Style
 field =
-  mixin
+  batch
     [ overflow auto
     , property "word-wrap" "break-word"
     , property "white-space" "pre-wrap"
