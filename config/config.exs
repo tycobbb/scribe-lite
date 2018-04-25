@@ -5,11 +5,11 @@ config :scribe,
   ecto_repos: [Scribe.Repo]
 
 # configure endpoint
-config :scribe, Scribe.Endpoint,
+config :scribe, ScribeWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "eiUHlp7TGDdi1WHFuhl66clhniPfQAkpYpucp9nDP8K5mHaT5vKJ2WHO9bNwnH1D",
   render_errors: [
-    view: Scribe.ErrorView,
+    view: ScribeWeb.ErrorView,
     accepts: ~w(html json)
   ],
   pubsub: [

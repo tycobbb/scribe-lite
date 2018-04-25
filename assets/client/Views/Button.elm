@@ -1,6 +1,6 @@
 module Views.Button exposing (..)
 
-import Html as El exposing (Html)
+import Html as H exposing (Html)
 import Css exposing (..)
 import Css.Elements exposing (span)
 import Styles.Fonts exposing (..)
@@ -10,15 +10,15 @@ import Styles.Colors as Colors
 -- view
 view : String -> Bool -> Html m
 view title isInverted =
-  El.button
+  H.button
     [ styles.classes
       [ ( Element, True )
       , ( Inverted, isInverted )
       ]
     ]
-    [ El.span []
-      [ El.text title
-      , El.div [ styles.class Chevron ] []
+    [ H.span []
+      [ H.text title
+      , H.div [ styles.class Chevron ] []
       ]
     ]
 

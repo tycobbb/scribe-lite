@@ -1,4 +1,4 @@
-defmodule Scribe.ConnCase do
+defmodule ScribeWeb.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -21,14 +21,14 @@ defmodule Scribe.ConnCase do
       use Phoenix.ConnTest
 
       alias Scribe.Repo
+
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-
-      import Scribe.Router.Helpers
+      import ScribeWeb.Router.Helpers
 
       # The default endpoint for testing
-      @endpoint Scribe.Endpoint
+      @endpoint ScribeWeb.Endpoint
     end
   end
 

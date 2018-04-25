@@ -1,4 +1,4 @@
-defmodule Scribe.ErrorHelpers do
+defmodule ScribeWeb.ErrorHelpers do
   @moduledoc """
   Conveniences for translating and building error messages.
   """

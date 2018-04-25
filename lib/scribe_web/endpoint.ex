@@ -1,7 +1,7 @@
-defmodule Scribe.Endpoint do
+defmodule ScribeWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :scribe
 
-  socket "/socket", Scribe.UserSocket
+  socket "/socket", ScribeWeb.UserSocket
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -44,5 +44,5 @@ defmodule Scribe.Endpoint do
     key: "_scribe_key",
     signing_salt: "vLf7WJGZ"
 
-  plug Scribe.Router
+  plug ScribeWeb.Router
 end

@@ -1,5 +1,5 @@
-defmodule Scribe.PageControllerTest do
-  use Scribe.ConnCase
+defmodule ScribeWeb.PageControllerTest do
+  use ScribeWeb.ConnCase
 
   test "GET /", %{conn: conn} do
     conn = get conn, "/"

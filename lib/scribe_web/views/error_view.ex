@@ -1,4 +1,4 @@
-defmodule Scribe.ErrorView do
+defmodule ScribeWeb.ErrorView do
   use Scribe.Web, :view
 
   def render("404.html", _assigns) do

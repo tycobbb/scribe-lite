@@ -1,21 +1,26 @@
 use Mix.Config
 
 # for development, we disable any cache and enable debugging and code reloading.
-config :scribe, Scribe.Endpoint,
+config :scribe, ScribeWeb.Endpoint,
   http: [port: 4000],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
-  watchers: [npm: ["run", "watch"]]
+  watchers: [
+    "./yarn": [
+      "watch",
+      cd: Path.expand("../assets", __DIR__)
+    ]
+  ]
 
 # catch static and templates for browser reloading.
-config :scribe, Scribe.Endpoint,
+config :scribe, ScribeWeb.Endpoint,
   live_reload: [
     patterns: [
       ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
       ~r{priv/gettext/.*(po)$},
-      ~r{web/views/.*(ex)$},
-      ~r{web/templates/.*(eex)$}
+      ~r{lib/scribe_web/views/.*(ex)$},
+      ~r{lib/scribe_web/templates/.*(eex)$}
     ]
   ]
 

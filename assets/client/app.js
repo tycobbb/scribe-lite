@@ -1,5 +1,5 @@
-import '../../client/Stylesheets'
-import Elm from '../../client/Main'
+import './Stylesheets'
+import Elm from './Main'
 
 const main = document.querySelector('#container')
 if (main) {

@@ -8,7 +8,7 @@ defmodule Scribe do
       # start the Ecto repository
       supervisor(Scribe.Repo, []),
       # start the endpoint when the application starts
-      supervisor(Scribe.Endpoint, []),
+      supervisor(ScribeWeb.Endpoint, []),
     ]
 
     opts = [
@@ -20,7 +20,7 @@ defmodule Scribe do
   end
 
   def config_change(changed, _new, removed) do
-    Scribe.Endpoint.config_change(changed, removed)
+    ScribeWeb.Endpoint.config_change(changed, removed)
     :ok
   end
 end

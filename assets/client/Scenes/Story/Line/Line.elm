@@ -1,7 +1,7 @@
 module Scenes.Story.Line.Line exposing (State, Model, Msg, init, update, view)
 
 import Html exposing (..)
-import Html.Attributes exposing (id, placeholder, autofocus, maxlength)
+import Html.Attributes exposing (id, value, placeholder, autofocus, maxlength)
 import Html.Events exposing (onWithOptions, onInput, keyCode)
 import Dom.Size exposing (Boundary(..))
 import Json.Decode as Decode
@@ -87,7 +87,7 @@ filterIllegalKeys currentText =
         |> Decode.map (\_ -> None))
 
 -- view
-{ class, classes } = styles
+{ class } = styles
 
 view : Model -> Html Msg
 view model =
@@ -124,5 +124,5 @@ field model =
     , filterIllegalKeys model.value
     , onInput Change
     , placeholder (toString characterLimit ++ " Characters")
-    ]
-    [ text model.value ]
+    , value model.value
+    ] []

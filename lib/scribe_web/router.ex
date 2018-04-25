@@ -1,4 +1,4 @@
-defmodule Scribe.Router do
+defmodule ScribeWeb.Router do
   use Scribe.Web, :router
 
   pipeline :browser do
@@ -9,7 +9,7 @@ defmodule Scribe.Router do
     plug :put_secure_browser_headers
   end
 
-  scope "/", Scribe do
+  scope "/", ScribeWeb do
     pipe_through :browser
     get "/*rest", PageController, :index
   end

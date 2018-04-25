@@ -1,7 +1,7 @@
 module Scenes.Story.Story exposing (State, Model, Msg, init, view, update, background)
 
 import Html exposing (..)
-import Html.Attributes exposing (placeholder)
+import Html.Attributes exposing (value, placeholder)
 import Html.Events exposing (onInput, onSubmit)
 import Css exposing (Color)
 import Json.Encode as JE
@@ -168,7 +168,7 @@ view model =
 
 lineForm : Model -> List (Html Msg) -> Html Msg
 lineForm model =
-  if List.all (not << String.isEmpty) [model.prompt] then
+  if (not << String.isEmpty) model.prompt then
     form
       [ class Body
       , onSubmit SubmitLine
@@ -178,16 +178,15 @@ lineForm model =
 
 emailField : Model -> Html Msg
 emailField model =
-  if List.all (not << String.isEmpty) [model.line.value] then
+  if (not << String.isEmpty) model.line.value then
     input
       [ class EmailField
       , onInput ChangeEmail
       , placeholder "E-mail Address"
-      ]
-      [ text model.email
-      ]
-    else
-      text ""
+      , value model.email
+      ] []
+  else
+    text ""
 
 submitRow : Model -> List (Html Msg) -> Html Msg
 submitRow model =
@@ -202,9 +201,8 @@ nameField model =
     [ class NameField
     , onInput ChangeName
     , placeholder "Name to Display (Optional)"
-    ]
-    [ text model.name
-    ]
+    , value model.name
+    ] []
 
 showsAfter : List String -> Classes -> Attribute m
 showsAfter values klass =

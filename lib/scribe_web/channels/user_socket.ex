@@ -1,8 +1,8 @@
-defmodule Scribe.UserSocket do
+defmodule ScribeWeb.UserSocket do
   use Phoenix.Socket
 
   # channels
-  channel "story:*", Scribe.StoryChannel
+  channel "story:*", ScribeWeb.StoryChannel
 
   # transports
   transport :websocket, Phoenix.Transports.WebSocket

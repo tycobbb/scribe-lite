@@ -1,4 +1,4 @@
-defmodule Scribe.ChannelCase do
+defmodule ScribeWeb.ChannelCase do
   @moduledoc """
   This module defines the test case to be used by
   channel tests.
@@ -25,9 +25,8 @@ defmodule Scribe.ChannelCase do
       import Ecto.Changeset
       import Ecto.Query
 
-
       # The default endpoint for testing
-      @endpoint Scribe.Endpoint
+      @endpoint ScribeWeb.Endpoint
     end
   end
 

@@ -1,5 +1,6 @@
-defmodule Scribe.StoryChannel do
-  use Phoenix.Channel, log_join: true, log_handle_in: true
+defmodule ScribeWeb.StoryChannel do
+  use Phoenix.Channel
+
   require Ecto.Query
 
   alias Scribe.Repo

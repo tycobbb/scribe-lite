@@ -1,11 +1,11 @@
-defmodule Scribe.StoryChannelTest do
-  use Scribe.ChannelCase
+defmodule ScribeWeb.StoryChannelTest do
+  use ScribeWeb.ChannelCase
 
   alias Scribe.Line
 
   def join do
     socket()
-      |> subscribe_and_join(Scribe.StoryChannel, "story:unified")
+      |> subscribe_and_join(ScribeWeb.StoryChannel, "story:unified")
   end
 
   describe "#join/3" do
@@ -35,7 +35,7 @@ defmodule Scribe.StoryChannelTest do
       assert(response == Map.take(attrs, [:text, :name]))
     end
 
-    test "story:unified responds with nil for the first line" do
+    test "story:unified responds with nil when there is no line" do
       {_, response, _} = join()
       assert(response == nil)
     end
@@ -61,7 +61,10 @@ defmodule Scribe.StoryChannelTest do
       })
 
       assert_reply(ref, :ok)
-      assert attrs == Line |> first |> Repo.one |> Map.take(Map.keys(attrs))
+      assert attrs == Line
+        |> first
+        |> Repo.one
+        |> Map.take(Map.keys(attrs))
     end
   end
 end

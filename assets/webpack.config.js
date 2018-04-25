@@ -4,10 +4,10 @@ const path = require('path')
 
 module.exports = {
   entry: [
-    './web/static/js/app.js'
+    './client/app.js'
   ],
   output: {
-    path: path.resolve('./priv/static'),
+    path: path.resolve('../priv/static'),
     filename: 'js/app.js'
   },
   resolve: {
@@ -48,7 +48,7 @@ module.exports = {
   plugins: [
     new ExtractTextPlugin('./css/app.css'),
     new CopyPlugin([
-      { from: './web/static/assets' }
+      { from: './static' }
     ])
   ]
 }

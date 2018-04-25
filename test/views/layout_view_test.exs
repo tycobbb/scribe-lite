@@ -1,3 +1,3 @@
-defmodule Scribe.LayoutViewTest do
-  use Scribe.ConnCase, async: true
+defmodule ScribeWeb.LayoutViewTest do
+  use ScribeWeb.ConnCase, async: true
 end

@@ -1,4 +1,4 @@
-defmodule Scribe.PageController do
+defmodule ScribeWeb.PageController do
   use Scribe.Web, :controller
 
   def index(conn, _params) do

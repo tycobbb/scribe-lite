@@ -1,21 +1,18 @@
-defmodule Scribe.ErrorViewTest do
-  use Scribe.ConnCase, async: true
+defmodule ScribeWeb.ErrorViewTest do
+  use ScribeWeb.ConnCase, async: true
 
   # Bring render/3 and render_to_string/3 for testing custom views
   import Phoenix.View
 
   test "renders 404.html" do
-    assert render_to_string(Scribe.ErrorView, "404.html", []) ==
-           "Page not found"
+    assert render_to_string(ScribeWeb.ErrorView, "404.html", []) == "Page not found"
   end
 
   test "render 500.html" do
-    assert render_to_string(Scribe.ErrorView, "500.html", []) ==
-           "Internal server error"
+    assert render_to_string(ScribeWeb.ErrorView, "500.html", []) == "Internal server error"
   end
 
   test "render any other" do
-    assert render_to_string(Scribe.ErrorView, "505.html", []) ==
-           "Internal server error"
+    assert render_to_string(ScribeWeb.ErrorView, "505.html", []) == "Internal server error"
   end
 end
