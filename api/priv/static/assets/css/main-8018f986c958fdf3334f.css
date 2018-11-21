@@ -1,0 +1,90 @@
+.mainContainer {
+    display: flex;
+    height: 100vh;
+    background-color: #FFFEF5;
+}
+
+.mainInner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 85px;
+}
+
+.mainHeader {
+    font-size: 32px;
+    color: #F2F1E7;
+}
+
+.mainContent {
+    flex: 1;
+}
+
+.mainText {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 50%;
+}
+
+.mainPrompt {
+    margin-bottom: 50px;
+    font-size: 60px;
+    color: #F5E9CB;
+}
+
+.mainAuthor {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #F2F1E7;
+}
+
+.fieldWrapper {
+    position: relative;
+    font-size: 60px;
+}
+
+.fieldInput {
+    overflow: auto;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    width: 100%;
+    padding: 0px;
+    z-index: 1;
+    border-style: none;
+    outline-style: none;
+    background-color: transparent;
+    cursor: pointer;
+    resize: none;
+}
+
+.fieldShadowInput {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    pointer-events: none;
+}
+
+.fieldShadowText {
+    overflow: auto;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    color: transparent;
+}
+
+.fieldPlaceholder {
+    color: #F2F1E7;
+}
+
+.fieldCountAnchor {
+    position: relative;
+}
+
+.fieldCount {
+    position: absolute;
+    top: 0px;
+    left: 10px;
+    color: #F2F1E7;
+}
