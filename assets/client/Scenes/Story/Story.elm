@@ -30,11 +30,11 @@ type alias State =
   Change Model Msg
 
 type alias Model =
-  { line : Line.Model
+  { line   : Line.Model
   , prompt : String
   , author : String
-  , email : String
-  , name : String
+  , email  : String
+  , name   : String
   }
 
 init : State
@@ -49,11 +49,11 @@ init =
 
 initModel : Line.Model -> Model
 initModel line =
-  { line = line
+  { line   = line
   , prompt = ""
   , author = ""
-  , email = ""
-  , name = ""
+  , email  = ""
+  , name   = ""
   }
 
 -- update
