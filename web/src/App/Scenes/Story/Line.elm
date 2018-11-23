@@ -1,4 +1,4 @@
-module Scenes.Story.Line.Line exposing (State, Model, Msg, init, update, view)
+module Scenes.Story.Line exposing (State, Model, Msg, init, update, view)
 
 import Html.Styled as H exposing (Html)
 import Html.Styled.Attributes exposing (id, value, placeholder, autofocus, maxlength, style)

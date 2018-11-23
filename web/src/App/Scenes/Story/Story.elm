@@ -5,7 +5,7 @@ import Html.Styled.Attributes exposing (value, placeholder)
 import Html.Styled.Events exposing (onInput, onSubmit)
 import Json.Encode as JE
 import Json.Decode as JD exposing (field)
-import Scenes.Story.Line.Line as Line
+import Scenes.Story.Line as Line
 import Views.Button as Button
 import Socket.Event exposing (Event)
 import Helpers exposing (Change, withCmd, withoutCmd, withEvent, withoutEvent, withoutEffects)
@@ -13,7 +13,6 @@ import Css exposing (..)
 import Styles.Fonts as Fonts
 import Styles.Colors as Colors
 import Styles.Mixins as Mixins
-
 
 -- constants
 room : String
@@ -87,7 +86,8 @@ update msg model =
         |> withEvent (submitLine model)
     SubmitOk _ ->
       model
-        |> withCmd (Navigation.newUrl "/thanks")
+        -- |> withCmd (Navigation.newUrl "/thanks")
+        |> withoutCmd
         |> withEvent leaveStory
 
 setLine : Model -> Line.State -> (Model, Cmd Msg)
@@ -104,20 +104,23 @@ setPrompt model result =
 -- events
 joinStory : Event Msg
 joinStory =
-  Channel.init room
-    |> Channel.onJoin JoinStory
-    |> Socket.Event.Join
+  Socket.Event.none
+  -- Channel.init room
+    -- |> Channel.onJoin JoinStory
+    -- |> Socket.Event.Join
 
 submitLine : Model -> Event Msg
 submitLine model =
-  Push.init "add:line" room
-    |> Push.withPayload (encodeLine model)
-    |> Push.onOk SubmitOk
-    |> Socket.Event.Push
+  Socket.Event.none
+  -- Push.init "add:line" room
+  --   |> Push.withPayload (encodeLine model)
+  --   |> Push.onOk SubmitOk
+  --   |> Socket.Event.Push
 
 leaveStory : Event Msg
 leaveStory =
-  Socket.Event.Leave room
+  Socket.Event.none
+  -- Socket.Event.Leave room
 
 -- request data
 type alias StoryPrompt =
@@ -125,7 +128,7 @@ type alias StoryPrompt =
   , name : String
   }
 
-decodePrompt : JD.Value -> Result String StoryPrompt
+decodePrompt : JD.Value -> Result JD.Error StoryPrompt
 decodePrompt =
   JD.decodeValue
     (JD.map2 StoryPrompt
@@ -135,9 +138,9 @@ decodePrompt =
 encodeLine : Model -> JE.Value
 encodeLine model =
   JE.object
-    [ ("text", JE.string model.line.value)
+    [ ("text",  JE.string model.line.value)
     , ("email", JE.string model.email)
-    , ("name", JE.string model.name)
+    , ("name",  JE.string model.name)
     ]
 
 -- view
