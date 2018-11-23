@@ -1,6 +1,6 @@
 module Router.Scene exposing (State, Model, Msg, init, update, view)
 
-import Html exposing (Html)
+import Html.Styled as H exposing (Html)
 import Css exposing (Color)
 import Router.Route as Route
 import Scenes.Story.Story as Story
@@ -17,11 +17,12 @@ type alias Model =
   }
 
 type Scene
-  = Story Story.Model
+  = Story  Story.Model
   | Thanks Thanks.Model
+  | NotFound
 
 type Msg
-  = StoryMsg Story.Msg
+  = StoryMsg  Story.Msg
   | ThanksMsg Thanks.Msg
 
 toState : (a -> Scene) -> (m -> Msg) -> Color -> Change a m -> Change Model Msg
@@ -38,11 +39,14 @@ init route =
     Route.Thanks ->
       Thanks.init
         |> toState Thanks ThanksMsg Thanks.background
+    Route.NotFound ->
+      { scene = NotFound, color = Css.hex "FF0000" }
+        |> withoutEffects
 
 -- update
 update : Msg -> Model -> State
-update msg model =
-  case ( msg, model.scene ) of
+update msgBox model =
+  case ( msgBox, model.scene ) of
     ( StoryMsg msg, Story story ) ->
       Story.update msg story
         |> toState Story StoryMsg Story.background
@@ -64,7 +68,9 @@ view { scene } =
   case scene of
     Story story ->
       Story.view story
-        |> Html.map StoryMsg
+        |> H.map StoryMsg
     Thanks thanks ->
       Thanks.view thanks
-        |> Html.map ThanksMsg
+        |> H.map ThanksMsg
+    NotFound ->
+      H.text "not found."
