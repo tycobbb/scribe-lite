@@ -1,13 +1,14 @@
 module Scenes.Thanks.Thanks exposing (Model, Msg, init, view, update, background)
 
-import Html exposing (..)
-import Html.Events exposing (onClick)
-import Css exposing (Color)
-import Navigation
-import Scenes.Thanks.Styles exposing (Classes(..), styles)
+import Html.Styled as H exposing (Html)
+import Html.Styled.Events exposing (onClick)
 import Views.Button as Button
+import Helpers exposing (Change, withoutEffects)
+import Css exposing (..)
+import Css.Global as CG
+import Styles.Fonts as Fonts
 import Styles.Colors as Colors
-import Helpers exposing (Change, withCmd, withoutEvent, withoutEffects)
+import Styles.Mixins as Mixins
 
 -- constants
 background : Color
@@ -34,21 +35,48 @@ update msg _ =
   case msg of
     RefreshPage ->
       None
-        |> withCmd (Navigation.newUrl "/")
-        |> withoutEvent
+        |> withoutEffects
+        -- |> withCmd (Navigation.newUrl "/")
+        -- |> withoutEvent
 
 -- view
-{ class } = styles
-
 view : Model -> Html Msg
 view _ =
-  div [ class Scene ]
-    [ div [ class Content ]
-      [ p [ class Message ]
-        [ text "Thanks for writing" ]
-      , p [ class Message ]
-        [ text "At 8PM tonight, today's story will be e-mailed to you." ]
-      , div [ class Button, onClick RefreshPage ]
+  sceneS []
+    [ sceneContentS []
+      [ messageS []
+        [ H.text "Thanks for writing" ]
+      , messageS []
+        [ H.text "At 8PM tonight, today's story will be e-mailed to you." ]
+      , buttonS [ onClick RefreshPage ]
         [ Button.view "Refresh Page" True ]
       ]
+    ]
+
+-- styles
+sceneS =
+  H.styled H.div
+    [ Mixins.scene
+    , justifyContent center
+    ]
+
+sceneContentS =
+  H.styled H.div
+    [ Mixins.sceneContent
+    ]
+
+messageS =
+  H.styled H.p
+    [ Fonts.lg
+    , color Colors.white
+    , CG.adjacentSiblings
+      [ CG.span
+        [ marginTop (px 45)
+        ]
+      ]
+    ]
+
+buttonS =
+  H.styled H.div
+    [ marginTop (px 65)
     ]

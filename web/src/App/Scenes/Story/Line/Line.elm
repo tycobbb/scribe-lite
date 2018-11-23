@@ -1,24 +1,33 @@
 module Scenes.Story.Line.Line exposing (State, Model, Msg, init, update, view)
 
-import Html exposing (..)
-import Html.Attributes exposing (id, value, placeholder, autofocus, maxlength)
-import Html.Events exposing (onWithOptions, onInput, keyCode)
+import Html.Styled as H exposing (Html)
+import Html.Styled.Attributes exposing (id, value, placeholder, autofocus, maxlength, style)
+import Html.Styled.Events exposing (onInput, preventDefaultOn, keyCode)
 import Browser.Dom as Dom
-import Json.Decode as Decode
+import Dict exposing (Dict)
+import Json.Decode as JD
 import Json.Decode.Extra as DecodeExt
 import Task
-import Scenes.Story.Line.Styles exposing (Classes(..), styles, inline, lineHeight)
-import Scenes.Story.Line.Keys as Keys
+import Css exposing (..)
+import Styles.Fonts as Fonts
+import Styles.Colors as Colors
+import Styles.Mixins as Mixins
 
 -- constants
 characterLimit : Int
 characterLimit = 150
 
+lineHeight : Float
+lineHeight = 81
+
 shadowInputId : String
 shadowInputId = "shadow-input"
 
--- state
-type alias State = (Model, Cmd Msg)
+-- model
+type alias State =
+  ( Model
+  , Cmd Msg
+  )
 
 type alias Model =
   { value: String
@@ -58,71 +67,127 @@ calculateHeight value =
 
 checkFieldHeight : Cmd Float
 checkFieldHeight =
-  Dom.Size.height VisibleContentWithBordersAndMargins shadowInputId
+  Dom.getElement shadowInputId
     |> Task.attempt
       (\result ->
         case result of
-          Ok height -> height
+          Ok rect -> rect.element.height
           Err _ -> 0.0)
 
 -- events
+space   : Int
+space   = Char.toCode ' '
+
+newline : Int
+newline = Char.toCode '\r'
 
 -- there's no simple way to selectively `preventDefault` in event handlers right
 -- now. solution lifted heavily from this issue:
 -- https://github.com/elm-lang/virtual-dom/issues/18
-filterIllegalKeys : String -> Attribute Msg
-filterIllegalKeys currentText =
+onKeypress : String -> H.Attribute Msg
+onKeypress currentText =
   let
-    options =
-      { stopPropagation = False, preventDefault = True }
-    wrapKey code =
-      if isIllegal code then Ok code else Err "ignored input"
     isIllegal code =
-      code == Keys.space && String.endsWith " " currentText ||
-      code == Keys.newline
+      code == space && String.endsWith " " currentText ||
+      code == newline
   in
-    onWithOptions "keypress" options
-      (keyCode
-        |> Decode.andThen (wrapKey >> DecodeExt.fromResult)
-        |> Decode.map (\_ -> None))
+    preventDefaultOn "keypress"
+      (JD.field "keyCode" JD.int
+        |> JD.map isIllegal
+        |> JD.map (Tuple.pair None))
 
 -- view
-{ class } = styles
-
 view : Model -> Html Msg
 view model =
-  div [ class Container ]
-    [ div [ id shadowInputId, class ShadowInput ]
-      [ shadowField model
-      ]
-    , field model
+  containerS []
+    [ viewShadowField model
+    , viewField model
     ]
 
-shadowField : Model -> Html Msg
-shadowField model =
+viewShadowField : Model -> Html Msg
+viewShadowField model =
+  if String.isEmpty model.value then
+    H.text ""
+  else
+    shadowInputS [ id shadowInputId ]
+      [ shadowFieldS []
+        [ shadowTextS []
+          [ H.text model.value
+          ]
+        , viewFieldCount model
+        ]
+      ]
+
+viewField : Model -> Html Msg
+viewField model =
+  let
+    placeholderText =
+      String.fromInt characterLimit ++ " Characters"
+  in
+    fieldS
+      [ fieldHeightI model.height
+      , autofocus True
+      , maxlength characterLimit
+      , onKeypress model.value
+      , onInput Change
+      , placeholder placeholderText
+      , value model.value
+      ] []
+
+viewFieldCount : Model -> Html Msg
+viewFieldCount model =
   let
     charactersLeft =
       characterLimit - (String.length model.value)
+    charactersText =
+      "  " ++ String.fromInt charactersLeft
   in
-    if String.isEmpty model.value then
-      text ""
-    else
-      span [ class ShadowField ]
-        [ span [ class ShadowText ]
-          [ text model.value ]
-        , span [ class Count ]
-          [ text ("  " ++ toString charactersLeft) ]
-        ]
+    fieldCountS []
+      [ H.text charactersText ]
 
-field : Model -> Html Msg
-field model =
-  textarea
-    [ class Input
-    , inline.height model.height
-    , autofocus True
-    , maxlength characterLimit
-    , filterIllegalKeys model.value
-    , onInput Change
-    , placeholder (toString characterLimit ++ " Characters")
-    , value model.value
-    ] []
+-- styles
+containerS =
+  H.styled H.div
+    [ Fonts.lg
+    , position relative
+    ]
+
+shadowInputS =
+  H.styled H.div
+    [ position absolute
+    , top (px 0)
+    , left (px 0)
+    , right (px 0)
+    , property "pointer-events" "none"
+    ]
+
+shadowFieldS =
+  H.styled H.span
+    [ fieldB
+    ]
+
+shadowTextS =
+  H.styled H.span
+    [ color transparent
+    ]
+
+fieldS =
+  H.styled H.textarea
+    [ fieldB
+    ]
+
+fieldCountS =
+  H.styled H.span
+    [ color Colors.gray0
+    ]
+
+fieldB : Style
+fieldB =
+  Css.batch
+    [ overflow auto
+    , property "word-wrap" "break-word"
+    , property "white-space" "pre-wrap"
+    ]
+
+fieldHeightI height =
+  style "height" (String.fromFloat height ++ "px")

@@ -6,9 +6,6 @@ import Html.Events exposing (onInput, onSubmit)
 import Css exposing (Color)
 import Json.Encode as JE
 import Json.Decode as JD exposing (field)
-import Navigation
-import Phoenix.Channel as Channel
-import Phoenix.Push as Push
 import Scenes.Story.Styles exposing (Classes(..), styles)
 import Scenes.Story.Line.Line as Line
 import Views.Button as Button

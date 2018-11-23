@@ -1,84 +1,96 @@
-module Scenes.Story.Styles exposing (Classes(..), styles)
+module Scenes.Story.Styles exposing (..)
 
 import Css exposing (..)
-import Styles.Mixins exposing (scene, sceneContent, textField)
-import Styles.Helpers exposing (Styles, stylesNamed)
 import Styles.Fonts as Fonts
 import Styles.Colors as Colors
+import Styles.Mixins as Mixins
 
-type Classes
-  = Scene
-  | Content
-  | Header
-  | Body
-  | Prompt
-  | Author
-  | EmailField
-  | SubmitRow
-  | NameField
-  | Visible
+scene : Style
+scene =
+  Css.batch
+    [ Mixins.scene
+    ]
 
-styles : Styles c m
-styles =
-  stylesNamed "Story"
-    [ class Scene
-      [ scene
-      ]
-    , class Content
-      [ sceneContent
-      ]
-    , class Header
-      [ Font.md
-      , alignSelf center
-      , color Colors.lightGray
-      ]
-    , class Body
-      [ animatesVisibility
-      , flex (int 1)
-      , displayFlex
-      , flexDirection column
-      , justifyContent center
-      ]
-    , class Prompt
-      [ marginBottom (px 60)
-      , Font.lg
-      , color Colors.secondary
-      ]
-    , class Author
-      [ marginBottom (px 20)
-      , Font.sm
-      , color Colors.lightGray
-      ]
-    , class EmailField
-      [ textField
-      , animatesVisibility
-      , Font.md
-      , marginTop (px 80)
-      , marginBottom (px 10)
-      , transform (translateY (px 20))
-      , color Colors.gray
-      ]
-    , class SubmitRow
-      [ animatesVisibility
-      , displayFlex
-      , justifyContent spaceBetween
-      , alignItems center
-      , transform (translateY (px 20))
-      ]
-    , class NameField
-      [ flex (int 1)
-      , textField
-      , Font.sm
-      , color Colors.gray
-      ]
-    , class Visible
-      [ opacity (int 1)
-      , transform none
-      ]
+content : Style
+content =
+  Css.batch
+    [ Mixins.sceneContent
+    ]
+
+header : Style
+header =
+  Css.batch
+    [ Fonts.md
+    , alignSelf center
+    , color Colors.gray0
+    ]
+
+body : Style
+body =
+  Css.batch
+    [ animatesVisibility
+    , flex (int 1)
+    , displayFlex
+    , flexDirection column
+    , justifyContent center
+    ]
+
+prompt : Style
+prompt =
+  Css.batch
+    [ marginBottom (px 60)
+    , Fonts.lg
+    , color Colors.secondary
+    ]
+
+author : Style
+author =
+  Css.batch
+    [ marginBottom (px 20)
+    , Fonts.sm
+    , color Colors.gray0
+    ]
+
+emailField : Style
+emailField =
+  Css.batch
+    [ Mixins.textField
+    , animatesVisibility
+    , marginTop (px 80)
+    , marginBottom (px 10)
+    , transform (translateY (px 20))
+    , Fonts.md
+    , color Colors.gray1
+    ]
+
+submitRow : Style
+submitRow =
+  Css.batch
+    [ animatesVisibility
+    , displayFlex
+    , justifyContent spaceBetween
+    , alignItems center
+    , transform (translateY (px 20))
+    ]
+
+nameField : Style
+nameField =
+  Css.batch
+    [ Mixins.textField
+    , flex (int 1)
+    , Fonts.sm
+    , color Colors.gray1
+    ]
+
+visible : Style
+visible =
+  Css.batch
+    [ opacity (int 1)
+    , transform none
     ]
 
 animatesVisibility : Style
 animatesVisibility =
-  batch
+  Css.batch
     [ property "transition" "opacity 0.2s, transform 0.2s"
     ]

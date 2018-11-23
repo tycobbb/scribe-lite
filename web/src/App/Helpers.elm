@@ -17,7 +17,9 @@ type alias Indexed a =
   }
 
 type alias Effects m =
-  ( Cmd m, Event m )
+  ( Cmd m
+  , Event m
+  )
 
 -- Change
 withoutEffects : a -> Change a m
@@ -77,9 +79,8 @@ withIndex index { model, effects } =
 -- Timers
 delay : Float -> a -> Cmd a
 delay time msg =
-  Process.sleep (Time.millisecond * time)
-    |> Task.andThen (always (Task.succeed msg))
-    |> Task.perform identity
+  Process.sleep (time * 1000)
+    |> Task.perform (\_ -> msg)
 
 async : m -> Cmd m
 async =

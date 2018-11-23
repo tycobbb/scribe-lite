@@ -2,8 +2,6 @@ module Main exposing (main)
 
 import Html exposing (..)
 import Html.Keyed as Keyed
-import Navigation
-import Phoenix.Socket as Socket
 import Router.Route as Route
 import Router.Scene as Scene
 import Socket.Event

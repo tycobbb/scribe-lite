@@ -1,22 +1,22 @@
 module Router.Route exposing (Route(..), route)
 
-import Navigation
-import UrlParser as Url exposing ((</>), s, top)
+import Url exposing (Url)
+import Url.Parser as Parser
 
 -- route parsing
 type Route
   = Story
   | Thanks
+  | NotFound
 
-route : Navigation.Location -> Route
-route location =
-  location
-    |> Url.parsePath routes
-    |> Maybe.withDefault Story
+toRoute : Url -> Route
+toRoute url =
+  Parser.parse route url
+    |> Maybe.withDefault NotFound
 
-routes : Url.Parser (Route -> c) c
-routes =
-  Url.oneOf
-    [ Url.map Story top
-    , Url.map Thanks (s "thanks")
+route : Parser.Parser (Route -> a) a
+route =
+  Parser.oneOf
+    [ Parser.map Story Parser.top
+    , Parser.map Thanks (Parser.s "thanks")
     ]

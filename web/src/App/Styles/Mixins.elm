@@ -1,11 +1,11 @@
 module Styles.Mixins exposing (..)
 
 import Css exposing (..)
-import Styles.Colors exposing (lightGray)
+import Styles.Colors exposing (gray0)
 
 scene : Style
 scene =
-  batch
+  Css.batch
     [ displayFlex
     , flexDirection column
     , width (vw 100)
@@ -15,7 +15,7 @@ scene =
 
 sceneContent : Style
 sceneContent =
-  batch
+  Css.batch
     [ displayFlex
     , flexDirection column
     , margin2 (px 60) (px 85)
@@ -23,13 +23,13 @@ sceneContent =
 
 textField : Style
 textField =
-  batch
+  Css.batch
     [ borderStyle none
     , outlineStyle none
     , backgroundColor transparent
     , cursor pointer
     , pseudoElement "placeholder"
-      [ color lightGray
+      [ color gray0
       , property "transition" "padding-left 0.15s"
       , focus
         [ paddingLeft (px 10)

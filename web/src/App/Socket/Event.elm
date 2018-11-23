@@ -1,41 +1,58 @@
 module Socket.Event exposing (..)
 
-import Phoenix.Socket as Socket
-import Phoenix.Channel as Channel
-import Phoenix.Push as Push
+-- scoket stub
+type Socket m
+  = Empty
 
-type Event m
-  = Join (Channel.Channel m)
-  | Leave String
-  | Push (Push.Push m)
-  | None
+empty : Socket m
+empty = Empty
 
 -- events
+type Event m
+  = None
+
+-- type Event m
+--   = Join (Channel.Channel m)
+--   | Leave String
+--   | Push (Push.Push m)
+--   | None
+
 none : Event m
 none = None
 
+-- none : Event m
+-- none = None
+
 -- actions
 map : (msg -> m) -> Event msg -> Event m
-map message event =
-  case event of
-    Join channel ->
-      Join (Channel.map message channel)
-    Leave name ->
-      Leave name
-    Push push ->
-      Push (Push.map message push)
-    None ->
-      None
+map mapMsg event =
+  None
 
-send : Socket.Socket m -> Event m -> (Socket.Socket m, Cmd (Socket.Msg m))
+-- map : (msg -> m) -> Event msg -> Event m
+-- map mapMsg event =
+--   case event of
+--     Join msg ->
+--       Join (Channel.map mapMsg msg)
+--     Leave name ->
+--       Leave name
+--     Push msg ->
+--       Push (Push.map mapMsg msg)
+--     None ->
+--       None
+
+send : Socket m -> Event m -> (Socket m, Cmd (Socket m))
 send socket event =
-  case event of
-    Join channel ->
-      Socket.join channel socket
-    Leave name ->
-      Socket.leave name socket
-    Push push ->
-      Socket.push push socket
-    None ->
-      (socket, Cmd.none)
+  (socket, Cmd.none)
+
+-- send : Socket.Socket m -> Event m -> (Socket.Socket m, Cmd (Socket.Msg m))
+-- send socket event =
+--   case event of
+--     Join channel ->
+--       Socket.join channel socket
+--     Leave name ->
+--       Socket.leave name socket
+--     Push push ->
+--       Socket.push push socket
+--     None ->
+--       (socket, Cmd.none)
 

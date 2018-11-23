@@ -1,113 +1,107 @@
 module Views.Button exposing (..)
 
 import Css exposing (..)
-import Html as H exposing (Html)
-import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (css, href, src)
+import Css.Global as CG
+import Html.Styled as H exposing (Html)
+import Html.Styled.Attributes exposing (class)
 import Styles.Fonts as Fonts
 import Styles.Colors as Colors
+
+-- constants
+chevronClass = "scribe-button-chevron"
 
 -- view
 view : String -> Bool -> Html m
 view title isInverted =
-  H.button
-    [ styles.classes
-      [ ( Element, True )
-      , ( Inverted, isInverted )
-      ]
-    ]
-    [ H.span []
+  buttonS isInverted []
+    [ titleS []
       [ H.text title
-      , H.div [ styles.class Chevron ] []
+      , chevronS [ class chevronClass ] []
       ]
     ]
 
-viewButton =
-  H.button
-    [ css
-      [ Fonts.medium
-      , padding (px 0)
-      , border unset
-      , backgroundImage unset
-      , backgroundColor transparent
-      , cursor pointer
-      , setColor Colors.primary Colors.primaryHighlight
-      , property "transition" "color 0.15s"
-      , chevronStyles
-        [ property "transition" "background-color 0.15s"
+-- styles
+buttonS isInverted =
+  H.styled H.button
+    [ padding (px 0)
+    , border unset
+    , Fonts.medium
+    , paletteB isInverted
+    , backgroundImage unset
+    , backgroundColor transparent
+    , cursor pointer
+    , property "transition" "color 0.15s"
+    , focus
+      [ outline none
+      ]
+    ]
+
+titleS =
+  H.styled H.span
+    [ displayFlex
+    , position relative
+    ]
+
+chevronS =
+  let
+    legB = Css.batch
+      [ property "content" "''"
+      , display block
+      , position absolute
+      , width (px 3)
+      , height (px 20)
+      , borderRadius (px 1.5)
+      , property "transition" "background-color 0.15s"
+      ]
+  in
+    H.styled H.div
+      [ paddingLeft (px 10)
+      , paddingRight (px 12)
+      , before
+        [ legB
+        , transforms
+          [ rotate (deg -45)
+          , translateY (px 3)
+          ]
         ]
-      , focus
-        [ outline none
-        ]
-      , children
-        [ span
-          [ displayFlex
-          , position relative
+      , after
+        [ legB
+        , bottom (px 0)
+        , transforms
+          [ rotate (deg 45)
+          , translateY (px -3)
           ]
         ]
       ]
-    ]
 
--- css
-inverted =
+chevronB : List Style -> Style
+chevronB styles =
   Css.batch
-    [ setColor Colors.secondary Colors.secondaryHighlight
-    ]
-
-chevron =
-  Css.batch
-    [ paddingLeft (px 10)
-    , paddingRight (px 12)
-    , before
-      [ chevronLeg
-      , transforms
-        [ rotate (deg -45)
-        , translateY (px 3)
-        ]
-      ]
-    , after
-      [ chevronLeg
-      , bottom (px 0)
-      , transforms
-        [ rotate (deg 45)
-        , translateY (px -3)
-        ]
-      ]
-    ]
-  ]
-
-chevronLeg =
-  Css.batch
-    [ property "content" "''"
-    , display block
-    , position absolute
-    , width (px 3)
-    , height (px 20)
-    , borderRadius (px 1.5)
-    ]
-
-chevronStyles : List Style -> Style
-chevronStyles styles =
-  Css.batch
-    [ descendants
-      [ chevron
+    [ CG.descendants
+      [ CG.class chevronClass
         [ before styles
         , after styles
         ]
       ]
     ]
 
-setColor : ColorValue c -> ColorValue c1 -> Style
-setColor base highlight =
-  Css.batch
-    [ color base
-    , chevronStyles
-      [ backgroundColor base
-      ]
-    , hover
-      [ color highlight
-      , chevronStyles
-        [ backgroundColor highlight
+paletteB : Bool -> Style
+paletteB isInverted =
+  let
+    (base, highlight) =
+      if isInverted
+        then (Colors.secondary, Colors.secondaryHighlight)
+        else (Colors.primary, Colors.primaryHighlight)
+  in
+    Css.batch
+      [ color base
+      , chevronB
+        [ backgroundColor base
+        ]
+      , hover
+        [ color highlight
+        , chevronB
+          [ backgroundColor highlight
+          ]
         ]
       ]
-    ]

@@ -1,64 +1,66 @@
-module MainStyles exposing (Classes(..), styles, inline, duration)
+module MainStyles exposing (duration)
 
 import Css exposing (..)
-import Styles.Helpers exposing (Styles, Rules, stylesNamed, rules)
 
 -- constants
-translation : number
-translation = 50
-
 duration : number
 duration = 300
 
--- stylesheet
-type Classes
-  = Stage
-  | Scene
-  | SceneReady
-  | SceneIn
-  | SceneOut
+translation : number
+translation = 50
 
-styles : Styles c m
-styles =
-  stylesNamed "Main"
-    [ class Stage
+-- stylesheet
+stage : Style
+stage =
+  Css.batch
       [ position relative
       , transition ["background-color"]
       ]
-    , class Scene
-      [
-      ]
-    , class SceneReady
-      [ position absolute
-      , top (px 0)
-      , left (px 0)
-      , right (px 0)
-      , transition ["top", "opacity"]
-      ]
-    , class SceneIn
-      [ top (px translation)
-      , opacity (int 0)
-      ]
-    , class SceneOut
-      [ top (px -translation)
-      , opacity (int 0)
-      ]
+
+scene : Style
+scene =
+  Css.batch
+    [
+    ]
+
+sceneReady : Style
+sceneReady =
+  Css.batch
+    [ position absolute
+    , top (px 0)
+    , left (px 0)
+    , right (px 0)
+    , transition ["top", "opacity"]
+    ]
+
+sceneIn : Style
+sceneIn =
+  Css.batch
+    [ top (px translation)
+    , opacity (int 0)
+    ]
+
+sceneOut : Style
+sceneOut =
+  Css.batch
+    [ top (px -translation)
+    , opacity (int 0)
     ]
 
 transition : List String -> Style
 transition attributes =
   let
     durationPart =
-      " " ++ toString duration ++ "ms"
-    toTransition =
-      (flip String.append) durationPart
+      " " ++ String.fromInt duration ++ "ms"
+    toTransition attribute =
+      attribute ++ durationPart
   in
     attributes
       |> List.map toTransition >> String.join ", "
       |> property "transition"
 
 -- inline
-inline : { backgroundColor : ColorValue c -> Rules m }
-inline =
-  { backgroundColor = backgroundColor >> List.singleton >> rules
-  }
+-- inline : { backgroundColor : ColorValue c -> Rules m }
+-- inline =
+--   { backgroundColor = backgroundColor >> List.singleton >> rules
+--   }

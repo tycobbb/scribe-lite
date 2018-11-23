@@ -22,12 +22,12 @@ secondaryBackground : Css.Color
 secondaryBackground =
   hex "FFFEF5"
 
-lightGray : Css.Color
-lightGray =
+gray0 : Css.Color
+gray0 =
   hex "F2F1E7"
 
-gray : Css.Color
-gray =
+gray1 : Css.Color
+gray1 =
   hex "93938B"
 
 black : Css.Color
