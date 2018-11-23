@@ -1,17 +1,19 @@
 module Scenes.Story.Story exposing (State, Model, Msg, init, view, update, background)
 
-import Html exposing (..)
-import Html.Attributes exposing (value, placeholder)
-import Html.Events exposing (onInput, onSubmit)
-import Css exposing (Color)
+import Html.Styled as H exposing (Html)
+import Html.Styled.Attributes exposing (value, placeholder)
+import Html.Styled.Events exposing (onInput, onSubmit)
 import Json.Encode as JE
 import Json.Decode as JD exposing (field)
-import Scenes.Story.Styles exposing (Classes(..), styles)
 import Scenes.Story.Line.Line as Line
 import Views.Button as Button
 import Socket.Event exposing (Event)
-import Styles.Colors as Colors
 import Helpers exposing (Change, withCmd, withoutCmd, withEvent, withoutEvent, withoutEffects)
+import Css exposing (..)
+import Styles.Fonts as Fonts
+import Styles.Colors as Colors
+import Styles.Mixins as Mixins
+
 
 -- constants
 room : String
@@ -139,71 +141,123 @@ encodeLine model =
     ]
 
 -- view
-{ class, classes } = styles
-
 view : Model -> Html Msg
 view model =
-  div [ class Scene ]
-    [ div [ class Content ]
-      [ div [ class Header ]
-        [ text "Friday May 24 (2017)" ]
-      , lineForm model
-        [ p [ class Author ]
-          [ text model.author ]
-        , p [ class Prompt ]
-          [ text model.prompt ]
+  sceneS []
+    [ sceneContentS []
+      [ headerS []
+        [ H.text "Friday May 24 (2017)" ]
+      , viewForm model
+        [ authorS []
+          [ H.text model.author ]
+        , promptS []
+          [ H.text model.prompt ]
         , Line.view model.line
-            |> Html.map LineMsg
-        , emailField model
-        , submitRow model
-          [ nameField model
+            |> H.map LineMsg
+        , viewEmailField model
+        , viewSubmitRow model
+          [ viewNameField model
           , Button.view "Submit" False
           ]
         ]
       ]
     ]
 
-lineForm : Model -> List (Html Msg) -> Html Msg
-lineForm model =
-  if (not << String.isEmpty) model.prompt then
-    form
-      [ class Body
-      , onSubmit SubmitLine
-      ]
+viewForm : Model -> List (Html Msg) -> Html Msg
+viewForm model =
+  if String.isEmpty model.prompt then
+    (\_ -> H.text "")
   else
-    (\_ -> text "")
+    formS [ onSubmit SubmitLine ]
 
-emailField : Model -> Html Msg
-emailField model =
-  if (not << String.isEmpty) model.line.value then
-    input
-      [ class EmailField
-      , onInput ChangeEmail
+viewEmailField : Model -> Html Msg
+viewEmailField model =
+  if String.isEmpty model.line.value then
+    H.text ""
+  else
+    emailFieldS
+      [ onInput ChangeEmail
       , placeholder "E-mail Address"
       , value model.email
       ] []
-  else
-    text ""
 
-submitRow : Model -> List (Html Msg) -> Html Msg
-submitRow model =
-  if List.all (not << String.isEmpty) [model.line.value, model.email] then
-    div [ class SubmitRow ]
-  else
-    (\_ -> text "")
-
-nameField : Model -> Html Msg
-nameField model =
-  input
-    [ class NameField
-    , onInput ChangeName
+viewNameField : Model -> Html Msg
+viewNameField model =
+  nameFieldS
+    [ onInput ChangeName
     , placeholder "Name to Display (Optional)"
     , value model.name
     ] []
 
-showsAfter : List String -> Classes -> Attribute m
-showsAfter values klass =
-  classes
-    [ (klass, True)
-    , (Visible, List.all (not << String.isEmpty) values)
+viewSubmitRow : Model -> List (Html Msg) -> Html Msg
+viewSubmitRow model =
+  if List.any String.isEmpty [model.line.value, model.email] then
+    (\_ -> H.text "")
+  else
+    submitRowS []
+
+-- styles
+sceneS =
+  H.styled H.div
+    [ Mixins.scene
+    ]
+
+sceneContentS =
+  H.styled H.div
+    [ Mixins.sceneContent
+    ]
+
+headerS =
+  H.styled H.header
+    [ Fonts.md
+    , alignSelf center
+    , color Colors.gray0
+    ]
+
+formS =
+  H.styled H.form
+    [ flex (int 1)
+    , displayFlex
+    , flexDirection column
+    , justifyContent center
+    ]
+
+authorS =
+  H.styled H.p
+    [ marginBottom (px 20)
+    , Fonts.sm
+    , color Colors.gray0
+    ]
+
+promptS =
+  H.styled H.p
+    [ marginBottom (px 60)
+    , Fonts.lg
+    , color Colors.secondary
+    ]
+
+emailFieldS =
+  H.styled H.input
+    [ Mixins.textField
+    , marginTop (px 80)
+    , marginBottom (px 10)
+    , transform (translateY (px 20))
+    , Fonts.md
+    , color Colors.gray1
+    ]
+
+nameFieldS =
+  H.styled H.input
+    [ Mixins.textField
+    , flex (int 1)
+    , Fonts.sm
+    , color Colors.gray1
+    ]
+
+submitRowS =
+  H.styled H.div
+    [ displayFlex
+    , justifyContent spaceBetween
+    , alignItems center
+    , transform (translateY (px 20))
     ]
