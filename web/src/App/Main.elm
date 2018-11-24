@@ -1,21 +1,27 @@
 module Main exposing (main)
 
-import Html exposing (..)
-import Html.Keyed as Keyed
+import Html.Styled as H exposing (Html)
+import Html.Styled.Attributes exposing (css, style)
+import Html.Styled.Keyed as HK
 import Router.Route as Route
 import Router.Scene as Scene
-import Socket.Event
-import MainStyles exposing (Classes(..), styles, inline, duration)
+import Browser
+import Browser.Navigation as Nav
+import Url exposing (Url)
+import Socket exposing (Socket)
+import Css exposing (..)
 import Helpers exposing (..)
 
 -- main
-main : Program Never Model Msg
+main : Program Int Model Msg
 main =
-  Navigation.program UrlChange
+  Browser.application
     { init = init
     , view = view
     , update = update
     , subscriptions = subscriptions
+    , onUrlChange = ChangedUrl
+    , onUrlRequest = ClickedLink
     }
 
 -- constants
@@ -25,22 +31,25 @@ serverUrl =
 
 -- state
 type alias State =
-  ( Model, Cmd Msg )
+  ( Model
+  , Cmd Msg
+  )
 
 type alias Model =
-  { stage : Stage
-  , socket : Socket.Socket Msg
+  { stage  : Stage
+  , socket : Socket Msg
+  , key    : Nav.Key
   }
 
-init : Navigation.Location -> State
-init location =
-  withoutCmd initModel
-    |> setScene Active (initScene location 0)
+init _ url key =
+  withoutCmd (initModel key)
+    |> setScene Active (initScene url 0)
 
-initModel : Model
-initModel =
-  { stage = Blank
+initModel : Nav.Key -> Model
+initModel key =
+  { stage  = Blank
   , socket = initSocket
+  , key    = key
   }
 
 -- stage
@@ -59,22 +68,23 @@ type alias IndexedScene =
 
 -- update
 type Msg
-  = UrlChange Navigation.Location
+  = SceneMsg (Indexed Scene.Msg)
   | SocketMsg (Socket.Msg Msg)
-  | SceneMsg (Indexed Scene.Msg)
   | StartTransition
   | EndTransition
+  | ChangedUrl Url
+  | ClickedLink Browser.UrlRequest
 
 update : Msg -> Model -> State
-update msg model =
-  case (msg, model.stage) of
-    ( UrlChange location, Active scene ) ->
+update msgBox model =
+  case (msgBox, model.stage) of
+    ( ChangedUrl location, Active scene ) ->
       withoutCmd model
         |> setScene (stageFrom scene (Transition False)) (initScene location (scene.index + 1))
         |> joinCmd (async StartTransition)
     ( SocketMsg msg, _ ) ->
       withoutCmd model
-        |> setSocket (Socket.update msg model.socket)
+        -- |> setSocket (Socket.update msg model.socket)
     ( SceneMsg msg, Active scene ) ->
       withoutCmd model
         |> updateScene Active msg scene
@@ -93,64 +103,63 @@ update msg model =
 -- subscriptions
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Socket.listen model.socket SocketMsg
+  Sub.none
+  -- Socket.listen model.socket SocketMsg
 
 -- view
-{ class } = styles
+view : Model -> Browser.Document Msg
+view model =
+  { title = "Scribe"
+  , body  = [ H.toUnstyled (viewStage model) ]
+  }
 
-view : Model -> Html Msg
-view { stage } =
+viewStage : Model -> Html Msg
+viewStage { stage } =
   case stage of
     Active scene ->
-      keyedStage scene
-        [ keyedScene scene Nothing
+      viewStageKeyed scene
+        [ viewSceneWithKey scene Nothing
         ]
     Transition False { scene, nextScene } ->
-      keyedStage scene
-        [ keyedScene scene (Just SceneReady)
-        , keyedScene nextScene (Just SceneIn)
+      viewStageKeyed scene
+        [ viewSceneWithKey scene Nothing
+        , viewSceneWithKey nextScene (Just sceneInB)
         ]
     Transition True { scene, nextScene } ->
-      keyedStage nextScene
-        [ keyedScene scene (Just SceneOut)
-        , keyedScene nextScene (Just SceneReady)
+      viewStageKeyed nextScene
+        [ viewSceneWithKey scene (Just sceneOutB)
+        , viewSceneWithKey nextScene Nothing
         ]
     Blank ->
-      div [ class Stage ]
-        [ text ""
-        ]
+      stageS []
+        [ ( "blank", H.text "" ) ]
 
-keyedStage : IndexedScene -> List ( String, Html m ) -> Html m
-keyedStage { item } =
-  Keyed.node "div"
-    [ class Stage
-    , inline.backgroundColor item.color
-    ]
+viewStageKeyed : IndexedScene -> List ( String, Html Msg ) -> Html Msg
+viewStageKeyed { item } =
+  stageS
+    [ backgroundColorI item.color ]
 
-keyedScene : IndexedScene -> Maybe Classes -> ( String, Html Msg )
-keyedScene scene animation =
-  ( "scene-" ++ toString scene.index
-  , sceneView scene animation
+viewScene : IndexedScene -> Maybe Style -> Html Msg
+viewScene scene animations =
+  let
+    styles =
+      List.filterMap identity [ animations ]
+  in
+    sceneS [ css styles ]
+      [ Scene.view scene.item
+          |> H.map (indexable SceneMsg scene.index)
+      ]
+
+viewSceneWithKey : IndexedScene -> Maybe Style -> ( String, Html Msg )
+viewSceneWithKey scene animations =
+  ( "scene-" ++ String.fromInt scene.index
+  , viewScene scene animations
   )
 
-sceneView : IndexedScene -> Maybe Classes -> Html Msg
-sceneView scene animation =
-  section [ sceneClasses animation ]
-    [ Scene.view scene.item
-        |> Html.map (indexable SceneMsg scene.index)
-    ]
-
-sceneClasses : Maybe Classes -> Attribute m
-sceneClasses animation =
-  [ Just Scene, animation ]
-    |> List.filterMap identity
-    |> List.map (\a -> ( a, True ))
-    |> styles.classes
-
 -- scenes
-initScene : Navigation.Location -> Int -> Change IndexedScene Scene.Msg
+initScene : Url -> Int -> Change IndexedScene Scene.Msg
 initScene location index =
-  Scene.init (Route.route location)
+  Scene.init (Route.toRoute location)
     |> withIndex index
 
 setScene : (IndexedScene -> Stage) -> Change IndexedScene Scene.Msg -> State -> State
@@ -184,32 +193,90 @@ asSceneMsg =
   indexable SceneMsg
 
 -- socket
-initSocket : Socket.Socket msg
+initSocket : Socket msg
 initSocket =
-  Socket.init serverUrl
-    |> Socket.withDebug
+  Socket.init
+  -- Socket.init serverUrl
+  --   |> Socket.withDebug
 
-setSocket : ( Socket.Socket Msg, Cmd (Socket.Msg Msg) ) -> State -> State
+setSocket : ( Socket Msg, Cmd (Socket.Msg Msg) ) -> State -> State
 setSocket ( socket, socketCmd ) ( model, cmd ) =
   { model | socket = socket }
     |> withCmd cmd
     |> joinCmd (Cmd.map SocketMsg socketCmd)
 
-sendEvent : Socket.Event.Event Msg -> State -> State
-sendEvent event (model, cmd)  =
-  let
-    (socket, socketCmd) =
-      Socket.Event.send model.socket event
-  in
-    { model | socket = socket }
-      |> withCmd cmd
-      |> joinCmd (Cmd.map SocketMsg socketCmd)
+sendEvent : Socket.Event Msg -> State -> State
+sendEvent _ state  =
+  state
+  -- let
+  --   (socket, socketCmd) =
+  --     Socket.Event.send model.socket event
+  -- in
+  --   { model | socket = socket }
+  --     |> withCmd cmd
+  --     |> joinCmd (Cmd.map SocketMsg socketCmd)
 
 -- transitions
 stageFrom : IndexedScene -> (IndexedScenes -> Stage) -> IndexedScene -> Stage
-stageFrom scene asStage =
-  (IndexedScenes scene) >> asStage
+stageFrom source asStage =
+  (IndexedScenes source) >> asStage
 
 stageTo : IndexedScene -> (IndexedScenes -> Stage) -> IndexedScene -> Stage
-stageTo scene asStage =
-  ((flip IndexedScenes) scene) >> asStage
+stageTo destination asStage =
+  (\source -> IndexedScenes source destination) >> asStage
+
+-- styles
+duration    : number
+duration    = 300
+
+translation : number
+translation = 50
+
+stageS attrs =
+  HK.node "div"
+    (attrs ++
+    [ css
+      [ position relative
+      , transitionB ["background-color"]
+      ]
+    ]
+    )
+
+sceneS =
+  H.styled H.section
+    [ transitionB ["top", "opacity"]
+    , position absolute
+    , top (px 0)
+    , left (px 0)
+    , right (px 0)
+    ]
+
+sceneInB : Style
+sceneInB =
+  Css.batch
+    [ top (px translation)
+    , opacity (int 0)
+    ]
+
+sceneOutB : Style
+sceneOutB =
+  Css.batch
+    [ top (px -translation)
+    , opacity (int 0)
+    ]
+
+transitionB : List String -> Style
+transitionB attributes =
+  let
+    durationPart =
+      " " ++ String.fromInt duration ++ "ms"
+    toTransition attribute =
+      attribute ++ durationPart
+  in
+    attributes
+      |> List.map toTransition >> String.join ", "
+      |> property "transition"
+
+backgroundColorI : Color -> H.Attribute Msg
+backgroundColorI color =
+  style "backgroundColor" (String.fromInt color.red)

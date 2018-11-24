@@ -19,21 +19,21 @@ medium =
 -- styles
 sm : Style
 sm =
-  batch
+  Css.batch
     [ fontSize (px 24)
     , regular
     ]
 
 md : Style
 md =
-  batch
+  Css.batch
     [ fontSize (px 32)
     , regular
     ]
 
 lg : Style
 lg =
-  batch
+  Css.batch
     [ fontSize (px 60)
     , medium
     ]

@@ -7,7 +7,7 @@ import Json.Encode as JE
 import Json.Decode as JD exposing (field)
 import Scenes.Story.Line as Line
 import Views.Button as Button
-import Socket.Event exposing (Event)
+import Socket
 import Helpers exposing (Change, withCmd, withoutCmd, withEvent, withoutEvent, withoutEffects)
 import Css exposing (..)
 import Styles.Fonts as Fonts
@@ -102,24 +102,24 @@ setPrompt model result =
     |> Result.withDefault { model | prompt = "You're starting from a blank slate." }
 
 -- events
-joinStory : Event Msg
+joinStory : Socket.Event Msg
 joinStory =
-  Socket.Event.none
+  Socket.noEvent
   -- Channel.init room
     -- |> Channel.onJoin JoinStory
     -- |> Socket.Event.Join
 
-submitLine : Model -> Event Msg
+submitLine : Model -> Socket.Event Msg
 submitLine model =
-  Socket.Event.none
+  Socket.noEvent
   -- Push.init "add:line" room
   --   |> Push.withPayload (encodeLine model)
   --   |> Push.onOk SubmitOk
   --   |> Socket.Event.Push
 
-leaveStory : Event Msg
+leaveStory : Socket.Event Msg
 leaveStory =
-  Socket.Event.none
+  Socket.noEvent
   -- Socket.Event.Leave room
 
 -- request data

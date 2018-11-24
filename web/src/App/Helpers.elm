@@ -3,22 +3,22 @@ module Helpers exposing (..)
 import Process
 import Task
 import Time
-import Socket.Event exposing (Event)
+import Socket
 
 -- Types
 type alias Change a m =
-  { model : a
+  { model   : a
   , effects : Effects m
   }
 
 type alias Indexed a =
   { index : Int
-  , item : a
+  , item  : a
   }
 
 type alias Effects m =
   ( Cmd m
-  , Event m
+  , Socket.Event m
   )
 
 -- Change
@@ -36,7 +36,7 @@ mapChange asModel asMsg { model, effects } =
 mapEffects : (m -> m1) -> Effects m -> Effects m1
 mapEffects asMsg ( cmd, event ) =
   ( Cmd.map asMsg cmd
-  , Socket.Event.map asMsg event
+  , Socket.map asMsg event
   )
 
 -- Cmd
@@ -55,7 +55,7 @@ joinCmd otherCmd ( model, cmd ) =
   )
 
 -- Socket.Event
-withEvent : Event m -> ( a, Cmd m ) -> Change a m
+withEvent : Socket.Event m -> ( a, Cmd m ) -> Change a m
 withEvent event ( model, cmd ) =
   { model = model
   , effects = ( cmd, event )
@@ -63,7 +63,7 @@ withEvent event ( model, cmd ) =
 
 withoutEvent : ( a, Cmd m ) -> Change a m
 withoutEvent =
-  withEvent Socket.Event.none
+  withEvent Socket.noEvent
 
 -- Indexing
 indexable : (Indexed a -> b) -> Int -> a -> b
@@ -72,7 +72,7 @@ indexable other index =
 
 withIndex : Int -> Change a m -> Change (Indexed a) m
 withIndex index { model, effects } =
-  { model = Indexed index model
+  { model   = Indexed index model
   , effects = effects
   }
 

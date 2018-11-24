@@ -1,15 +1,19 @@
-module Socket.Event exposing (..)
+module Socket exposing (..)
 
--- scoket stub
-type Socket m
-  = Empty
+-- socket
+type Socket m =
+  None
 
-empty : Socket m
-empty = Empty
+init : Socket m
+init = None
 
--- events
+-- msg
+type Msg m
+  = NoMsg
+
+-- event
 type Event m
-  = None
+  = NoEvent
 
 -- type Event m
 --   = Join (Channel.Channel m)
@@ -17,8 +21,8 @@ type Event m
 --   | Push (Push.Push m)
 --   | None
 
-none : Event m
-none = None
+noEvent : Event m
+noEvent = NoEvent
 
 -- none : Event m
 -- none = None
@@ -26,7 +30,7 @@ none = None
 -- actions
 map : (msg -> m) -> Event msg -> Event m
 map mapMsg event =
-  None
+  NoEvent
 
 -- map : (msg -> m) -> Event msg -> Event m
 -- map mapMsg event =
@@ -53,6 +57,6 @@ send socket event =
 --       Socket.leave name socket
 --     Push push ->
 --       Socket.push push socket
---     None ->
+--     NoEvent ->
 --       (socket, Cmd.none)
 
