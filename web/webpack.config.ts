@@ -13,7 +13,6 @@ const config: webpack.Configuration = {
     publicPath: "/",
     filename: "bundle.js"
   },
-  devtool: "source-map",
   resolve: {
     extensions: [
       ".js", ".elm"

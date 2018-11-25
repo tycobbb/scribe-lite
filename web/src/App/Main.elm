@@ -13,7 +13,7 @@ import Css exposing (..)
 import Helpers exposing (..)
 
 -- main
-main : Program Int Model Msg
+main : Program (Maybe Int) Model Msg
 main =
   Browser.application
     { init = init

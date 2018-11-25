@@ -1,1 +1,2 @@
-export { Server } from "./Server"
+import { Server } from "./Server"
+Server.start()
