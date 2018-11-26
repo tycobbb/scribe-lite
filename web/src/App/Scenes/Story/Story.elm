@@ -201,7 +201,7 @@ viewSubmitRow model =
 
 -- styles
 sceneS =
-  H.styled H.div
+  H.styled H.section
     [ Mixins.scene
     ]
 

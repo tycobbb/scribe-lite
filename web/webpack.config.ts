@@ -1,4 +1,3 @@
-import path    from "path"
 import webpack from "webpack"
 
 const config: webpack.Configuration = {
@@ -23,13 +22,16 @@ const config: webpack.Configuration = {
     rules: [{
       test: /\.elm$/,
       exclude: [/elm-stuff/, /node_modules/],
-      use: {
-        loader: 'elm-webpack-loader',
+      use: [{
+        loader: "elm-hot-webpack-loader"
+      }, {
+        loader: "elm-webpack-loader",
         options: {
-          cwd: path.resolve('./'),
-          debug: true
+          cwd:   __dirname,
+          debug: true,
+          forceWatch: true
         }
-      }
+      }]
     }]
   },
   plugins: [

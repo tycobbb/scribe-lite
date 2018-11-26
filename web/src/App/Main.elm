@@ -233,17 +233,17 @@ translation : number
 translation = 50
 
 stageS attrs =
-  HK.node "div"
+  HK.node "main"
     (attrs ++
-    [ css
-      [ position relative
-      , transitionB ["background-color"]
+      [ css
+        [ position relative
+        , transitionB ["background-color"]
+        ]
       ]
-    ]
     )
 
 sceneS =
-  H.styled H.section
+  H.styled H.div
     [ transitionB ["top", "opacity"]
     , position absolute
     , top (px 0)

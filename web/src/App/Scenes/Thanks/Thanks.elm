@@ -55,7 +55,7 @@ view _ =
 
 -- styles
 sceneS =
-  H.styled H.div
+  H.styled H.section
     [ Mixins.scene
     , justifyContent center
     ]

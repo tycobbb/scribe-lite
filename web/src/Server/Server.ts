@@ -2,13 +2,16 @@ import express from "express"
 import { Root } from "./Root"
 
 export class Server {
-  private app = express()
+  private port = 3000
+  private app  = express()
 
   private async start() {
     this.setConfig()
     await this.addHotReloading()
     this.addRoutes()
-    this.app.listen(3000)
+    this.app.listen(this.port)
+
+    console.log(`hosting app @ http://localhost:${this.port}`)
   }
 
   private setConfig() {
