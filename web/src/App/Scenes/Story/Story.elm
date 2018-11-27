@@ -48,8 +48,8 @@ init =
 initModel : Line.Model -> Model
 initModel line =
   { line   = line
-  , prompt = ""
-  , author = ""
+  , prompt = "Test prompt."
+  , author = "Test Author"
   , email  = ""
   , name   = ""
   }

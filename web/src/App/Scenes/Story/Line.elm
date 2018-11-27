@@ -174,6 +174,7 @@ shadowTextS =
 fieldS =
   H.styled H.textarea
     [ fieldB
+    , resize none
     ]
 
 fieldCountS =
