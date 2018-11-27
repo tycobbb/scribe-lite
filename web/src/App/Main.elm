@@ -7,6 +7,7 @@ import Router.Route as Route
 import Router.Scene as Scene
 import Browser
 import Browser.Navigation as Nav
+import Styles.Theme as Theme
 import Url exposing (Url)
 import Socket exposing (Socket)
 import Css exposing (..)
@@ -110,7 +111,10 @@ subscriptions model =
 view : Model -> Browser.Document Msg
 view model =
   { title = "Scribe"
-  , body  = [ H.toUnstyled (viewStage model) ]
+  , body  =
+    [ H.toUnstyled (viewStage model)
+    , H.toUnstyled Theme.global
+    ]
   }
 
 viewStage : Model -> Html Msg
