@@ -7,7 +7,7 @@ jbin = ./node_modules/.bin
 # -- run/stop --
 ## starts the dev server
 s:
-	$(jbin)/ts-node src/Server
+	$(jbin)/ts-node index.ts
 ## kills the running dev server
 s/kill:
 	lsof -t -i:3000 | xargs kill

@@ -17,6 +17,7 @@ export class Server {
   private setConfig() {
     this.app.set("views", __dirname)
     this.app.set("view engine",  "ejs")
+    this.app.use(express.static("public"))
   }
 
   private async addHotReloading() {
