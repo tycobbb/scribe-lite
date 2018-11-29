@@ -1,4 +1,7 @@
-module Socket exposing (..)
+port module Socket exposing (..)
+
+import Json.Encode as JE
+import Json.Decode as JD
 
 -- socket
 type Socket m =
@@ -7,13 +10,61 @@ type Socket m =
 init : Socket m
 init = None
 
+port send : JE.Value -> Cmd msg
+port recv : (JD.Value -> msg) -> Sub msg
+
+listen : (Msg -> msg) -> Sub msg
+listen toMsg =
+  recv (\data -> data |> (JD.decodeValue decodeMessage) |> Debug.log "listen" |> (\_ -> toMsg NoMsg))
+
+-- message
+type alias Message =
+  { name    : String
+  , payload : Payload JD.Value
+  }
+
+type alias Payload v =
+  Result Error v
+
+decodeMessage : JD.Decoder Message
+decodeMessage =
+  JD.map2 Message
+    (JD.field "name" JD.string)
+    (decodePayload)
+
+decodePayload : JD.Decoder (Payload JD.Value)
+decodePayload =
+  let
+    toResult error data =
+      data
+        |> Result.fromMaybe error
+        |> Result.mapError (Maybe.withDefault unknownError)
+  in
+    JD.map2 toResult
+      (JD.maybe (JD.field "error" decodeError))
+      (JD.maybe (JD.field "data" JD.value))
+
+-- error
+type alias Error =
+  { message : String
+  }
+
+decodeError : JD.Decoder Error
+decodeError =
+  JD.map Error
+    (JD.field "message" JD.string)
+
+unknownError : Error
+unknownError =
+  Error "Unknown Error."
+
 -- msg
-type Msg m
+type Msg
   = NoMsg
 
 -- event
 type Event m
-  = NoEvent
+  = Unknown
 
 -- type Event m
 --   = Join (Channel.Channel m)
@@ -21,8 +72,8 @@ type Event m
 --   | Push (Push.Push m)
 --   | None
 
-noEvent : Event m
-noEvent = NoEvent
+unknown : Event m
+unknown = Unknown
 
 -- none : Event m
 -- none = None
@@ -30,7 +81,7 @@ noEvent = NoEvent
 -- actions
 map : (msg -> m) -> Event msg -> Event m
 map mapMsg event =
-  NoEvent
+  Unknown
 
 -- map : (msg -> m) -> Event msg -> Event m
 -- map mapMsg event =
@@ -44,9 +95,9 @@ map mapMsg event =
 --     None ->
 --       None
 
-send : Socket m -> Event m -> (Socket m, Cmd (Socket m))
-send socket event =
-  (socket, Cmd.none)
+snd : Socket m -> Event m -> (Socket m, Cmd (Socket m))
+snd sock event =
+  (sock, Cmd.none)
 
 -- send : Socket.Socket m -> Event m -> (Socket.Socket m, Cmd (Socket.Msg m))
 -- send socket event =
@@ -57,6 +108,6 @@ send socket event =
 --       Socket.leave name socket
 --     Push push ->
 --       Socket.push push socket
---     NoEvent ->
+--     Unknown ->
 --       (socket, Cmd.none)
 

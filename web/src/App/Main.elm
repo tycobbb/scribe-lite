@@ -7,6 +7,7 @@ import Router.Route as Route
 import Router.Scene as Scene
 import Browser
 import Browser.Navigation as Nav
+import Json.Encode as JE
 import Styles.Theme as Theme
 import Url exposing (Url)
 import Socket exposing (Socket)
@@ -43,7 +44,8 @@ type alias Model =
   }
 
 init _ url key =
-  withoutCmd (initModel key)
+  initModel key
+    |> withCmd (Socket.send (JE.int 2))
     |> setScene Active (initScene url 0)
 
 initModel : Nav.Key -> Model
@@ -70,7 +72,7 @@ type alias IndexedScene =
 -- update
 type Msg
   = SceneMsg (Indexed Scene.Msg)
-  | SocketMsg (Socket.Msg Msg)
+  | SocketMsg Socket.Msg
   | StartTransition
   | EndTransition
   | ChangedUrl Url
@@ -104,7 +106,8 @@ update msgBox model =
 -- subscriptions
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Sub.none
+  Socket.listen SocketMsg
+  -- Sub.none
   -- Socket.listen model.socket SocketMsg
 
 -- view
@@ -203,7 +206,7 @@ initSocket =
   -- Socket.init serverUrl
   --   |> Socket.withDebug
 
-setSocket : ( Socket Msg, Cmd (Socket.Msg Msg) ) -> State -> State
+setSocket : ( Socket Msg, Cmd (Socket.Msg) ) -> State -> State
 setSocket ( socket, socketCmd ) ( model, cmd ) =
   { model | socket = socket }
     |> withCmd cmd

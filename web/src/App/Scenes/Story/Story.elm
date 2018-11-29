@@ -104,14 +104,14 @@ setPrompt model result =
 -- events
 joinStory : Socket.Event Msg
 joinStory =
-  Socket.noEvent
+  Socket.unknown
   -- Channel.init room
     -- |> Channel.onJoin JoinStory
     -- |> Socket.Event.Join
 
 submitLine : Model -> Socket.Event Msg
 submitLine model =
-  Socket.noEvent
+  Socket.unknown
   -- Push.init "add:line" room
   --   |> Push.withPayload (encodeLine model)
   --   |> Push.onOk SubmitOk
@@ -119,7 +119,7 @@ submitLine model =
 
 leaveStory : Socket.Event Msg
 leaveStory =
-  Socket.noEvent
+  Socket.unknown
   -- Socket.Event.Leave room
 
 -- request data

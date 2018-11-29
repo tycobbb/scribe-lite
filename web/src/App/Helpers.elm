@@ -63,7 +63,7 @@ withEvent event ( model, cmd ) =
 
 withoutEvent : ( a, Cmd m ) -> Change a m
 withoutEvent =
-  withEvent Socket.noEvent
+  withEvent Socket.unknown
 
 -- Indexing
 indexable : (Indexed a -> b) -> Int -> a -> b
