@@ -1,4 +1,4 @@
-module Scenes.Story.Story exposing (State, Model, Msg, init, view, update, background)
+module Scenes.Story.Story exposing (State, Model, Msg, init, subscriptions, update, view, background)
 
 import Html.Styled as H exposing (Html)
 import Html.Styled.Attributes exposing (value, placeholder)
@@ -8,7 +8,7 @@ import Json.Decode as JD exposing (field)
 import Scenes.Story.Line as Line
 import Views.Button as Button
 import Socket
-import Helpers exposing (Change, withCmd, withoutCmd, withEvent, withoutEvent, withoutEffects)
+import Helpers exposing (Change, withCmd, withoutCmd, joinCmd, withEvent, withoutEvent, withoutEffects)
 import Css exposing (..)
 import Styles.Fonts as Fonts
 import Styles.Colors as Colors
@@ -43,13 +43,14 @@ init =
   in
     initModel line
       |> withCmd (Cmd.map LineMsg lineCmd)
-      |> withEvent joinStory
+      |> joinCmd (Socket.push joinStory)
+      |> withoutEvent
 
 initModel : Line.Model -> Model
 initModel line =
   { line   = line
-  , prompt = "Test prompt."
-  , author = "Test Author"
+  , prompt = ""
+  , author = ""
   , email  = ""
   , name   = ""
   }
@@ -59,7 +60,7 @@ type Msg
   = LineMsg Line.Msg
   | ChangeEmail String
   | ChangeName String
-  | JoinStory JE.Value
+  | SetupStory (Result Socket.Error StoryPrompt)
   | SubmitLine
   | SubmitOk JE.Value
 
@@ -76,8 +77,8 @@ update msg model =
     ChangeName name ->
       { model | name = name }
         |> withoutEffects
-    JoinStory raw ->
-      decodePrompt raw
+    SetupStory prompt ->
+      prompt
         |> setPrompt model
         |> withoutEffects
     SubmitLine ->
@@ -95,19 +96,41 @@ setLine model (field, cmd) =
   { model | line = field }
     |> withCmd (Cmd.map LineMsg cmd)
 
-setPrompt : Model -> Result e StoryPrompt -> Model
+setPrompt : Model -> Result Socket.Error StoryPrompt -> Model
 setPrompt model result =
   result
     |> Result.map (\{ text, name } -> { model | prompt = text, author = name })
-    |> Result.withDefault { model | prompt = "You're starting from a blank slate." }
+    |> Result.withDefault model
 
--- events
-joinStory : Socket.Event Msg
+-- subscriptions
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  Socket.subscribe SetupStory setupStory
+
+-- socket.messages
+joinStory : Socket.Message
 joinStory =
-  Socket.unknown
-  -- Channel.init room
-    -- |> Channel.onJoin JoinStory
-    -- |> Socket.Event.Join
+  { name = "STORY.JOIN"
+  , data = JE.null
+  }
+
+-- socket.events
+type alias StoryPrompt =
+  { text : String
+  , name : String
+  }
+
+setupStory : Socket.Evt StoryPrompt
+setupStory =
+  let
+    decoder =
+      JD.map2 StoryPrompt
+        (JD.field "text" JD.string)
+        (JD.field "name" JD.string)
+  in
+    { name    = "STORY.SETUP"
+    , decoder = decoder
+    }
 
 submitLine : Model -> Socket.Event Msg
 submitLine model =
@@ -122,19 +145,7 @@ leaveStory =
   Socket.unknown
   -- Socket.Event.Leave room
 
--- request data
-type alias StoryPrompt =
-  { text : String
-  , name : String
-  }
-
-decodePrompt : JD.Value -> Result JD.Error StoryPrompt
-decodePrompt =
-  JD.decodeValue
-    (JD.map2 StoryPrompt
-      (field "text" JD.string)
-      (field "name" JD.string))
-
+-- payloads
 encodeLine : Model -> JE.Value
 encodeLine model =
   JE.object

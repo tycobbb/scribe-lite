@@ -45,7 +45,7 @@ type alias Model =
 
 init _ url key =
   initModel key
-    |> withCmd (Socket.send (JE.int 2))
+    |> withoutCmd
     |> setScene Active (initScene url 0)
 
 initModel : Nav.Key -> Model
@@ -106,7 +106,14 @@ update msgBox model =
 -- subscriptions
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Socket.listen SocketMsg
+  case model.stage of
+    Active { index, item } ->
+      Scene.subscriptions item
+        |> Sub.map (\msg -> SceneMsg (Indexed index msg))
+    _ ->
+      Sub.none
+        -- |> Sub.map SceneMsg
+        -- |> Sub.map (Indexed index)
   -- Sub.none
   -- Socket.listen model.socket SocketMsg
 

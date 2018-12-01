@@ -11,13 +11,14 @@ export class Socket {
 
     setTimeout(() => {
       this.recv.send({
-        name: "JOIN_STORY",
-        // data: {
-        //   title: "cool"
-        // }
-        error: {
-          message: "Nope."
+        name: "STORY.SETUP",
+        data: {
+          text: "This is the first line.",
+          name: "Mr. Socket"
         }
+        // error: {
+        //   message: "Nope."
+        // }
       })
     }, 500);
   }

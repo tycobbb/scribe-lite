@@ -1,4 +1,4 @@
-module Router.Scene exposing (State, Model, Msg, init, update, view)
+module Router.Scene exposing (State, Model, Msg, init, subscriptions, update, view)
 
 import Html.Styled as H exposing (Html)
 import Css exposing (Color)
@@ -42,6 +42,16 @@ init route =
     Route.NotFound ->
       { scene = NotFound, color = Css.hex "FF0000" }
         |> withoutEffects
+
+-- subscriptions
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  case model.scene of
+    Story story ->
+      Story.subscriptions story
+        |> Sub.map StoryMsg
+    _ ->
+      Sub.none
 
 -- update
 update : Msg -> Model -> State
