@@ -184,9 +184,10 @@ initScene location index =
     |> Indexed.withIndex index
 
 setScene : (IndexedScene -> Stage) -> (IndexedScene, Cmd Scene.Msg) -> State -> State
-setScene asStage ( scene, _ ) ( model, cmd ) =
+setScene asStage ( scene, sceneCmd ) ( model, cmd ) =
   { model | stage = asStage scene }
     |> State.withCmd cmd
+    |> State.joinCmd (Cmd.map (asSceneMsg scene.index) sceneCmd)
 
 updateScenes : (IndexedScenes -> Stage) -> Indexed Scene.Msg -> IndexedScenes -> State -> State
 updateScenes asStage msg { scene, nextScene } =
