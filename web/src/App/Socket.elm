@@ -13,10 +13,6 @@ init = None
 port send : JE.Value -> Cmd msg
 port recv : (JD.Value -> msg) -> Sub msg
 
-listen : (Msg -> msg) -> Sub msg
-listen toMsg =
-  recv (\data -> data |> (JD.decodeValue decodeResponse) |> Debug.log "listen" |> (\_ -> toMsg NoMsg))
-
 -- envelope
 type alias Envelope p =
   { name    : String
@@ -37,7 +33,7 @@ decodeEnvelope decodeP =
     (JD.field "name" JD.string)
     (decodeP)
 
--- message
+-- message (push)
 type alias Message =
   { name : String
   , data : JE.Value
@@ -49,7 +45,7 @@ push message =
     |> encodeEnvelope
     |> send
 
--- event
+-- event (subscribe)
 type alias Evt a =
   { name    : String
   , decoder : JD.Decoder a
@@ -64,14 +60,14 @@ subscribe : (Result Error a -> msg) -> Evt a -> Sub msg
 subscribe toMsg event =
   recv (\data ->
     data
-      |> decodeEventResponse event
+      |> decodeEventPayload event
       |> toMsg)
 
-decodeEventResponse : Evt a -> JD.Value -> Payload a
-decodeEventResponse event data =
+decodeEventPayload : Evt a -> JD.Value -> Payload a
+decodeEventPayload event data =
   data
     |> decodeValue decodeResponse
-    |> Result.andThen (filteredToEvent event.name)
+    |> Result.andThen (filterEventByName event.name)
     |> Result.andThen (decodeValue event.decoder)
 
 decodeValue : JD.Decoder a -> JD.Value -> Result Error a
@@ -79,8 +75,8 @@ decodeValue decoder value =
   JD.decodeValue decoder value
     |> Result.mapError DecodingError
 
-filteredToEvent : String -> Response a -> Payload a
-filteredToEvent name response =
+filterEventByName : String -> Response a -> Payload a
+filterEventByName name response =
   if response.name /= name
     then Err MismatchedEvent
     else response.payload

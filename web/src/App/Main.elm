@@ -106,16 +106,21 @@ update msgBox model =
 -- subscriptions
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  case model.stage of
-    Active { index, item } ->
+  let
+    fromScene { index, item } =
       Scene.subscriptions item
         |> Sub.map (\msg -> SceneMsg (Indexed index msg))
-    _ ->
-      Sub.none
-        -- |> Sub.map SceneMsg
-        -- |> Sub.map (Indexed index)
-  -- Sub.none
-  -- Socket.listen model.socket SocketMsg
+  in
+    case model.stage of
+      Active scene ->
+        fromScene scene
+      Transition _ { scene, nextScene } ->
+        Sub.batch
+          [ fromScene scene
+          , fromScene nextScene
+          ]
+      _ ->
+        Sub.none
 
 -- view
 view : Model -> Browser.Document Msg
