@@ -5,15 +5,17 @@ import Css exposing (Color)
 import Router.Route as Route
 import Scenes.Story.Story as Story
 import Scenes.Thanks.Thanks as Thanks
-import Helpers exposing (Change, mapChange, withoutEffects)
+import State
 
 -- state
 type alias State =
-  Change Model Msg
+  ( Model
+  , Cmd Msg
+  )
 
 type alias Model =
-  { scene : Scene
-  , color : Color
+  { color : Color
+  , scene : Scene
   }
 
 type Scene
@@ -25,9 +27,9 @@ type Msg
   = StoryMsg  Story.Msg
   | ThanksMsg Thanks.Msg
 
-toState : (a -> Scene) -> (m -> Msg) -> Color -> Change a m -> Change Model Msg
-toState asModel asMsg color =
-  (mapChange asModel asMsg) >> (setColor color)
+toState : (a -> Scene) -> (m -> Msg) -> Color -> (a, Cmd m) -> State
+toState toScene toMsg color =
+  State.map (toScene >> (Model color)) toMsg
 
 -- init
 init : Route.Route -> State
@@ -41,7 +43,7 @@ init route =
         |> toState Thanks ThanksMsg Thanks.background
     Route.NotFound ->
       { scene = NotFound, color = Css.hex "FF0000" }
-        |> withoutEffects
+        |> State.withNoCmd
 
 -- subscriptions
 subscriptions : Model -> Sub Msg
@@ -64,13 +66,8 @@ update msgBox model =
       Thanks.update msg thanks
         |> toState Thanks ThanksMsg Thanks.background
     _ ->
-      withoutEffects model
-
-setColor : Color -> Change Scene Msg -> Change Model Msg
-setColor color { model, effects } =
-  { model = Model model color
-  , effects = effects
-  }
+      model
+        |> State.withNoCmd
 
 -- view
 view : Model -> Html Msg

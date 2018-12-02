@@ -8,6 +8,7 @@ import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Decode.Extra as DecodeExt
 import Task
+import State
 import Css exposing (..)
 import Styles.Fonts as Fonts
 import Styles.Colors as Colors
@@ -30,17 +31,20 @@ type alias State =
   )
 
 type alias Model =
-  { value: String
-  , height: Float
+  { value  : String
+  , height : Float
   }
 
 init : State
 init =
-  ( { value = ""
-    , height = lineHeight * 2
-    }
-  , calculateHeight ""
-  )
+  initModel
+    |> State.withCmd (calculateHeight "")
+
+initModel : Model
+initModel =
+  { value  = ""
+  , height = lineHeight * 2
+  }
 
 -- update
 type Msg
@@ -71,8 +75,8 @@ checkFieldHeight =
     |> Task.attempt
       (\result ->
         case result of
-          Ok rect -> rect.element.height
-          Err _ -> 0.0)
+          Ok  rect -> rect.element.height
+          Err _    -> 0.0)
 
 -- events
 space   : Int

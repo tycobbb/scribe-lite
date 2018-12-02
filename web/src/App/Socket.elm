@@ -3,13 +3,7 @@ port module Socket exposing (..)
 import Json.Encode as JE
 import Json.Decode as JD
 
--- socket
-type Socket m =
-  None
-
-init : Socket m
-init = None
-
+-- ports
 port send : JE.Value -> Cmd msg
 port recv : (JD.Value -> msg) -> Sub msg
 
@@ -117,56 +111,3 @@ decodeError =
 unknownError : Error
 unknownError =
   ResponseError (ServiceError "Unknown error.")
-
--- event
-type Msg
-  = NoMsg
-
-type Event m
-  = Unknown
-
--- type Event m
---   = Join (Channel.Channel m)
---   | Leave String
---   | Push (Push.Push m)
---   | None
-
-unknown : Event m
-unknown = Unknown
-
--- none : Event m
--- none = None
-
--- actions
-map : (msg -> m) -> Event msg -> Event m
-map mapMsg event =
-  Unknown
-
--- map : (msg -> m) -> Event msg -> Event m
--- map mapMsg event =
---   case event of
---     Join msg ->
---       Join (Channel.map mapMsg msg)
---     Leave name ->
---       Leave name
---     Push msg ->
---       Push (Push.map mapMsg msg)
---     None ->
---       None
-
-snd : Socket m -> Event m -> (Socket m, Cmd (Socket m))
-snd sock event =
-  (sock, Cmd.none)
-
--- send : Socket.Socket m -> Event m -> (Socket.Socket m, Cmd (Socket.Msg m))
--- send socket event =
---   case event of
---     Join channel ->
---       Socket.join channel socket
---     Leave name ->
---       Socket.leave name socket
---     Push push ->
---       Socket.push push socket
---     Unknown ->
---       (socket, Cmd.none)
-

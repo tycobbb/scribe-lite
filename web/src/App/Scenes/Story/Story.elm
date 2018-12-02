@@ -7,25 +7,23 @@ import Json.Encode as JE
 import Json.Decode as JD exposing (field)
 import Scenes.Story.Line as Line
 import Views.Button as Button
+import State
 import Socket
-import Helpers exposing (Change, withCmd, withoutCmd, joinCmd, withEvent, withoutEvent, withoutEffects)
 import Css exposing (..)
 import Styles.Fonts as Fonts
 import Styles.Colors as Colors
 import Styles.Mixins as Mixins
 
 -- constants
-room : String
-room =
-  "story:unified"
-
 background : Color
 background =
   Colors.secondaryBackground
 
 -- state
 type alias State =
-  Change Model Msg
+  ( Model
+  , Cmd Msg
+  )
 
 type alias Model =
   { line   : Line.Model
@@ -40,11 +38,11 @@ init =
   let
     (line, lineCmd) =
       Line.init
+        |> State.mapCmd LineMsg
   in
     initModel line
-      |> withCmd (Cmd.map LineMsg lineCmd)
-      |> joinCmd (Socket.push joinStory)
-      |> withoutEvent
+      |> State.withCmd lineCmd
+      |> State.joinCmd (Socket.push joinStory)
 
 initModel : Line.Model -> Model
 initModel line =
@@ -70,31 +68,28 @@ update msg model =
     LineMsg lineMsg ->
       Line.update lineMsg model.line
         |> setLine model
-        |> withoutEvent
     ChangeEmail email ->
       { model | email = email }
-        |> withoutEffects
+        |> State.withNoCmd
     ChangeName name ->
       { model | name = name }
-        |> withoutEffects
+        |> State.withNoCmd
     SetupStory prompt ->
       prompt
         |> setPrompt model
-        |> withoutEffects
+        |> State.withNoCmd
     SubmitLine ->
       model
-        |> withoutCmd
-        |> withEvent (submitLine model)
+        |> State.withCmd (submitLine model)
     SubmitOk _ ->
       model
-        -- |> withCmd (Navigation.newUrl "/thanks")
-        |> withoutCmd
-        |> withEvent leaveStory
+        -- |> State.withCmd (Navigation.newUrl "/thanks")
+        |> State.withCmd leaveStory
 
 setLine : Model -> Line.State -> (Model, Cmd Msg)
 setLine model (field, cmd) =
   { model | line = field }
-    |> withCmd (Cmd.map LineMsg cmd)
+    |> State.withCmd (Cmd.map LineMsg cmd)
 
 setPrompt : Model -> Result Socket.Error StoryPrompt -> Model
 setPrompt model result =
@@ -132,17 +127,17 @@ setupStory =
     , decoder = decoder
     }
 
-submitLine : Model -> Socket.Event Msg
+submitLine : Model -> Cmd Msg
 submitLine model =
-  Socket.unknown
+  Cmd.none
   -- Push.init "add:line" room
   --   |> Push.withPayload (encodeLine model)
   --   |> Push.onOk SubmitOk
   --   |> Socket.Event.Push
 
-leaveStory : Socket.Event Msg
+leaveStory : Cmd Msg
 leaveStory =
-  Socket.unknown
+  Cmd.none
   -- Socket.Event.Leave room
 
 -- payloads

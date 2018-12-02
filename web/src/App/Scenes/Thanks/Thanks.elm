@@ -3,7 +3,7 @@ module Scenes.Thanks.Thanks exposing (Model, Msg, init, view, update, background
 import Html.Styled as H exposing (Html)
 import Html.Styled.Events exposing (onClick)
 import Views.Button as Button
-import Helpers exposing (Change, withoutEffects)
+import State
 import Css exposing (..)
 import Css.Global as CG
 import Styles.Fonts as Fonts
@@ -16,28 +16,30 @@ background =
   Colors.primary
 
 -- init
-type alias State
-  = Change Model Msg
+type alias State =
+  ( Model
+  , Cmd Msg
+  )
 
 type Model
   = None
 
 init : State
 init =
-  withoutEffects None
+  None
+    |> State.withNoCmd
 
 -- update
 type Msg
   = RefreshPage
 
 update : Msg -> Model -> State
-update msg _ =
+update msg model =
   case msg of
     RefreshPage ->
-      None
-        |> withoutEffects
-        -- |> withCmd (Navigation.newUrl "/")
-        -- |> withoutEvent
+      model
+        -- |> State.withCmd (Navigation.newUrl "/")
+        |> State.withNoCmd
 
 -- view
 view : Model -> Html Msg
