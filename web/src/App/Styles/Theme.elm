@@ -1,8 +1,8 @@
 module Styles.Theme exposing (global)
 
-import Html.Styled exposing (Html)
 import Css exposing (..)
 import Css.Global as CG
+import Html.Styled exposing (Html)
 import Styles.Fonts as Fonts
 
 -- theme

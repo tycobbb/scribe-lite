@@ -17,6 +17,6 @@ toRoute url =
 route : Parser.Parser (Route -> a) a
 route =
   Parser.oneOf
-    [ Parser.map Story Parser.top
+    [ Parser.map Story  (Parser.top)
     , Parser.map Thanks (Parser.s "thanks")
     ]

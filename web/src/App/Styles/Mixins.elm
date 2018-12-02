@@ -1,7 +1,7 @@
 module Styles.Mixins exposing (..)
 
 import Css exposing (..)
-import Styles.Colors exposing (gray0)
+import Styles.Colors as Colors
 
 scene : Style
 scene =
@@ -29,7 +29,7 @@ textField =
     , backgroundColor transparent
     , cursor pointer
     , pseudoElement "placeholder"
-      [ color gray0
+      [ color Colors.gray0
       , property "transition" "padding-left 0.15s"
       , focus
         [ paddingLeft (px 10)

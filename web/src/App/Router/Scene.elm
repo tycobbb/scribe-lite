@@ -1,10 +1,12 @@
 module Router.Scene exposing (State, Model, Msg, init, subscriptions, update, view)
 
+import Css
 import Html.Styled as H exposing (Html)
-import Css exposing (Color)
+
 import Router.Route as Route
 import Scenes.Story.Story as Story
 import Scenes.Thanks.Thanks as Thanks
+import Session exposing (Session)
 import State
 
 -- state
@@ -14,7 +16,7 @@ type alias State =
   )
 
 type alias Model =
-  { color : Color
+  { color : Css.Color
   , scene : Scene
   }
 
@@ -27,7 +29,7 @@ type Msg
   = StoryMsg  Story.Msg
   | ThanksMsg Thanks.Msg
 
-toState : (a -> Scene) -> (m -> Msg) -> Color -> (a, Cmd m) -> State
+toState : (a -> Scene) -> (m -> Msg) -> Css.Color -> (a, Cmd m) -> State
 toState toScene toMsg color =
   State.map (toScene >> (Model color)) toMsg
 
@@ -56,14 +58,14 @@ subscriptions model =
       Sub.none
 
 -- update
-update : Msg -> Model -> State
-update msgBox model =
+update : Msg -> Model -> Session -> State
+update msgBox model session =
   case ( msgBox, model.scene ) of
     ( StoryMsg msg, Story story ) ->
-      Story.update msg story
+      Story.update msg story session
         |> toState Story StoryMsg Story.background
     ( ThanksMsg msg, Thanks thanks ) ->
-      Thanks.update msg thanks
+      Thanks.update msg thanks session
         |> toState Thanks ThanksMsg Thanks.background
     _ ->
       model

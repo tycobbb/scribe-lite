@@ -5,18 +5,20 @@ export class Socket {
   }
 
   start() {
-    switch (data.name) {
-      case "STORY.JOIN":
-        setTimeout(() => {
-          this.recv.send({
-            name: "STORY.SETUP",
-            data: {
-              text: "This is the first line.",
-              name: "Mr. Socket"
-            }
-          })
-        }, 100)
-      default: break;
-    }
+    this.send.subscribe((data) => {
+      setTimeout(() => {
+        switch (data.name) {
+          case "STORY.JOIN":
+            this.recv.send({
+              name: "STORY.SETUP",
+              data: {
+                text: "This is the first line.",
+                name: "Mr. Socket"
+              }
+            })
+          default: break;
+        }
+      }, 100)
+    })
   }
 }

@@ -1,14 +1,17 @@
 module Scenes.Thanks.Thanks exposing (Model, Msg, init, view, update, background)
 
-import Html.Styled as H exposing (Html)
-import Html.Styled.Events exposing (onClick)
-import Views.Button as Button
-import State
+import Browser.Navigation as Nav
 import Css exposing (..)
 import Css.Global as CG
+import Html.Styled as H exposing (Html)
+import Html.Styled.Events exposing (onClick)
+
+import Session exposing (Session)
+import State
 import Styles.Fonts as Fonts
 import Styles.Colors as Colors
 import Styles.Mixins as Mixins
+import Views.Button as Button
 
 -- constants
 background : Color
@@ -33,13 +36,12 @@ init =
 type Msg
   = RefreshPage
 
-update : Msg -> Model -> State
-update msg model =
+update : Msg -> Model -> Session -> State
+update msg model session =
   case msg of
     RefreshPage ->
       model
-        -- |> State.withCmd (Navigation.newUrl "/")
-        |> State.withNoCmd
+        |> State.withCmd (Nav.pushUrl session.key "/")
 
 -- view
 view : Model -> Html Msg

@@ -1,18 +1,21 @@
 module Scenes.Story.Story exposing (State, Model, Msg, init, subscriptions, update, view, background)
 
+import Browser.Navigation as Nav
+import Css exposing (..)
 import Html.Styled as H exposing (Html)
 import Html.Styled.Attributes exposing (value, placeholder)
 import Html.Styled.Events exposing (onInput, onSubmit)
 import Json.Encode as JE
 import Json.Decode as JD exposing (field)
+
 import Scenes.Story.Line as Line
-import Views.Button as Button
-import State
+import Session exposing (Session)
 import Socket
-import Css exposing (..)
+import State
 import Styles.Fonts as Fonts
 import Styles.Colors as Colors
 import Styles.Mixins as Mixins
+import Views.Button as Button
 
 -- constants
 background : Color
@@ -62,8 +65,8 @@ type Msg
   | SubmitLine
   | SubmitOk JE.Value
 
-update : Msg -> Model -> State
-update msg model =
+update : Msg -> Model -> Session -> State
+update msg model session =
   case msg of
     LineMsg lineMsg ->
       Line.update lineMsg model.line
@@ -83,8 +86,8 @@ update msg model =
         |> State.withCmd (submitLine model)
     SubmitOk _ ->
       model
-        -- |> State.withCmd (Navigation.newUrl "/thanks")
-        |> State.withCmd leaveStory
+        |> State.withCmd (Nav.pushUrl session.key "/thanks")
+        |> State.joinCmd leaveStory
 
 setLine : Model -> Line.State -> (Model, Cmd Msg)
 setLine model (field, cmd) =

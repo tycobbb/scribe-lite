@@ -4,6 +4,7 @@ import Css exposing (..)
 import Css.Global as CG
 import Html.Styled as H exposing (Html)
 import Html.Styled.Attributes exposing (class)
+
 import Styles.Fonts as Fonts
 import Styles.Colors as Colors
 

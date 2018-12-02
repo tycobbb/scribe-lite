@@ -1,20 +1,22 @@
 module Main exposing (main)
 
+import Browser
+import Browser.Navigation as Nav
+import Css exposing (..)
 import Html.Styled as H exposing (Html)
 import Html.Styled.Attributes exposing (css, style)
 import Html.Styled.Keyed as HK
+import Json.Encode as JE
+import Url exposing (Url)
+
+import Indexed exposing (Indexed)
 import Router.Route as Route
 import Router.Scene as Scene
-import Browser
-import Browser.Navigation as Nav
-import Json.Encode as JE
+import Socket
 import State
 import Styles.Theme as Theme
-import Indexed exposing (Indexed)
-import Url exposing (Url)
-import Socket
+import Session exposing (Session)
 import Timers
-import Css exposing (..)
 
 -- main
 main : Program (Maybe Int) Model Msg
@@ -40,8 +42,8 @@ type alias State =
   )
 
 type alias Model =
-  { stage : Stage
-  , key   : Nav.Key
+  { stage   : Stage
+  , session : Session
   }
 
 init _ url key =
@@ -51,8 +53,8 @@ init _ url key =
 
 initModel : Nav.Key -> Model
 initModel key =
-  { stage  = Blank
-  , key    = key
+  { stage   = Blank
+  , session = Session key
   }
 
 -- stage
@@ -196,10 +198,14 @@ updateScenes asStage msg { scene, nextScene } =
     identity
 
 updateScene : (IndexedScene -> Stage) -> Indexed Scene.Msg -> IndexedScene -> State -> State
-updateScene asStage msg scene =
-  Scene.update msg.item scene.item
-    |> Indexed.withIndex scene.index
-    |> setScene asStage
+updateScene asStage msg scene state =
+  let
+    ( { session }, _) = state
+  in
+    (Scene.update msg.item scene.item session
+      |> Indexed.withIndex scene.index
+      |> setScene asStage)
+      state
 
 asSceneMsg : Int -> Scene.Msg -> Msg
 asSceneMsg =

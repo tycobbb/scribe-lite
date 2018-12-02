@@ -1,15 +1,16 @@
 module Scenes.Story.Line exposing (State, Model, Msg, init, update, view)
 
+import Browser.Dom as Dom
+import Css exposing (..)
+import Dict exposing (Dict)
 import Html.Styled as H exposing (Html)
 import Html.Styled.Attributes exposing (id, value, placeholder, autofocus, maxlength, style)
 import Html.Styled.Events exposing (onInput, preventDefaultOn, keyCode)
-import Browser.Dom as Dom
-import Dict exposing (Dict)
 import Json.Decode as JD
 import Json.Decode.Extra as DecodeExt
 import Task
+
 import State
-import Css exposing (..)
 import Styles.Fonts as Fonts
 import Styles.Colors as Colors
 import Styles.Mixins as Mixins
@@ -56,11 +57,14 @@ update : Msg -> Model -> State
 update msg model =
   case msg of
     None ->
-      ( model, Cmd.none )
+      model
+        |> State.withNoCmd
     Change value ->
-      ( { model | value = value }, calculateHeight value )
+      { model | value = value }
+        |> State.withCmd (calculateHeight value)
     Resize height ->
-      ( { model | height = lineHeight + height }, Cmd.none )
+      { model | height = lineHeight + height }
+        |> State.withNoCmd
 
 -- commands
 calculateHeight : String -> Cmd Msg
@@ -85,9 +89,6 @@ space   = Char.toCode ' '
 newline : Int
 newline = Char.toCode '\r'
 
--- there's no simple way to selectively `preventDefault` in event handlers right
--- now. solution lifted heavily from this issue:
--- https://github.com/elm-lang/virtual-dom/issues/18
 onKeypress : String -> H.Attribute Msg
 onKeypress currentText =
   let
