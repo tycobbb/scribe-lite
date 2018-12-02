@@ -62,8 +62,8 @@ type Msg
   | ChangeEmail String
   | ChangeName String
   | SetupStory (Result Socket.Error StoryPrompt)
-  | SubmitLine
-  | SubmitOk JE.Value
+  | AddLine
+  | AddLineOk (Result Socket.Error Bool)
 
 update : Msg -> Model -> Session -> State
 update msg model session =
@@ -81,11 +81,11 @@ update msg model session =
       prompt
         |> setPrompt model
         |> State.withNoCmd
-    SubmitLine ->
+    AddLine ->
       model
-        |> State.withCmd (submitLine model)
-    SubmitOk _ ->
-      model
+        |> State.withCmd (addLine model)
+    AddLineOk _ ->
+      Debug.log "add line ok" model
         |> State.withCmd (Nav.pushUrl session.key "/thanks")
         |> State.joinCmd leaveStory
 
@@ -103,7 +103,10 @@ setPrompt model result =
 -- subscriptions
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Socket.subscribe SetupStory setupStory
+  Sub.batch
+    [ setupStory
+    , addLineOk
+    ]
 
 -- socket.messages
 joinStory : Socket.Message
@@ -112,13 +115,13 @@ joinStory =
   , data = JE.null
   }
 
--- socket.events
+-- socket.subscribe
 type alias StoryPrompt =
   { text : String
   , name : String
   }
 
-setupStory : Socket.Evt StoryPrompt
+setupStory : Sub Msg
 setupStory =
   let
     decoder =
@@ -126,31 +129,35 @@ setupStory =
         (JD.field "text" JD.string)
         (JD.field "name" JD.string)
   in
-    { name    = "STORY.SETUP"
-    , decoder = decoder
-    }
+    decoder
+      |> Socket.Event "STORY.SETUP"
+      |> Socket.subscribe SetupStory
 
-submitLine : Model -> Cmd Msg
-submitLine model =
-  Cmd.none
-  -- Push.init "add:line" room
-  --   |> Push.withPayload (encodeLine model)
-  --   |> Push.onOk SubmitOk
-  --   |> Socket.Event.Push
+-- STORY.ADD_LINE
+addLine : Model -> Cmd Msg
+addLine model =
+  let
+    data =
+      JE.object
+        [ ("text",  JE.string model.line.value)
+        , ("email", JE.string model.email)
+        , ("name",  JE.string model.name)
+        ]
+  in
+    data
+      |> Socket.Message "STORY.ADD_LINE"
+      |> Socket.push
 
+addLineOk : Sub Msg
+addLineOk =
+  JD.null True
+    |> Socket.Event "STORY.ADD_LINE.OK"
+    |> Socket.subscribe AddLineOk
+
+-- STORY.LEAVE
 leaveStory : Cmd Msg
 leaveStory =
   Cmd.none
-  -- Socket.Event.Leave room
-
--- payloads
-encodeLine : Model -> JE.Value
-encodeLine model =
-  JE.object
-    [ ("text",  JE.string model.line.value)
-    , ("email", JE.string model.email)
-    , ("name",  JE.string model.name)
-    ]
 
 -- view
 view : Model -> Html Msg
@@ -180,7 +187,7 @@ viewForm model =
   if String.isEmpty model.prompt then
     (\_ -> H.text "")
   else
-    formS [ onSubmit SubmitLine ]
+    formS [ onSubmit AddLine ]
 
 viewEmailField : Model -> Html Msg
 viewEmailField model =

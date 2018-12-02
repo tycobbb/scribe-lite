@@ -40,7 +40,7 @@ push message =
     |> send
 
 -- event (subscribe)
-type alias Evt a =
+type alias Event a =
   { name    : String
   , decoder : JD.Decoder a
   }
@@ -50,14 +50,14 @@ type Error
   | ResponseError ServiceError
   | MismatchedEvent
 
-subscribe : (Result Error a -> msg) -> Evt a -> Sub msg
+subscribe : (Result Error a -> msg) -> Event a -> Sub msg
 subscribe toMsg event =
   recv (\data ->
     data
       |> decodeEventPayload event
       |> toMsg)
 
-decodeEventPayload : Evt a -> JD.Value -> Payload a
+decodeEventPayload : Event a -> JD.Value -> Payload a
 decodeEventPayload event data =
   data
     |> decodeValue decodeResponse
