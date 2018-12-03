@@ -11,9 +11,7 @@ import State
 
 -- state
 type alias State =
-  ( Model
-  , Cmd Msg
-  )
+  State.Base Model Msg
 
 type alias Model =
   { color : Css.Color
@@ -45,7 +43,7 @@ init route =
         |> toState Thanks ThanksMsg Thanks.background
     Route.NotFound ->
       { scene = NotFound, color = Css.hex "FF0000" }
-        |> State.withNoCmd
+        |> State.withoutCmd
 
 -- subscriptions
 subscriptions : Model -> Sub Msg
@@ -68,8 +66,7 @@ update msgBox model session =
       Thanks.update msg thanks session
         |> toState Thanks ThanksMsg Thanks.background
     _ ->
-      model
-        |> State.withNoCmd
+      State.just model
 
 -- view
 view : Model -> Html Msg

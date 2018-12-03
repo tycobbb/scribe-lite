@@ -27,9 +27,7 @@ shadowInputId = "shadow-input"
 
 -- model
 type alias State =
-  ( Model
-  , Cmd Msg
-  )
+  State.Base Model Msg
 
 type alias Model =
   { value  : String
@@ -49,22 +47,21 @@ initModel =
 
 -- update
 type Msg
-  = None
-  | Change String
+  = Change String
   | Resize Float
+  | Ignored
 
 update : Msg -> Model -> State
 update msg model =
   case msg of
-    None ->
-      model
-        |> State.withNoCmd
     Change value ->
       { model | value = value }
         |> State.withCmd (calculateHeight value)
     Resize height ->
       { model | height = lineHeight + height }
-        |> State.withNoCmd
+        |> State.withoutCmd
+    Ignored ->
+      State.just model
 
 -- commands
 calculateHeight : String -> Cmd Msg
@@ -99,7 +96,7 @@ onKeypress currentText =
     preventDefaultOn "keypress"
       (JD.field "keyCode" JD.int
         |> JD.map isIllegal
-        |> JD.map (Tuple.pair None))
+        |> JD.map (Tuple.pair Ignored))
 
 -- view
 view : Model -> Html Msg

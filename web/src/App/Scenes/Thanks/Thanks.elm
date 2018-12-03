@@ -20,9 +20,7 @@ background =
 
 -- init
 type alias State =
-  ( Model
-  , Cmd Msg
-  )
+  State.Base Model Msg
 
 type Model
   = None
@@ -30,7 +28,7 @@ type Model
 init : State
 init =
   None
-    |> State.withNoCmd
+    |> State.withoutCmd
 
 -- update
 type Msg

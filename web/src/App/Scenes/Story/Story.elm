@@ -24,9 +24,7 @@ background =
 
 -- state
 type alias State =
-  ( Model
-  , Cmd Msg
-  )
+  State.Base Model Msg
 
 type alias Model =
   { line   : Line.Model
@@ -45,7 +43,7 @@ init =
   in
     initModel line
       |> State.withCmd lineCmd
-      |> State.joinCmd (Socket.push joinStory)
+      |> State.joinCmd joinStory
 
 initModel : Line.Model -> Model
 initModel line =
@@ -61,68 +59,76 @@ type Msg
   = LineMsg Line.Msg
   | ChangeEmail String
   | ChangeName String
-  | SetupStory (Result Socket.Error StoryPrompt)
+  | JoinStoryDone (Socket.Res StoryPrompt)
   | AddLine
-  | AddLineOk (Result Socket.Error Bool)
+  | AddLineDone (Socket.Res Bool)
+  | Ignored
 
 update : Msg -> Model -> Session -> State
 update msg model session =
   case msg of
     LineMsg lineMsg ->
-      Line.update lineMsg model.line
-        |> setLine model
+      model
+        |> setLine (Line.update lineMsg model.line)
     ChangeEmail email ->
       { model | email = email }
-        |> State.withNoCmd
+        |> State.withoutCmd
     ChangeName name ->
       { model | name = name }
-        |> State.withNoCmd
-    SetupStory prompt ->
-      prompt
-        |> setPrompt model
-        |> State.withNoCmd
+        |> State.withoutCmd
+    JoinStoryDone result ->
+      case result of
+        Ok prompt ->
+          model
+            |> setPrompt prompt
+            |> State.withoutCmd
+        Err _ ->
+          State.just model
     AddLine ->
       model
         |> State.withCmd (addLine model)
-    AddLineOk _ ->
-      Debug.log "add line ok" model
-        |> State.withCmd (Nav.pushUrl session.key "/thanks")
-        |> State.joinCmd leaveStory
+    AddLineDone result ->
+      case result of
+        Ok _ ->
+          model
+            |> State.withCmd (Nav.pushUrl session.key "/thanks")
+            |> State.joinCmd leaveStory
+        Err _ ->
+          State.just model
+    Ignored ->
+      State.just model
 
-setLine : Model -> Line.State -> (Model, Cmd Msg)
-setLine model (field, cmd) =
-  { model | line = field }
+setLine : Line.State -> Model -> State
+setLine (line, cmd) model =
+  { model | line = line }
     |> State.withCmd (Cmd.map LineMsg cmd)
 
-setPrompt : Model -> Result Socket.Error StoryPrompt -> Model
-setPrompt model result =
-  result
-    |> Result.map (\{ text, name } -> { model | prompt = text, author = name })
-    |> Result.withDefault model
+setPrompt : StoryPrompt -> Model -> Model
+setPrompt { text, name } model =
+  { model | prompt = text, author = name }
 
 -- subscriptions
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
-    [ setupStory
-    , addLineOk
+    [ joinStoryDone
+    , addLineDone
     ]
 
--- socket.messages
-joinStory : Socket.Message
-joinStory =
-  { name = "STORY.JOIN"
-  , data = JE.null
-  }
-
--- socket.subscribe
+-- STORY.JOIN
 type alias StoryPrompt =
   { text : String
   , name : String
   }
 
-setupStory : Sub Msg
-setupStory =
+joinStory : Cmd Msg
+joinStory =
+  JE.null
+    |> Socket.Message "STORY.JOIN"
+    |> Socket.push
+
+joinStoryDone : Sub Msg
+joinStoryDone =
   let
     decoder =
       JD.map2 StoryPrompt
@@ -130,8 +136,8 @@ setupStory =
         (JD.field "name" JD.string)
   in
     decoder
-      |> Socket.Event "STORY.SETUP"
-      |> Socket.subscribe SetupStory
+      |> Socket.Event "STORY.JOIN.DONE"
+      |> Socket.subscribe JoinStoryDone Ignored
 
 -- STORY.ADD_LINE
 addLine : Model -> Cmd Msg
@@ -148,11 +154,11 @@ addLine model =
       |> Socket.Message "STORY.ADD_LINE"
       |> Socket.push
 
-addLineOk : Sub Msg
-addLineOk =
+addLineDone : Sub Msg
+addLineDone =
   JD.null True
-    |> Socket.Event "STORY.ADD_LINE.OK"
-    |> Socket.subscribe AddLineOk
+    |> Socket.Event "STORY.ADD_LINE.DONE"
+    |> Socket.subscribe AddLineDone Ignored
 
 -- STORY.LEAVE
 leaveStory : Cmd Msg

@@ -37,9 +37,7 @@ serverUrl =
 
 -- state
 type alias State =
-  ( Model
-  , Cmd Msg
-  )
+  State.Base Model Msg
 
 type alias Model =
   { stage   : Stage
@@ -48,7 +46,7 @@ type alias Model =
 
 init _ url key =
   initModel key
-    |> State.withNoCmd
+    |> State.withoutCmd
     |> setScene Active (initScene url 0)
 
 initModel : Nav.Key -> Model
@@ -84,26 +82,26 @@ update msgBox model =
   case (msgBox, model.stage) of
     ( ChangedUrl location, Active scene ) ->
       model
-        |> State.withNoCmd
+        |> State.withoutCmd
         |> setScene (stageFrom scene (Transition False)) (initScene location (scene.index + 1))
         |> State.joinCmd (Timers.async StartTransition)
     ( SceneMsg msg, Active scene ) ->
       model
-        |> State.withNoCmd
+        |> State.withoutCmd
         |> updateScene Active msg scene
     ( SceneMsg msg, Transition isActive scenes ) ->
       model
-        |> State.withNoCmd
+        |> State.withoutCmd
         |> updateScenes (Transition isActive) msg scenes
     ( StartTransition, Transition False scenes ) ->
       { model | stage = Transition True scenes }
         |> State.withCmd (Timers.delay duration EndTransition)
     ( EndTransition, Transition True scenes ) ->
       { model | stage = Active scenes.nextScene }
-        |> State.withNoCmd
+        |> State.withoutCmd
     _ ->
       model
-        |> State.withNoCmd
+        |> State.withoutCmd
 
 -- subscriptions
 subscriptions : Model -> Sub Msg

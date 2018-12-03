@@ -1,9 +1,8 @@
-module Router.Route exposing (..)
+module Router.Route exposing (Route(..), toRoute)
 
 import Url exposing (Url)
-import Url.Parser as Parser
+import Url.Parser as P exposing (Parser)
 
--- route parsing
 type Route
   = Story
   | Thanks
@@ -11,12 +10,12 @@ type Route
 
 toRoute : Url -> Route
 toRoute url =
-  Parser.parse route url
+  P.parse routes url
     |> Maybe.withDefault NotFound
 
-route : Parser.Parser (Route -> a) a
-route =
-  Parser.oneOf
-    [ Parser.map Story  (Parser.top)
-    , Parser.map Thanks (Parser.s "thanks")
+routes : Parser (Route -> a) a
+routes =
+  P.oneOf
+    [ P.map Story  (P.top)
+    , P.map Thanks (P.s "thanks")
     ]

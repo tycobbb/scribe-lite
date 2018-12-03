@@ -12,7 +12,7 @@ export class Socket {
         switch (data.name) {
           case "STORY.JOIN":
             this.respond({
-              name: "STORY.SETUP",
+              name: "STORY.JOIN.DONE",
               data: {
                 text: "This is the first line.",
                 name: "Mr. Socket"
@@ -20,7 +20,7 @@ export class Socket {
             }); break;
           case "STORY.ADD_LINE":
             this.respond({
-              name: "STORY.ADD_LINE.OK",
+              name: "STORY.ADD_LINE.DONE",
               data: null
             }); break;
           default: break;
