@@ -10,8 +10,8 @@ import Json.Encode as JE
 import Url exposing (Url)
 
 import Indexed exposing (Indexed)
-import Router.Route as Route
-import Router.Scene as Scene
+import Route
+import Scenes.Scene as Scene
 import Socket
 import State
 import Styles.Theme as Theme

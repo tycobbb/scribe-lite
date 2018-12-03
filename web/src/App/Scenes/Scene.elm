@@ -1,9 +1,9 @@
-module Router.Scene exposing (State, Model, Msg, init, subscriptions, update, view)
+module Scenes.Scene exposing (State, Model, Msg, init, subscriptions, update, view)
 
 import Css
 import Html.Styled as H exposing (Html)
 
-import Router.Route as Route
+import Route
 import Scenes.Story.Story as Story
 import Scenes.Thanks.Thanks as Thanks
 import Session exposing (Session)
