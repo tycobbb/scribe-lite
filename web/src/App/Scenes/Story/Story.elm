@@ -3,7 +3,7 @@ module Scenes.Story.Story exposing (State, Model, Msg, init, subscriptions, upda
 import Browser.Navigation as Nav
 import Css exposing (..)
 import Html.Styled as H exposing (Html)
-import Html.Styled.Attributes exposing (value, placeholder)
+import Html.Styled.Attributes exposing (attribute, placeholder, value)
 import Html.Styled.Events exposing (onInput, onSubmit)
 import Json.Encode as JE
 import Json.Decode as JD exposing (field)
@@ -14,6 +14,7 @@ import Socket
 import State
 import Styles.Colors as Colors
 import Styles.Fonts as Fonts
+import Styles.Mixins as Mixins
 import Views.Button as Button
 import Views.Scene as Scene
 
@@ -203,6 +204,7 @@ viewEmailField model =
     emailFieldS
       [ onInput ChangeEmail
       , placeholder "E-mail Address"
+      , attribute "type" "email"
       , value model.email
       ] []
 
@@ -258,10 +260,9 @@ promptS =
 emailFieldS : List (H.Attribute m) -> List (Html m) -> Html m
 emailFieldS =
   H.styled H.input
-    [ textFieldB
+    [ Mixins.textFieldB
     , marginTop (px 80)
     , marginBottom (px 10)
-    , transform (translateY (px 20))
     , Fonts.md
     , color Colors.gray1
     ]
@@ -269,7 +270,7 @@ emailFieldS =
 nameFieldS : List (H.Attribute m) -> List (Html m) -> Html m
 nameFieldS =
   H.styled H.input
-    [ textFieldB
+    [ Mixins.textFieldB
     , flex (int 1)
     , Fonts.sm
     , color Colors.gray1
@@ -282,20 +283,4 @@ submitRowS =
     , justifyContent spaceBetween
     , alignItems center
     , transform (translateY (px 20))
-    ]
-
-textFieldB : Style
-textFieldB =
-  Css.batch
-    [ borderStyle none
-    , outlineStyle none
-    , backgroundColor transparent
-    , cursor pointer
-    , pseudoElement "placeholder"
-      [ color Colors.gray0
-      , property "transition" "padding-left 0.15s"
-      , focus
-        [ paddingLeft (px 10)
-        ]
-      ]
     ]

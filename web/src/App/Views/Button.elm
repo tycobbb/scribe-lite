@@ -26,11 +26,8 @@ view title isInverted =
 buttonS : Bool -> List (H.Attribute m) -> List (Html m) -> Html m
 buttonS isInverted =
   H.styled H.button
-    [ padding (px 0)
-    , border unset
-    , Fonts.medium
+    [ Fonts.medium
     , paletteB isInverted
-    , backgroundImage unset
     , backgroundColor transparent
     , cursor pointer
     , property "transition" "color 0.15s"
@@ -66,7 +63,7 @@ chevronS =
         [ legB
         , transforms
           [ rotate (deg 45)
-          , translateY (px 3)
+          , translate2 (px 3) (px 3)
           ]
         ]
       , after
@@ -74,7 +71,7 @@ chevronS =
         , bottom (px 0)
         , transforms
           [ rotate (deg -45)
-          , translateY (px -3)
+          , translate2 (px 3) (px -3)
           ]
         ]
       ]

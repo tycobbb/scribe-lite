@@ -11,8 +11,9 @@ import Json.Decode.Extra as DecodeExt
 import Task
 
 import State
-import Styles.Fonts as Fonts
 import Styles.Colors as Colors
+import Styles.Fonts as Fonts
+import Styles.Mixins as Mixins
 
 -- constants
 characterLimit : Int
@@ -150,8 +151,11 @@ viewFieldCount model =
 containerS : List (H.Attribute m) -> List (Html m) -> Html m
 containerS =
   H.styled H.div
-    [ Fonts.lg
+    [ displayFlex
+    , flexDirection column
     , position relative
+    , marginBottom (px -lineHeight)
+    , Fonts.lg
     ]
 
 shadowInputS : List (H.Attribute m) -> List (Html m) -> Html m
@@ -180,6 +184,7 @@ fieldS : List (H.Attribute m) -> List (Html m) -> Html m
 fieldS =
   H.styled H.textarea
     [ fieldB
+    , Mixins.textFieldB
     , resize none
     ]
 
