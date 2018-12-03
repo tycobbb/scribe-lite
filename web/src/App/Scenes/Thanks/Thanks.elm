@@ -4,14 +4,15 @@ import Browser.Navigation as Nav
 import Css exposing (..)
 import Css.Global as CG
 import Html.Styled as H exposing (Html)
+import Html.Styled.Attributes exposing (css)
 import Html.Styled.Events exposing (onClick)
 
 import Session exposing (Session)
 import State
 import Styles.Fonts as Fonts
 import Styles.Colors as Colors
-import Styles.Mixins as Mixins
 import Views.Button as Button
+import Views.Scene as Scene
 
 -- constants
 background : Color
@@ -44,8 +45,8 @@ update msg model session =
 -- view
 view : Model -> Html Msg
 view _ =
-  sceneS []
-    [ sceneContentS []
+  Scene.view [ sceneA ]
+    [ Scene.viewContent []
       [ messageS []
         [ H.text "Thanks for writing" ]
       , messageS []
@@ -56,16 +57,9 @@ view _ =
     ]
 
 -- styles
-sceneS =
-  H.styled H.section
-    [ Mixins.scene
-    , justifyContent center
-    ]
-
-sceneContentS =
-  H.styled H.div
-    [ Mixins.sceneContent
-    ]
+sceneA =
+  css
+    [ justifyContent center ]
 
 messageS =
   H.styled H.p

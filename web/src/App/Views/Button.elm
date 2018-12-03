@@ -1,4 +1,4 @@
-module Views.Button exposing (..)
+module Views.Button exposing (view)
 
 import Css exposing (..)
 import Css.Global as CG
@@ -9,6 +9,7 @@ import Styles.Fonts as Fonts
 import Styles.Colors as Colors
 
 -- constants
+chevronClass : String
 chevronClass = "scribe-button-chevron"
 
 -- view
@@ -22,6 +23,7 @@ view title isInverted =
     ]
 
 -- styles
+buttonS : Bool -> List (H.Attribute m) -> List (Html m) -> Html m
 buttonS isInverted =
   H.styled H.button
     [ padding (px 0)
@@ -37,12 +39,14 @@ buttonS isInverted =
       ]
     ]
 
+titleS : List (H.Attribute m) -> List (Html m) -> Html m
 titleS =
   H.styled H.span
     [ displayFlex
     , position relative
     ]
 
+chevronS : List (H.Attribute m) -> List (Html m) -> Html m
 chevronS =
   let
     legB = Css.batch

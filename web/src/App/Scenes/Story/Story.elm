@@ -12,10 +12,10 @@ import Scenes.Story.Line as Line
 import Session exposing (Session)
 import Socket
 import State
-import Styles.Fonts as Fonts
 import Styles.Colors as Colors
-import Styles.Mixins as Mixins
+import Styles.Fonts as Fonts
 import Views.Button as Button
+import Views.Scene as Scene
 
 -- constants
 background : Color
@@ -168,8 +168,8 @@ leaveStory =
 -- view
 view : Model -> Html Msg
 view model =
-  sceneS []
-    [ sceneContentS []
+  Scene.view []
+    [ Scene.viewContent []
       [ headerS []
         [ H.text "Friday May 24 (2017)" ]
       , viewForm model
@@ -222,16 +222,7 @@ viewSubmitRow model =
     submitRowS []
 
 -- styles
-sceneS =
-  H.styled H.section
-    [ Mixins.scene
-    ]
-
-sceneContentS =
-  H.styled H.div
-    [ Mixins.sceneContent
-    ]
-
+headerS : List (H.Attribute m) -> List (Html m) -> Html m
 headerS =
   H.styled H.header
     [ Fonts.md
@@ -239,6 +230,7 @@ headerS =
     , color Colors.gray0
     ]
 
+formS : List (H.Attribute m) -> List (Html m) -> Html m
 formS =
   H.styled H.form
     [ flex (int 1)
@@ -247,6 +239,7 @@ formS =
     , justifyContent center
     ]
 
+authorS : List (H.Attribute m) -> List (Html m) -> Html m
 authorS =
   H.styled H.p
     [ marginBottom (px 20)
@@ -254,6 +247,7 @@ authorS =
     , color Colors.gray0
     ]
 
+promptS : List (H.Attribute m) -> List (Html m) -> Html m
 promptS =
   H.styled H.p
     [ marginBottom (px 60)
@@ -261,9 +255,10 @@ promptS =
     , color Colors.secondary
     ]
 
+emailFieldS : List (H.Attribute m) -> List (Html m) -> Html m
 emailFieldS =
   H.styled H.input
-    [ Mixins.textField
+    [ textFieldB
     , marginTop (px 80)
     , marginBottom (px 10)
     , transform (translateY (px 20))
@@ -271,18 +266,36 @@ emailFieldS =
     , color Colors.gray1
     ]
 
+nameFieldS : List (H.Attribute m) -> List (Html m) -> Html m
 nameFieldS =
   H.styled H.input
-    [ Mixins.textField
+    [ textFieldB
     , flex (int 1)
     , Fonts.sm
     , color Colors.gray1
     ]
 
+submitRowS : List (H.Attribute m) -> List (Html m) -> Html m
 submitRowS =
   H.styled H.div
     [ displayFlex
     , justifyContent spaceBetween
     , alignItems center
     , transform (translateY (px 20))
+    ]
+
+textFieldB : Style
+textFieldB =
+  Css.batch
+    [ borderStyle none
+    , outlineStyle none
+    , backgroundColor transparent
+    , cursor pointer
+    , pseudoElement "placeholder"
+      [ color Colors.gray0
+      , property "transition" "padding-left 0.15s"
+      , focus
+        [ paddingLeft (px 10)
+        ]
+      ]
     ]

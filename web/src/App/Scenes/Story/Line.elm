@@ -13,7 +13,6 @@ import Task
 import State
 import Styles.Fonts as Fonts
 import Styles.Colors as Colors
-import Styles.Mixins as Mixins
 
 -- constants
 characterLimit : Int
@@ -148,12 +147,14 @@ viewFieldCount model =
       [ H.text charactersText ]
 
 -- styles
+containerS : List (H.Attribute m) -> List (Html m) -> Html m
 containerS =
   H.styled H.div
     [ Fonts.lg
     , position relative
     ]
 
+shadowInputS : List (H.Attribute m) -> List (Html m) -> Html m
 shadowInputS =
   H.styled H.div
     [ position absolute
@@ -163,22 +164,26 @@ shadowInputS =
     , property "pointer-events" "none"
     ]
 
+shadowFieldS : List (H.Attribute m) -> List (Html m) -> Html m
 shadowFieldS =
   H.styled H.span
     [ fieldB
     ]
 
+shadowTextS : List (H.Attribute m) -> List (Html m) -> Html m
 shadowTextS =
   H.styled H.span
     [ color transparent
     ]
 
+fieldS : List (H.Attribute m) -> List (Html m) -> Html m
 fieldS =
   H.styled H.textarea
     [ fieldB
     , resize none
     ]
 
+fieldCountS : List (H.Attribute m) -> List (Html m) -> Html m
 fieldCountS =
   H.styled H.span
     [ color Colors.gray0
@@ -192,5 +197,6 @@ fieldB =
     , property "white-space" "pre-wrap"
     ]
 
+fieldHeightI : Float -> H.Attribute Msg
 fieldHeightI height =
   style "height" (String.fromFloat height ++ "px")
