@@ -9,5 +9,5 @@ async =
 
 delay : Float -> m -> Cmd m
 delay time msg =
-  Process.sleep (time * 1000)
+  Process.sleep time
     |> Task.perform (\_ -> msg)
