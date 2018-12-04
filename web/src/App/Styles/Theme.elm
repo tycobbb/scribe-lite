@@ -9,9 +9,8 @@ import Styles.Fonts as Fonts
 global : Html msg
 global =
   CG.global
-    [ CG.html
-      [ property "padding-left" "calc(100vw - 100%)"
-      , Fonts.serif
+    [ CG.body
+      [ Fonts.serif
       , Fonts.regular
       , lineHeight (num 1.35)
       ]

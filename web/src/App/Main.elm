@@ -3,6 +3,7 @@ module Main exposing (main)
 import Browser
 import Browser.Navigation as Nav
 import Css exposing (..)
+import Css.Global as CG
 import Html.Styled as H exposing (Html)
 import Html.Styled.Attributes exposing (css, style)
 import Html.Styled.Keyed as HK
@@ -127,8 +128,8 @@ view : Model -> Browser.Document Msg
 view model =
   { title = "Scribe"
   , body  =
-    [ H.toUnstyled (viewStage model)
-    , H.toUnstyled Theme.global
+    [ H.toUnstyled Theme.global
+    , H.toUnstyled (viewStage model)
     ]
   }
 
@@ -154,9 +155,9 @@ viewStage { stage } =
         [ ( "blank", H.text "" ) ]
 
 viewStageKeyed : IndexedScene -> List ( String, Html Msg ) -> Html Msg
-viewStageKeyed { item } =
-  stageS
-    [ backgroundColorI item.color ]
+viewStageKeyed { item } children =
+  stageS []
+    (( "body", bodyG item.color ) :: children)
 
 viewScene : IndexedScene -> Maybe Style -> Html Msg
 viewScene scene animations =
@@ -230,8 +231,11 @@ stageS attrs =
   HK.node "main"
     (attrs ++
       [ css
-        [ position relative
-        , transitionB ["background-color"]
+        [ position absolute
+        , top (px 0)
+        , bottom (px 0)
+        , left (px 0)
+        , right (px 0)
         ]
       ]
     )
@@ -271,6 +275,12 @@ transitionB attributes =
       |> List.map toTransition >> String.join ", "
       |> property "transition"
 
-backgroundColorI : Color -> H.Attribute Msg
-backgroundColorI color =
-  style "backgroundColor" (String.fromInt color.red)
+bodyG : Color -> Html Msg
+bodyG color =
+  CG.global
+    [ CG.body
+      [ minHeight (vh 100)
+      , transitionB ["background-color"]
+      , backgroundColor color
+      ]
+    ]

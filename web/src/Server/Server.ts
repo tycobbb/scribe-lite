@@ -27,7 +27,7 @@ export class Server {
   }
 
   private addRoutes() {
-    this.app.get("/", Root.route)
+    this.app.get("/\*", Root.route)
   }
 
   // bootstrap

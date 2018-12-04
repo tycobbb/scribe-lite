@@ -7,6 +7,7 @@ textFieldB : Style
 textFieldB =
   Css.batch
     [ outlineStyle none
+    , backgroundColor transparent
     , cursor pointer
     , pseudoElement "placeholder"
       [ color Colors.gray0

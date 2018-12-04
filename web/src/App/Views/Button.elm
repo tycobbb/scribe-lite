@@ -62,16 +62,16 @@ chevronS =
       , before
         [ legB
         , transforms
-          [ rotate (deg 45)
-          , translate2 (px 3) (px 3)
+          [ translateY (px -6)
+          , rotate (deg -45)
           ]
         ]
       , after
         [ legB
         , bottom (px 0)
         , transforms
-          [ rotate (deg -45)
-          , translate2 (px 3) (px -3)
+          [ translateY (px 6)
+          , rotate (deg 45)
           ]
         ]
       ]
