@@ -41,34 +41,42 @@ type alias State =
   State.Base Model Msg
 
 type alias Model =
-  { stage   : Stage
-  , session : Session
+  { stage      : Stage
+  , sceneIndex : Int
+  , session    : Session
   }
 
 init _ url key =
-  initModel key
-    |> State.withoutCmd
-    |> setScene Active (initScene url 0)
+  State.just (initModel key)
+    |> State.merge setStage SceneMsg (initStage url)
 
 initModel : Nav.Key -> Model
 initModel key =
-  { stage   = Blank
-  , session = Session key
+  { stage      = Blank
+  , sceneIndex = 0
+  , session    = Session key
   }
 
 -- stage
 type Stage
-  = Active IndexedScene
-  | Transition Bool IndexedScenes
+  = Active (Indexed Scene.Model)
+  | Transition Bool ((Indexed Scene.Model), (Indexed Scene.Model))
   | Blank
 
-type alias IndexedScenes =
-  { scene : IndexedScene
-  , nextScene : IndexedScene
-  }
+initStage url =
+  initScene url 0
+    |> State.mapModel Active
 
-type alias IndexedScene =
-  Indexed Scene.Model
+initPreTransition url exiting =
+  initScene url (exiting.index + 1)
+    |> State.mapModel (Tuple.pair exiting)
+    |> State.mapModel (Transition False)
+
+initTransition scenes =
+  Transition True scenes
+
+initNewStage scene =
+  Active scene
 
 -- update
 type Msg
@@ -81,28 +89,34 @@ type Msg
 update : Msg -> Model -> State
 update msgBox model =
   case (msgBox, model.stage) of
-    ( ChangedUrl location, Active scene ) ->
+    ( ChangedUrl url, Active scene ) ->
       model
-        |> State.withoutCmd
-        |> setScene (stageFrom scene (Transition False)) (initScene location (scene.index + 1))
-        |> State.joinCmd (Timers.async StartTransition)
+        |> State.withCmd (Timers.async StartTransition)
+        |> State.merge setStage SceneMsg (initPreTransition url scene)
     ( SceneMsg msg, Active scene ) ->
-      model
-        |> State.withoutCmd
-        |> updateScene Active msg scene
+      State.just model
+        |>
+          (scene
+            |> uScene model.session msg
+            |> State.map Active identity
+            |> State.merge setStage SceneMsg)
     ( SceneMsg msg, Transition isActive scenes ) ->
-      model
-        |> State.withoutCmd
-        |> updateScenes (Transition isActive) msg scenes
+      State.just model
+        |>
+          (scenes
+            |> uScenes model.session msg
+            |> State.mapModel (Transition isActive)
+            |> State.merge setStage SceneMsg)
     ( StartTransition, Transition False scenes ) ->
-      { model | stage = Transition True scenes }
+      model
+        |> setStage (initTransition scenes)
         |> State.withCmd (Timers.delay duration EndTransition)
-    ( EndTransition, Transition True scenes ) ->
-      { model | stage = Active scenes.nextScene }
+    ( EndTransition, Transition True (_, entering) ) ->
+      model
+        |> setStage (initNewStage entering)
         |> State.withoutCmd
     _ ->
-      model
-        |> State.withoutCmd
+      State.just model
 
 -- subscriptions
 subscriptions : Model -> Sub Msg
@@ -115,10 +129,10 @@ subscriptions model =
     case model.stage of
       Active scene ->
         fromScene scene
-      Transition _ { scene, nextScene } ->
+      Transition _ (exiting, entering) ->
         Sub.batch
-          [ fromScene scene
-          , fromScene nextScene
+          [ fromScene exiting
+          , fromScene entering
           ]
       _ ->
         Sub.none
@@ -140,26 +154,26 @@ viewStage { stage } =
       viewStageKeyed scene
         [ viewSceneWithKey scene Nothing
         ]
-    Transition False { scene, nextScene } ->
-      viewStageKeyed scene
-        [ viewSceneWithKey scene Nothing
-        , viewSceneWithKey nextScene (Just sceneInB)
+    Transition False (exiting, entering) ->
+      viewStageKeyed exiting
+        [ viewSceneWithKey exiting Nothing
+        , viewSceneWithKey entering (Just sceneInB)
         ]
-    Transition True { scene, nextScene } ->
-      viewStageKeyed nextScene
-        [ viewSceneWithKey scene (Just sceneOutB)
-        , viewSceneWithKey nextScene Nothing
+    Transition True (exiting, entering) ->
+      viewStageKeyed entering
+        [ viewSceneWithKey exiting (Just sceneOutB)
+        , viewSceneWithKey entering Nothing
         ]
     Blank ->
       stageS []
         [ ( "blank", H.text "" ) ]
 
-viewStageKeyed : IndexedScene -> List ( String, Html Msg ) -> Html Msg
+viewStageKeyed : Indexed Scene.Model -> List ( String, Html Msg ) -> Html Msg
 viewStageKeyed { item } children =
   stageS []
     (( "body", bodyG item.color ) :: children)
 
-viewScene : IndexedScene -> Maybe Style -> Html Msg
+viewScene : Indexed Scene.Model -> Maybe Style -> Html Msg
 viewScene scene animations =
   let
     styles =
@@ -170,55 +184,55 @@ viewScene scene animations =
           |> H.map (Indexed.indexable SceneMsg scene.index)
       ]
 
-viewSceneWithKey : IndexedScene -> Maybe Style -> ( String, Html Msg )
+viewSceneWithKey : Indexed Scene.Model -> Maybe Style -> ( String, Html Msg )
 viewSceneWithKey scene animations =
   ( "scene-" ++ String.fromInt scene.index
   , viewScene scene animations
   )
 
 -- scenes
-initScene : Url -> Int -> (IndexedScene, Cmd Scene.Msg)
+initScene : Url -> Int -> State.Base (Indexed Scene.Model) (Indexed Scene.Msg)
 initScene location index =
-  Scene.init (Route.toRoute location)
-    |> Indexed.withIndex index
-
-setScene : (IndexedScene -> Stage) -> (IndexedScene, Cmd Scene.Msg) -> State -> State
-setScene asStage ( scene, sceneCmd ) ( model, cmd ) =
-  { model | stage = asStage scene }
-    |> State.withCmd cmd
-    |> State.joinCmd (Cmd.map (asSceneMsg scene.index) sceneCmd)
-
-updateScenes : (IndexedScenes -> Stage) -> Indexed Scene.Msg -> IndexedScenes -> State -> State
-updateScenes asStage msg { scene, nextScene } =
-  if msg.index == scene.index then
-    updateScene (stageTo nextScene asStage) msg scene
-  else if msg.index == nextScene.index then
-    updateScene (stageFrom scene asStage) msg nextScene
-  else
-    identity
-
-updateScene : (IndexedScene -> Stage) -> Indexed Scene.Msg -> IndexedScene -> State -> State
-updateScene asStage msg scene state =
   let
-    ( { session }, _) = state
+    indexed =
+      Indexed index
   in
-    (Scene.update msg.item scene.item session
-      |> Indexed.withIndex scene.index
-      |> setScene asStage)
-      state
+    location
+      |> Route.toRoute
+      |> Scene.init
+      |> State.map indexed indexed
 
-asSceneMsg : Int -> Scene.Msg -> Msg
-asSceneMsg =
-  Indexed.indexable SceneMsg
+uScenes : Session -> Indexed Scene.Msg -> (Indexed Scene.Model, Indexed Scene.Model) -> State.Base (Indexed Scene.Model, Indexed Scene.Model) (Indexed Scene.Msg)
+uScenes session msg scenes =
+  let
+    u =
+      uScene session msg
+    unzip ((ll, lr), (rl, rr)) =
+      ((ll, rl), (lr, rr))
+    toList (l, r) =
+      [l, r]
+  in
+    scenes
+      |> Tuple.mapBoth u u
+      |> unzip
+      |> Tuple.mapSecond (toList >> Cmd.batch)
 
--- transitions
-stageFrom : IndexedScene -> (IndexedScenes -> Stage) -> IndexedScene -> Stage
-stageFrom source asStage =
-  (IndexedScenes source) >> asStage
+uScene : Session -> Indexed Scene.Msg -> Indexed Scene.Model -> State.Base (Indexed Scene.Model) (Indexed Scene.Msg)
+uScene session msg model =
+  let
+    u =
+      Indexed.join (Scene.update session)
+    indexed =
+      Indexed model.index
+  in
+    model
+      |> u msg
+      |> Maybe.withDefault (State.just model.item)
+      |> State.map indexed indexed
 
-stageTo : IndexedScene -> (IndexedScenes -> Stage) -> IndexedScene -> Stage
-stageTo destination asStage =
-  (\source -> IndexedScenes source destination) >> asStage
+setStage : Stage -> Model -> Model
+setStage stage model =
+  { model | stage = stage }
 
 -- styles
 duration    : number

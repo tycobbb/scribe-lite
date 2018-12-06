@@ -65,8 +65,8 @@ type Msg
   | AddLineDone (Socket.Res Bool)
   | Ignored
 
-update : Msg -> Model -> Session -> State
-update msg model session =
+update : Session -> Msg -> Model -> State
+update session msg model =
   case msg of
     LineMsg lineMsg ->
       model
@@ -92,7 +92,7 @@ update msg model session =
       case result of
         Ok _ ->
           model
-            |> State.withCmd (Nav.pushUrl session.key "/thanks")
+            |> State.withCmd (Nav.replaceUrl session.key "/thanks")
             |> State.joinCmd leaveStory
         Err _ ->
           State.just model

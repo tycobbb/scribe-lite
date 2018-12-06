@@ -56,14 +56,14 @@ subscriptions model =
       Sub.none
 
 -- update
-update : Msg -> Model -> Session -> State
-update msgBox model session =
+update : Session -> Msg -> Model -> State
+update session msgBox model =
   case ( msgBox, model.scene ) of
     ( StoryMsg msg, Story story ) ->
-      Story.update msg story session
+      Story.update session msg story
         |> toState Story StoryMsg Story.background
     ( ThanksMsg msg, Thanks thanks ) ->
-      Thanks.update msg thanks session
+      Thanks.update session msg thanks
         |> toState Thanks ThanksMsg Thanks.background
     _ ->
       State.just model

@@ -35,12 +35,12 @@ init =
 type Msg
   = RefreshPage
 
-update : Msg -> Model -> Session -> State
-update msg model session =
+update : Session -> Msg -> Model -> State
+update session msg model =
   case msg of
     RefreshPage ->
       model
-        |> State.withCmd (Nav.pushUrl session.key "/")
+        |> State.withCmd (Nav.replaceUrl session.key "/")
 
 -- view
 view : Model -> Html Msg
