@@ -37,14 +37,9 @@ type alias Model =
 
 init : State
 init =
-  let
-    (line, lineCmd) =
-      Line.init
-        |> State.mapCmd LineMsg
-  in
-    initModel line
-      |> State.withCmd lineCmd
-      |> State.joinCmd joinStory
+  Line.init
+    |> State.map initModel LineMsg
+    |> State.joinCmd joinStory
 
 initModel : Line.Model -> Model
 initModel line =
