@@ -21,7 +21,7 @@ background =
 
 -- init
 type alias State =
-  State.Base Model Msg
+  State.Pair Model Msg
 
 type Model
   = None

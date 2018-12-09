@@ -30,7 +30,7 @@ serverUrl =
 
 -- state
 type alias State =
-  State.Base Model Msg
+  State.Pair Model Msg
 
 type alias Model =
   { stage      : Stage.Model

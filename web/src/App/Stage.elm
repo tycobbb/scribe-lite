@@ -16,7 +16,7 @@ import Session exposing (Session)
 
 -- state
 type alias State =
-  State.Base Model Msg
+  State.Pair Model Msg
 
 type Model
   = Active (Indexed Scene.Model)
@@ -130,7 +130,7 @@ viewScene scene animations =
     )
 
 -- scenes
-initScene : Url -> Int -> State.Base (Indexed Scene.Model) (Indexed Scene.Msg)
+initScene : Url -> Int -> State.Pair (Indexed Scene.Model) (Indexed Scene.Msg)
 initScene location index =
   let
     indexed =
@@ -141,7 +141,7 @@ initScene location index =
       |> Scene.init
       |> State.map indexed indexed
 
-updateScenes : Session -> Indexed Scene.Msg -> (Indexed Scene.Model, Indexed Scene.Model) -> State.Base (Indexed Scene.Model, Indexed Scene.Model) (Indexed Scene.Msg)
+updateScenes : Session -> Indexed Scene.Msg -> (Indexed Scene.Model, Indexed Scene.Model) -> State.Pair (Indexed Scene.Model, Indexed Scene.Model) (Indexed Scene.Msg)
 updateScenes session msg scenes =
   let
     updateOne =
@@ -156,7 +156,7 @@ updateScenes session msg scenes =
       |> unzip
       |> Tuple.mapSecond batchCmds
 
-updateScene : Session -> Indexed Scene.Msg -> Indexed Scene.Model -> State.Base (Indexed Scene.Model) (Indexed Scene.Msg)
+updateScene : Session -> Indexed Scene.Msg -> Indexed Scene.Model -> State.Pair (Indexed Scene.Model) (Indexed Scene.Msg)
 updateScene session msg model =
   let
     updateOne =

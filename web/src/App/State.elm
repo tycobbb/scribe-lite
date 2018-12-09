@@ -1,29 +1,29 @@
 module State exposing (..)
 
-type alias Base a m =
+type alias Pair a m =
   ( a
   , Cmd m
   )
 
 -- initialization
-just : a -> Base a m
+just : a -> Pair a m
 just =
   withCmd Cmd.none
 
-withCmd : Cmd m -> a -> Base a m
+withCmd : Cmd m -> a -> Pair a m
 withCmd cmd model =
   ( model, cmd )
 
-withoutCmd : a -> Base a m
+withoutCmd : a -> Pair a m
 withoutCmd =
   just
 
 -- operations
-map : (a1 -> a2) -> (m1 -> m2) -> Base a1 m1 -> Base a2 m2
+map : (a1 -> a2) -> (m1 -> m2) -> Pair a1 m1 -> Pair a2 m2
 map toModel toMsg =
   Tuple.mapBoth toModel (Cmd.map toMsg)
 
-merge : (a1 -> a2 -> a2) -> (m1 -> m2) -> Base a1 m1 -> Base a2 m2 -> Base a2 m2
+merge : (a1 -> a2 -> a2) -> (m1 -> m2) -> Pair a1 m1 -> Pair a2 m2 -> Pair a2 m2
 merge toModel toMsg (newModel, newMsg) (model, msg) =
   ( toModel newModel model
   , Cmd.batch
@@ -31,7 +31,8 @@ merge toModel toMsg (newModel, newMsg) (model, msg) =
     , Cmd.map toMsg newMsg
     ]
   )
-joinCmd : Cmd m -> Base a m -> Base a m
+
+joinCmd : Cmd m -> Pair a m -> Pair a m
 joinCmd other ( model, cmd ) =
   ( model
   , Cmd.batch [ cmd, other ]
