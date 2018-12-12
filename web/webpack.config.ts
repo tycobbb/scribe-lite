@@ -5,7 +5,7 @@ const config: webpack.Configuration = {
   context: __dirname,
   entry: [
     "webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000",
-    "./src/Client/index.js"
+    "./src/Client/index.ts"
   ],
   output: {
     path: __dirname,
@@ -14,12 +14,17 @@ const config: webpack.Configuration = {
   },
   resolve: {
     extensions: [
-      ".js", ".elm"
+      ".js", ".ts", ".elm"
     ]
   },
   module: {
-    noParse: /\.elm$/,
     rules: [{
+      test: /\.ts$/,
+      exclude: [/node_modules/],
+      use: [{
+        loader: "ts-loader"
+      }]
+    }, {
       test: /\.elm$/,
       exclude: [/elm-stuff/, /node_modules/],
       use: [{

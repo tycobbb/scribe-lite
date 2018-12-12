@@ -1,5 +1,10 @@
+import { InPort, OutPort } from "../App/Main"
+
 export class Socket {
-  constructor(send, recv) {
+  private send: OutPort
+  private recv: InPort
+
+  constructor(send: OutPort, recv: InPort) {
     this.send = send
     this.recv = recv
   }
@@ -29,7 +34,7 @@ export class Socket {
     })
   }
 
-  respond(payload) {
+  respond(payload: any) {
     console.log("socket", "responding:", payload)
     this.recv.send(payload)
   }
