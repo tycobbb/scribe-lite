@@ -10,16 +10,29 @@ extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 struct Message<'a, T> {
     name: &'a str,
     data: T
 }
 
 #[derive(Serialize, Debug)]
-struct ErrorMessage<'a> {
-    name:  &'a str,
-    error: &'a str
+struct Response<'a, T> {
+    name: &'a str,
+    #[serde(flatten)]
+    payload: Payload<'a, T>
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all="lowercase")]
+enum Payload<'a, T> {
+    Data(T),
+    Error(Errors<'a>)
+}
+
+#[derive(Serialize, Debug)]
+struct Errors<'a> {
+    messages: &'a str
 }
 
 #[derive(Serialize, Debug)]
@@ -37,15 +50,17 @@ fn decode<'a, T>(text: &'a str) -> Result<Message<'a, T>, Error> where T: serde:
     serde_json::from_str(text).map_err(Error::DecodeFailed)
 }
 
-fn encode<'a, T>(message: Message<'a, T>) -> String where T: serde::Serialize {
-    serde_json::to_string(&message)
-        .unwrap_or_else(|_| { encode_error(message.name) })
+fn encode<'a, T>(response: Response<'a, T>) -> String where T: serde::Serialize {
+    serde_json::to_string(&response)
+        .unwrap_or_else(|_| { encode_error(response) })
 }
 
-fn encode_error<'a>(name: &'a str) -> String {
-    let message = ErrorMessage {
-        name:  name,
-        error: "Server Error."
+fn encode_error<'a, T>(original: Response<'a, T>) -> String where T: serde::Serialize {
+    let message = Response::<T> {
+        name:    original.name,
+        payload: Payload::Error(Errors {
+            messages: "Encoding error."
+        })
     };
 
     serde_json::to_string(&message).unwrap()
@@ -66,16 +81,16 @@ fn main() {
 
                 if let Ok(message) = result {
                     match message.name {
-                        "STORY.JOIN" => out.send(ws::Message::text(encode(Message {
-                            name: "STORY.JOIN.DONE",
-                            data: JoinDone {
+                        "STORY.JOIN" => out.send(ws::Message::text(encode(Response {
+                            name:    "STORY.JOIN.DONE",
+                            payload: Payload::Data(JoinDone {
                                 name: "This is the first line.",
                                 text: "Mr. Socket"
-                            }
+                            })
                         }))),
-                        "STORY.ADD_LINE" => out.send(ws::Message::text(encode::<Option<&str>>(Message {
+                        "STORY.ADD_LINE" => out.send(ws::Message::text(encode(Response {
                             name: "STORY.ADD_LINE.DONE",
-                            data: None
+                            payload: Payload::Data::<Option<&str>>(None)
                         }))),
                         _ => Ok(())
                     }
