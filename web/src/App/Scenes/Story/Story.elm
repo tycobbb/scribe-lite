@@ -15,6 +15,7 @@ import State
 import Styles.Colors as Colors
 import Styles.Fonts as Fonts
 import Styles.Mixins as Mixins
+import Timers
 import Views.Button as Button
 import Views.Scene as Scene
 
@@ -39,7 +40,8 @@ init : State
 init =
   Line.init
     |> State.map initModel LineMsg
-    |> State.joinCmd joinStory
+    -- workaround https://github.com/elm/compiler/issues/1776
+    |> State.joinCmd (Timers.async JoinStory)
 
 initModel : Line.Model -> Model
 initModel line =
@@ -55,6 +57,7 @@ type Msg
   = LineMsg Line.Msg
   | ChangeEmail String
   | ChangeName String
+  | JoinStory
   | JoinStoryDone (Socket.Res StoryPrompt)
   | AddLine
   | AddLineDone (Socket.Res Bool)
@@ -64,14 +67,17 @@ update : Session -> Msg -> Model -> State
 update session msg model =
   case msg of
     LineMsg lineMsg ->
-      model
-        |> setLine (Line.update lineMsg model.line)
+      State.just model
+        |> State.merge setLine LineMsg (Line.update lineMsg model.line)
     ChangeEmail email ->
       { model | email = email }
         |> State.withoutCmd
     ChangeName name ->
       { model | name = name }
         |> State.withoutCmd
+    JoinStory ->
+      model
+        |> State.withCmd joinStory
     JoinStoryDone result ->
       case result of
         Ok prompt ->
@@ -88,16 +94,14 @@ update session msg model =
         Ok _ ->
           model
             |> State.withCmd (Nav.replaceUrl session.key "/thanks")
-            |> State.joinCmd leaveStory
         Err _ ->
           State.just model
     Ignored ->
       State.just model
 
-setLine : Line.State -> Model -> State
-setLine (line, cmd) model =
+setLine : Line.Model -> Model -> Model
+setLine line model =
   { model | line = line }
-    |> State.withCmd (Cmd.map LineMsg cmd)
 
 setPrompt : StoryPrompt -> Model -> Model
 setPrompt { text, name } model =
@@ -155,11 +159,6 @@ addLineDone =
   JD.null True
     |> Socket.Event "STORY.ADD_LINE.DONE"
     |> Socket.subscribe AddLineDone Ignored
-
--- STORY.LEAVE
-leaveStory : Cmd Msg
-leaveStory =
-  Cmd.none
 
 -- view
 view : Model -> Html Msg

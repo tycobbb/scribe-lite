@@ -5,14 +5,13 @@ import Css.Global as CG
 import Html.Styled as H exposing (Html)
 import Html.Styled.Attributes exposing (css, style)
 import Html.Styled.Keyed as HK
-import Process
-import Task
 import Url exposing (Url)
 
 import Route
 import Scenes.Scene as Scene
 import State
 import Session exposing (Session)
+import Timers
 
 -- state
 type alias State =
@@ -39,7 +38,7 @@ transition url model =
     Active exiting ->
       initScene url (exiting.index + 1)
         |> State.map ((Tuple.pair exiting) >> (Transition False)) SceneMsg
-        |> State.joinCmd (async StartTransition)
+        |> State.joinCmd (Timers.async StartTransition)
     _ ->
       State.just model
 
@@ -61,8 +60,9 @@ update session msgBox model =
         |> updateScenes session msg
         |> State.map (Transition isActive) SceneMsg
     ( StartTransition, Transition False scenes ) ->
-      Transition True scenes
-        |> State.withCmd (delay duration EndTransition)
+      scenes
+        |> Transition True
+        |> State.withCmd (Timers.delay duration EndTransition)
     ( EndTransition, Transition True (_, entering) ) ->
       State.just (Active entering)
     _ ->
@@ -72,9 +72,9 @@ update session msgBox model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
   let
-    fromScene { index, item } =
-      Scene.subscriptions item
-        |> Sub.map (indexedT SceneMsg index)
+    fromScene mod =
+      Scene.subscriptions mod.item
+        |> Sub.map (indexedT SceneMsg mod.index)
   in
     case model of
       Active scene ->
@@ -186,16 +186,6 @@ indexedT : (Indexed a -> b) -> Int -> a -> b
 indexedT other index =
   (Indexed index) >> other
 
--- timers
-async : m -> Cmd m
-async =
-  delay 17
-
-delay : Float -> m -> Cmd m
-delay time msg =
-  Process.sleep time
-    |> Task.perform (always msg)
-
 -- styles
 duration    : number
 duration    = 300
@@ -203,6 +193,7 @@ duration    = 300
 translation : number
 translation = 50
 
+stageS : List (H.Attribute Msg) -> List (String, Html Msg) -> Html Msg
 stageS attrs =
   HK.node "main"
     (attrs ++
@@ -216,6 +207,7 @@ stageS attrs =
       ]
     )
 
+sceneS : List (H.Attribute msg) -> List (Html msg) -> Html msg
 sceneS =
   H.styled H.div
     [ transitionB ["top", "opacity"]

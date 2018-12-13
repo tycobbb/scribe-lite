@@ -23,19 +23,13 @@ main =
     , onUrlRequest = ClickedLink
     }
 
--- constants
-serverUrl : String
-serverUrl =
-  "ws://localhost:4000/socket/websocket"
-
 -- state
 type alias State =
   State.Pair Model Msg
 
 type alias Model =
-  { stage      : Stage.Model
-  , sceneIndex : Int
-  , session    : Session
+  { stage   : Stage.Model
+  , session : Session
   }
 
 init _ url key =
@@ -45,7 +39,6 @@ init _ url key =
 initModel : Nav.Key -> Stage.Model -> Model
 initModel key stage =
   { stage      = stage
-  , sceneIndex = 0
   , session    = Session key
   }
 
