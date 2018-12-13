@@ -15,34 +15,14 @@ export class Socket {
 
   start() {
     this.socket           = new WebSocket("ws://localhost:8080")
-    this.socket.onopen    = this.flush.bind(this)
-    this.socket.onmessage = this.handle.bind(this)
+    this.socket.onopen    = this.flush
+    this.socket.onmessage = this.handle
 
-    this.send.subscribe(this.enqueue.bind(this))
-
-      // setTimeout(() => {
-      //   switch (data.name) {
-      //     case "STORY.JOIN":
-      //       this.respond({
-      //         name: "STORY.JOIN.DONE",
-      //         data: {
-      //           text: "This is the first line.",
-      //           name: "Mr. Socket"
-      //         }
-      //       }); break;
-      //     case "STORY.ADD_LINE":
-      //       this.respond({
-      //         name: "STORY.ADD_LINE.DONE",
-      //         data: null
-      //       }); break;
-      //     default: break;
-      //   }
-      // }, 100)
-    // })
+    this.send.subscribe(this.enqueue)
   }
 
   // push messages
-  private enqueue(message: any) {
+  private enqueue = (message: any) => {
     const state = this.socket!.readyState
     if (state == WebSocket.CLOSED || state == WebSocket.CLOSING) {
       return
@@ -56,7 +36,7 @@ export class Socket {
     }
   }
 
-  private flush() {
+  private flush = () => {
     for (const message of this.messages) {
       const json = JSON.stringify(message)
       this.socket!.send(json)
@@ -66,7 +46,12 @@ export class Socket {
   }
 
   // handle events
-  private handle(event: MessageEvent) {
+  private handle = (event: MessageEvent) => {
     console.debug("socket", "received:", event.data)
+
+    if (event.data) {
+      const json = JSON.parse(event.data)
+      this.recv.send(json)
+    }
   }
 }
