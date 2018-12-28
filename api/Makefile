@@ -4,14 +4,12 @@
 ## starts the api server
 s:
 	cargo run
-
 .PHONY: s
 
 # -- build --
 ## builds the api code
 b:
 	cargo build
-
 .PHONY: b
 
 # -- help --
@@ -21,7 +19,7 @@ help:
 define HELP
 BEGIN {
 	print "\033[4;37musage:\033[0m";
-	print "  \033[1;37mmake <command>\033[0m\n";
+	print "  \033[1;37mmake <target>\033[0m\n";
 	print "\033[4;37mcommands:\033[0m";
 }
 /^## (.*)$$/ {
@@ -33,4 +31,4 @@ BEGIN {
 endef
 export HELP
 
-.PHONY = help
+.PHONY: help

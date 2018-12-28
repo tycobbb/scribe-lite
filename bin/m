@@ -1,0 +1,60 @@
+#!/bin/sh
+
+# text styles
+rs="\033[0m"
+bd="\033[1;37m"
+ul="\033[4;37m"
+rd="\033[1;31m"
+gr="\033[0;90m"
+
+# usage
+function usage() {
+  local help=$(cat \
+<<-HELP
+${ul}usage:${rs}
+  ${bd}m <project> <make-target>${rs}
+
+${ul}projects:${rs}
+  $(show_project a)
+  $(show_project w)
+HELP
+  );
+
+  echo "$help" 1>&2; exit 0;
+}
+
+# projects
+function get_project() {
+  local project=""
+
+  case "$1" in
+    a|api) project="api" ;;
+    w|web) project="web" ;;
+  esac
+
+  echo $project
+}
+
+function show_project() {
+  printf "${rd}%-2s  ${gr}%s${rs}\n" $1 $(get_project $1)
+}
+
+# arguments
+function parse_args() {
+  project=$(get_project $1)
+
+  if [ -z "$project" ]; then
+    usage;
+  fi
+
+  options=$(echo "${@:2}")
+}
+
+# main
+function main() {
+  parse_args "$@"
+  # proxy command to the project-specific make
+  make -C $project $options
+}
+
+main "$@"

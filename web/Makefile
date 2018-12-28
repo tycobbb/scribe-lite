@@ -8,11 +8,12 @@ jbin = ./node_modules/.bin
 ## starts the dev server
 s:
 	$(jbin)/ts-node index.ts
+.PHONY: s
+
 ## kills the running dev server
 s/kill:
 	lsof -t -i:3000 | xargs kill
-
-.PHONY: s s/kill
+.PHONY: s/kill
 
 # -- help --
 help:
@@ -21,7 +22,7 @@ help:
 define HELP
 BEGIN {
 	print "\033[4;37musage:\033[0m";
-	print "  \033[1;37mmake <command>\033[0m\n";
+	print "  \033[1;37mmake <target>\033[0m\n";
 	print "\033[4;37mcommands:\033[0m";
 }
 /^## (.*)$$/ {
@@ -33,4 +34,4 @@ BEGIN {
 endef
 export HELP
 
-.PHONY = help
+.PHONY: help

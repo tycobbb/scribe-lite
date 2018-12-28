@@ -17,8 +17,8 @@ type alias Envelope p =
 encodeEnvelope : Envelope JE.Value -> JE.Value
 encodeEnvelope envelope =
   JE.object
-    [ ("name", JE.string envelope.name)
-    , ("data", envelope.payload)
+    [ ("name",   JE.string envelope.name)
+    , ("params", envelope.payload)
     ]
 
 decodeEnvelope : JD.Decoder p -> JD.Decoder (Envelope p)
