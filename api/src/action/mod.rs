@@ -1,4 +1,4 @@
 mod story;
 
 pub mod routes;
-pub use actions::routes::*;
+pub use action::routes::*;

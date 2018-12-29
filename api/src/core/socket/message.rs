@@ -1,6 +1,6 @@
 use serde::Serialize;
-use action;
-use action::Action;
+use core::action as action;
+use core::action::Action;
 use socket;
 use socket::event::{ EventIn, EventOut };
 

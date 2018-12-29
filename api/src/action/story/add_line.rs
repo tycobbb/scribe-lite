@@ -1,4 +1,4 @@
-use action::{ Action, Result };
+use core::action::{ Action, Result };
 
 // types
 pub struct AddLine;

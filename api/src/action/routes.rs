@@ -1,6 +1,6 @@
 use socket;
 use socket::{ EventIn, MessageIn };
-use actions::story;
+use action::story;
 
 // types
 pub struct Routes;

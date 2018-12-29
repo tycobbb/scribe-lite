@@ -10,12 +10,13 @@ extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
+mod core;
 mod action;
-mod actions;
-mod socket;
+
+use core::socket as socket;
 
 fn main() {
     dotenv::dotenv().ok();
-    socket::listen(&actions::Routes);
+    socket::listen(&action::Routes);
     rocket::ignite().mount("/", routes![]).launch();
 }

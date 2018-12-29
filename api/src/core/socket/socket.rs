@@ -1,4 +1,4 @@
-use action;
+use core::action as action;
 use socket;
 use socket::routes::Routes;
 use socket::event::EventOut;
