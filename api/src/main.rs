@@ -11,11 +11,11 @@ extern crate serde_json;
 extern crate serde_derive;
 
 mod action;
-mod story;
+mod actions;
 mod socket;
 
 fn main() {
     dotenv::dotenv().ok();
-    socket::listen();
+    socket::listen(&actions::Routes);
     rocket::ignite().mount("/", routes![]).launch();
 }

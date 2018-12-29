@@ -9,7 +9,7 @@ pub struct Response<'a> {
     name: &'a str
 }
 
-// action
+// impls
 impl<'a> Action<'a, Response<'a>> for Join {
     fn call(&self) -> Result<'a, Response<'a>> {
         Ok(Response {

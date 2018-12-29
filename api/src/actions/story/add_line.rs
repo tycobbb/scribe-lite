@@ -3,7 +3,7 @@ use action::{ Action, Result };
 // types
 pub struct AddLine;
 
-// action
+// impls
 impl<'a> Action<'a, ()> for AddLine {
     fn call(&self) -> Result<'a, ()> {
         Ok(())
