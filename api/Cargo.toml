@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Ty Cobb <ty.cobb.m@gmail.com>"]
 
 [dependencies]
+chrono       = "0.4.6"
 dotenv       = "0.13.0"
 rocket       = "0.4.0-rc.1"
 ws           = "0.7.9"
@@ -16,4 +17,4 @@ features = ["raw_value"]
 
 [dependencies.diesel]
 version  = "1.3.3"
-features = ["postgres"]
+features = ["postgres", "chrono"]

@@ -6,11 +6,20 @@ s:
 	cargo run
 .PHONY: s
 
-# -- build --
 ## builds the api code
 b:
 	cargo build
 .PHONY: b
+
+# -- db --
+## runs the database migrations
+db/m:
+	diesel migration run
+.PHONY: db/m
+
+## re-runs the most recent migration
+db/m/redo:
+	diesel migration redo
 
 # -- help --
 help:
@@ -26,7 +35,7 @@ BEGIN {
 	$$1=""; docs=$$0;
 	getline;
 	sub(/:/, "", $$1);
-	printf "  \033[1;31m%-2s\033[0;90m %s\033[0m\n", $$1, docs;
+	printf "  \033[1;31m%-9s\033[0;90m %s\033[0m\n", $$1, docs;
 }
 endef
 export HELP
