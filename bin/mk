@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# text styles
+# cosmetics
 rs="\033[0m"
 bd="\033[1;37m"
 ul="\033[4;37m"
@@ -12,7 +12,7 @@ function usage() {
   local help=$(cat \
 <<-HELP
 ${ul}usage:${rs}
-  ${bd}m <project> <make-target>${rs}
+  ${bd}$(basename $0) <project> <make-target>${rs}
 
 ${ul}projects:${rs}
   $(show_project a)
@@ -20,7 +20,7 @@ ${ul}projects:${rs}
 HELP
   );
 
-  echo "$help" 1>&2; exit 0;
+  echo "$help" 1>&2; exit 1;
 }
 
 # projects

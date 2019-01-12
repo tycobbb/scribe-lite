@@ -1,4 +1,7 @@
-pub mod schema;
+mod connect;
+use core::db::connect::*;
 
-pub mod connect;
-pub use core::db::connect::*;
+pub mod connected;
+pub use core::db::connected::*;
+
+pub mod schema;

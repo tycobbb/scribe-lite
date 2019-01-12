@@ -1,16 +1,12 @@
 table! {
     lines (id) {
         id -> Int4,
-        text -> Nullable<Varchar>,
-        email -> Nullable<Varchar>,
-        name -> Nullable<Varchar>,
-    }
-}
-
-table! {
-    schema_migrations (version) {
-        version -> Int8,
-        inserted_at -> Nullable<Timestamp>,
+        text -> Text,
+        name -> Nullable<Text>,
+        email -> Nullable<Text>,
+        story_id -> Int4,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -22,8 +18,9 @@ table! {
     }
 }
 
+joinable!(lines -> stories (story_id));
+
 allow_tables_to_appear_in_same_query!(
     lines,
-    schema_migrations,
     stories,
 );

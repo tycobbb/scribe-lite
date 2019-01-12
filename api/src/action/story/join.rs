@@ -1,24 +1,45 @@
-use core::action::{ Action, Result };
+use core::action::{ Action, Errors, Result };
 use domain::story;
+use core::db::Connected;
 
 // types
 pub struct Join;
 
 #[derive(Serialize, Debug)]
-pub struct Response<'a> {
-    text: &'a str,
-    name: &'a str
+pub struct Response {
+    text: String,
+    name: Option<String>
 }
 
 // impls
-impl<'a> Action<'a, Response<'a>> for Join {
-    fn call(&self) -> Result<'a, Response<'a>> {
-        let _ = story::Repo.today()
-            .or_else(|_| story::Factory.create_for_today());
+impl<'a> Action<'a, Option<Response>> for Join {
+    fn call(&self) -> Result<'a, Option<Response>> {
+        let repo  = story::Repo::connect();
+        let story = repo.today()
+            .or_else(|_| story::Factory::consume(repo).create_for_today())
+            .map_err(Join::errors)?;
 
-        Ok(Response {
-            name: "Mr. Socket",
-            text: "This is the first line."
-        })
+        let response = story
+            .previous_line()
+            .map(Response::from_line);
+
+        Ok(response)
+    }
+}
+
+impl Join {
+    fn errors<'a>(_: diesel::result::Error) -> Errors<'a> {
+        Errors {
+            messages: "Errors joining story."
+        }
+    }
+}
+
+impl Response {
+    fn from_line(line: &story::Line) -> Response {
+        Response {
+            text: line.text.clone(),
+            name: line.name.clone()
+        }
     }
 }

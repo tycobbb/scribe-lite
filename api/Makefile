@@ -12,6 +12,11 @@ b:
 .PHONY: b
 
 # -- db --
+## resets the database
+db/r:
+	diesel database reset
+.PHONY: db/r
+
 ## runs the database migrations
 db/m:
 	diesel migration run
