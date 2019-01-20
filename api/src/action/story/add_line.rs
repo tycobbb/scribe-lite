@@ -1,4 +1,6 @@
-use core::action::{ Action, Result };
+use core::action::{ Action, Errors, Result };
+use core::db::Connected;
+use domain::story;
 
 // types
 pub struct AddLine;
@@ -6,6 +8,29 @@ pub struct AddLine;
 // impls
 impl<'a> Action<'a, ()> for AddLine {
     fn call(&self) -> Result<'a, ()> {
+        let repo = story::Repo::connect();
+
+        let mut story = repo
+            .today()
+            .map_err(AddLine::errors)?;
+
+        story.add_line(
+            "This is a fake line",
+            Some("Not Real"),
+            Some("test@email.com")
+        );
+
+        repo.save(&mut story)
+            .map_err(AddLine::errors)?;
+
         Ok(())
+    }
+}
+
+impl AddLine {
+    fn errors<'a>(_: diesel::result::Error) -> Errors<'a> {
+        Errors {
+            messages: "Errors adding line to story."
+        }
     }
 }

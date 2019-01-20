@@ -1,6 +1,6 @@
 use core::action::{ Action, Errors, Result };
-use domain::story;
 use core::db::Connected;
+use domain::story;
 
 // types
 pub struct Join;

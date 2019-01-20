@@ -16,7 +16,7 @@ impl Factory {
         diesel::insert_into(stories::table)
             .default_values()
             .get_result::<Record>(&self.conn)
-            .map(Story::from_db_with_defaults)
+            .map(Story::from_db_initial)
     }
 }
 
@@ -24,10 +24,8 @@ impl db::Connected for Factory {
     fn conn(self) -> diesel::PgConnection {
         self.conn
     }
-}
 
-impl From<diesel::PgConnection> for Factory {
-    fn from(conn: diesel::PgConnection) -> Factory {
+    fn from_conn(conn: diesel::PgConnection) -> Self {
         Factory {
             conn: conn
         }

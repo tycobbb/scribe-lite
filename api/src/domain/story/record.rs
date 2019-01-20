@@ -1,4 +1,4 @@
-use chrono::{ NaiveDateTime };
+use chrono::NaiveDateTime;
 use core::db::schema::stories;
 use domain::story::story::Story;
 use domain::story::line;
@@ -14,17 +14,18 @@ pub struct Record {
 
 // impls
 impl Story {
-    pub fn from_db_with_defaults(record: Record) -> Story {
+    pub fn from_db_initial(record: Record) -> Self {
         Story::from_db(record, vec![])
     }
 
-    pub fn from_db(_: Record, lines: Vec<line::Record>) -> Story {
+    pub fn from_db(record: Record, lines: Vec<line::Record>) -> Self {
         let lines = lines
             .into_iter()
             .map(line::Line::from_db);
 
-        Story {
-            lines: lines.collect()
-        }
+        Story::new(
+            record.id,
+            lines.collect()
+        )
     }
 }

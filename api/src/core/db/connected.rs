@@ -1,16 +1,17 @@
 use core::db;
 
 // trait
-pub trait Connected: From<diesel::PgConnection> {
+pub trait Connected {
     // interface
     fn conn(self) -> diesel::PgConnection;
+    fn from_conn(conn: diesel::PgConnection) -> Self where Self: Sized;
 
     // factories
     fn connect() -> Self where Self: Sized {
-        Self::from(db::connect())
+        Self::from_conn(db::connect())
     }
 
     fn consume<T>(other: T) -> Self where Self: Sized, T: Connected + Sized {
-        Self::from(other.conn())
+        Self::from_conn(other.conn())
     }
 }

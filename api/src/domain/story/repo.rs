@@ -1,6 +1,7 @@
 use chrono::Utc;
 use diesel::prelude::*;
 use core::db;
+use core::empty;
 use domain::story;
 use domain::story::line;
 
@@ -11,10 +12,27 @@ pub struct Repo {
 
 // impls
 impl Repo {
+    // commands
+    #[must_use]
+    pub fn save(&self, story: &mut story::Story) -> QueryResult<()> {
+        use core::db::schema::lines;
+
+        if let Some(line) = story.new_line() {
+            line
+                .to_new_record(story.id)
+                .insert_into(lines::table)
+                .execute(&self.conn)
+                .map(empty::ignore)?;
+        }
+
+        Ok(())
+    }
+
+    // queries
     pub fn today(&self) -> QueryResult<story::Story> {
         use core::db::schema::{ stories, lines };
 
-        // find todays story
+        // find today's story
         let midnight = Utc::today()
             .and_hms(0, 0, 0)
             .naive_utc();
@@ -37,10 +55,8 @@ impl db::Connected for Repo {
     fn conn(self) -> diesel::PgConnection {
         self.conn
     }
-}
 
-impl From<diesel::PgConnection> for Repo {
-    fn from(conn: diesel::PgConnection) -> Repo {
+    fn from_conn(conn: diesel::PgConnection) -> Self {
         Repo {
             conn: conn
         }
