@@ -29,7 +29,6 @@ export class Socket {
     }
 
     this.messages.push(message)
-    console.debug("socket", "enqueued:", message)
 
     if (state == WebSocket.OPEN) {
       this.flush()
@@ -39,6 +38,7 @@ export class Socket {
   private flush = () => {
     for (const message of this.messages) {
       const json = JSON.stringify(message)
+      console.debug("Socket.ts", "sending", json)
       this.socket!.send(json)
     }
 
@@ -47,7 +47,7 @@ export class Socket {
 
   // handle events
   private handle = (event: MessageEvent) => {
-    console.debug("socket", "received:", event.data)
+    console.debug("Socket.ts", "received", event.data)
 
     if (event.data) {
       const json = JSON.parse(event.data)

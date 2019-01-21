@@ -18,6 +18,7 @@ dependencies = [
  "serde_derive 1.0.85 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.36 (registry+https://github.com/rust-lang/crates.io-index)",
  "ws 0.7.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "yansi 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -263,7 +264,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "cfg-if 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.47 (registry+https://github.com/rust-lang/crates.io-index)",
- "redox_syscall 0.1.50 (registry+https://github.com/rust-lang/crates.io-index)",
+ "redox_syscall 0.1.51 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -502,7 +503,7 @@ dependencies = [
 
 [[package]]
 name = "redox_syscall"
-version = "0.1.50"
+version = "0.1.51"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -693,7 +694,7 @@ version = "0.1.42"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libc 0.2.47 (registry+https://github.com/rust-lang/crates.io-index)",
- "redox_syscall 0.1.50 (registry+https://github.com/rust-lang/crates.io-index)",
+ "redox_syscall 0.1.51 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -913,7 +914,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum rand 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)" = "dee497e66d8d76bf08ce20c8d36e16f93749ab0bf89975b4f8ae5cee660c2da2"
 "checksum rand_core 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "0905b6b7079ec73b314d4c748701f6931eb79fd97c668caa3f1899b22b32c6db"
 "checksum rdrand 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "678054eb77286b51581ba43620cc911abf02758c91f93f479767aed0f90458b2"
-"checksum redox_syscall 0.1.50 (registry+https://github.com/rust-lang/crates.io-index)" = "52ee9a534dc1301776eff45b4fa92d2c39b1d8c3d3357e6eb593e0d795506fc2"
+"checksum redox_syscall 0.1.51 (registry+https://github.com/rust-lang/crates.io-index)" = "423e376fffca3dfa06c9e9790a9ccd282fafb3cc6e6397d01dbf64f9bacc6b85"
 "checksum regex 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "37e7cbbd370869ce2e8dff25c7018702d10b21a20ef7135316f8daecd6c25b7f"
 "checksum regex-syntax 0.6.4 (registry+https://github.com/rust-lang/crates.io-index)" = "4e47a2ed29da7a9e1960e1639e7a982e6edc6d49be308a3b02daf511504a16d1"
 "checksum ring 0.13.5 (registry+https://github.com/rust-lang/crates.io-index)" = "2c4db68a2e35f3497146b7e4563df7d4773a2433230c5e4b448328e31740458a"

@@ -52,7 +52,7 @@ impl<'a, T> Socket<'a, T> where T: Routes {
     }
 
     fn send_error(&self, error: socket::Error) -> ws::Result<()> {
-        print!("socket error: {:?}", error);
+        println!("socket error: {:?}", error);
 
         let message = MessageOut::<()>::failure(
             EventOut::NetworkError,
