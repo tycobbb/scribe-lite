@@ -12,8 +12,8 @@ pub struct Response {
 }
 
 // impls
-impl<'a> Action<'a, Option<Response>> for Join {
-    fn call(&self) -> Result<'a, Option<Response>> {
+impl<'a> Action<'a, Response> for Join {
+    fn call(&self) -> Result<'a, Response> {
         let repo  = story::Repo::connect();
         let story = repo.today()
             .or_else(|_| story::Factory::consume(repo).create_for_today())
@@ -21,7 +21,8 @@ impl<'a> Action<'a, Option<Response>> for Join {
 
         let response = story
             .previous_line()
-            .map(Response::from_line);
+            .map(Response::from_line)
+            .unwrap_or_default();
 
         Ok(response)
     }
@@ -36,10 +37,19 @@ impl Join {
 }
 
 impl Response {
-    fn from_line(line: &story::Line) -> Response {
+    fn from_line(line: &story::Line) -> Self {
         Response {
             text: line.text.clone(),
             name: line.name.clone()
+        }
+    }
+}
+
+impl Default for Response {
+    fn default() -> Self {
+        Response {
+            text: "You get to write the first line! Follow your heart <3".to_string(),
+            name: None
         }
     }
 }

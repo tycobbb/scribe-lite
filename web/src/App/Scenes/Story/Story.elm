@@ -58,9 +58,9 @@ type Msg
   | ChangeEmail String
   | ChangeName String
   | JoinStory
-  | JoinStoryDone (Socket.Res StoryPrompt)
+  | JoinStoryDone (Socket.Result Prompt)
   | AddLine
-  | AddLineDone (Socket.Res Bool)
+  | AddLineDone (Socket.Result Bool)
   | Ignored
 
 update : Session -> Msg -> Model -> State
@@ -103,9 +103,9 @@ setLine : Line.Model -> Model -> Model
 setLine line model =
   { model | line = line }
 
-setPrompt : StoryPrompt -> Model -> Model
+setPrompt : Prompt -> Model -> Model
 setPrompt { text, name } model =
-  { model | prompt = text, author = name }
+  { model | prompt = text, author = Maybe.withDefault "" name }
 
 -- subscriptions
 subscriptions : Model -> Sub Msg
@@ -116,9 +116,9 @@ subscriptions model =
     ]
 
 -- STORY.JOIN
-type alias StoryPrompt =
+type alias Prompt =
   { text : String
-  , name : String
+  , name : Maybe String
   }
 
 joinStory : Cmd Msg
@@ -130,12 +130,12 @@ joinStory =
 joinStoryDone : Sub Msg
 joinStoryDone =
   let
-    decoder =
-      JD.map2 StoryPrompt
+    decodePrompt =
+      JD.map2 Prompt
         (JD.field "text" JD.string)
-        (JD.field "name" JD.string)
+        (JD.field "name" (JD.nullable JD.string))
   in
-    decoder
+    decodePrompt
       |> Socket.Event "STORY.JOIN.DONE"
       |> Socket.subscribe JoinStoryDone Ignored
 

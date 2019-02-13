@@ -15,9 +15,9 @@ impl<'a> Action<'a, ()> for AddLine {
             .map_err(AddLine::errors)?;
 
         story.add_line(
-            "This is a fake line",
-            Some("Not Real"),
-            Some("test@email.com")
+            "This is a real fake line",
+            Some("Real Fake"),
+            Some("real@fake.com")
         );
 
         repo.save(&mut story)
