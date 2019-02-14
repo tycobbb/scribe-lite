@@ -20,7 +20,7 @@ mod core;
 mod domain;
 mod action;
 
-use core::socket as socket;
+use core::socket;
 
 fn main() {
     dotenv::dotenv().ok();

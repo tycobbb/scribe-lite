@@ -1,4 +1,5 @@
 mod story;
+mod event;
+mod routes;
 
-pub mod routes;
-pub use action::routes::*;
+pub use self::routes::*;

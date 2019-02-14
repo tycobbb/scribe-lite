@@ -1,6 +1,8 @@
-use domain::story::line::Line;
+use super::line::Line;
+use super::prompt::Prompt;
 
 // types
+#[derive(Debug)]
 pub struct Story {
     pub id:           i32,
     pub lines:        Vec<Line>,
@@ -33,6 +35,12 @@ impl Story {
     }
 
     // queries
+    pub fn next_line_prompt(&self) -> Prompt {
+        self.previous_line()
+            .map(Prompt::from_line)
+            .unwrap_or_default()
+    }
+
     pub fn new_line(&self) -> Option<&Line> {
         if self.has_new_line {
             self.lines.last()

@@ -4,7 +4,7 @@ use domain::story::Record as Story;
 use domain::story::line::Line;
 
 // types
-#[derive(Identifiable, Associations, Queryable)]
+#[derive(Debug, Identifiable, Associations, Queryable)]
 #[belongs_to(Story)]
 #[table_name="lines"]
 pub struct Record {
@@ -17,7 +17,7 @@ pub struct Record {
     pub updated_at: NaiveDateTime
 }
 
-#[derive(Insertable)]
+#[derive(Debug, Insertable)]
 #[table_name="lines"]
 pub struct NewRecord<'a> {
     pub text:     &'a str,

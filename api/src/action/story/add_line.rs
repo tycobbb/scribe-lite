@@ -1,18 +1,24 @@
-use core::action::{ Action, Errors, Result };
+use core::action;
 use core::db::Connected;
 use domain::story;
+use action::event::*;
 
 // types
 pub struct AddLine;
 
 // impls
-impl<'a> Action<'a, ()> for AddLine {
-    fn call(&self) -> Result<'a, ()> {
+impl<'a> AddLine {
+    pub fn call(&self) -> Event<'a> {
         let repo = story::Repo::connect();
 
-        let mut story = repo
+        let result = repo
             .today()
-            .map_err(AddLine::errors)?;
+            .map_err(AddLine::errors);
+
+        let mut story = match result {
+            Ok(s)  => s,
+            Err(e) => return Event::ShowThanks(Err(e))
+        };
 
         story.add_line(
             "This is a real fake line",
@@ -20,16 +26,16 @@ impl<'a> Action<'a, ()> for AddLine {
             Some("real@fake.com")
         );
 
-        repo.save(&mut story)
-            .map_err(AddLine::errors)?;
+        let result = repo.save(&mut story)
+            .map_err(AddLine::errors);
 
-        Ok(())
+        Event::ShowThanks(result)
     }
 }
 
 impl AddLine {
-    fn errors<'a>(_: diesel::result::Error) -> Errors<'a> {
-        Errors {
+    fn errors<'a>(_: diesel::result::Error) -> action::Errors<'a> {
+        action::Errors {
             messages: "Errors adding line to story."
         }
     }

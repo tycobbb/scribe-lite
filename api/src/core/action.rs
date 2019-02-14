@@ -8,7 +8,7 @@ pub trait Action<'a, T> where T: Serialize {
 }
 
 // a result type for actions
-pub type Result<'a, T> =
+pub type Result<'a, T> where T: Serialize =
     std::result::Result<T, Errors<'a>>;
 
 // an error type that contains user-facing messages

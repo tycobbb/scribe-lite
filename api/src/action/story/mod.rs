@@ -1,5 +1,5 @@
-pub mod join;
-pub mod add_line;
+mod join;
+pub use self::join::*;
 
-pub use action::story::join::*;
-pub use action::story::add_line::*;
+mod add_line;
+pub use self::add_line::*;

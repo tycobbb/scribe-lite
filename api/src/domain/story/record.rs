@@ -1,10 +1,10 @@
 use chrono::NaiveDateTime;
 use core::db::schema::stories;
-use domain::story::story::Story;
-use domain::story::line;
+use super::Story;
+use super::line;
 
 // types
-#[derive(Identifiable, Queryable)]
+#[derive(Debug, Identifiable, Queryable)]
 #[table_name="stories"]
 pub struct Record {
     pub id:         i32,
