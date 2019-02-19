@@ -8,7 +8,7 @@ pub struct Join;
 
 // impls
 impl<'a> Join {
-    pub fn call(&self) -> Event<'a> {
+    pub fn call(&self) -> Event {
         let repo   = story::Repo::connect();
         let prompt = repo.today()
             .or_else(|_| story::Factory::consume(repo).create_for_today())
@@ -20,9 +20,9 @@ impl<'a> Join {
 }
 
 impl Join {
-    fn errors<'a>(_: diesel::result::Error) -> action::Errors<'a> {
-        action::Errors {
-            messages: "Errors joining story."
-        }
+    fn errors(_: diesel::result::Error) -> action::Errors {
+        action::Errors::new(
+            "Errors joining story."
+        )
     }
 }

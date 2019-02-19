@@ -11,19 +11,8 @@ pub enum EventIn {
 pub enum EventOut {
     #[serde(rename = "NETWORK_ERROR")]
     NetworkError,
-    #[serde(rename = "STORY.JOIN.DONE")]
-    StoryJoinDone,
-    #[serde(rename = "STORY.ADD_LINE.DONE")]
-    StoryAddLineDone,
-}
-
-// impls
-impl EventIn {
-    // queries
-    pub fn to_event_out(&self) -> EventOut {
-        match self {
-            EventIn::StoryJoin    => EventOut::StoryJoinDone,
-            EventIn::StoryAddLine => EventOut::StoryAddLineDone
-        }
-    }
+    #[serde(rename = "SHOW_PREVIOUS_LINE")]
+    ShowPreviousLine,
+    #[serde(rename = "SHOW_THANKS")]
+    ShowThanks,
 }

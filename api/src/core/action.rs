@@ -2,26 +2,26 @@ use serde::Serialize;
 
 // types
 // a command type that produces a serializable value or a user-facing error
-pub trait Action<'a, T> where T: Serialize {
+pub trait Action<T> where T: Serialize {
     // fires the action and returns the payload
-    fn call(&self) -> Result<'a, T>;
+    fn call(&self) -> Result<T>;
 }
 
 // a result type for actions
-pub type Result<'a, T> where T: Serialize =
-    std::result::Result<T, Errors<'a>>;
+pub type Result<T> where T: Serialize =
+    std::result::Result<T, Errors>;
 
 // an error type that contains user-facing messages
 #[derive(Serialize, Debug)]
-pub struct Errors<'a> {
-    pub messages: &'a str
+pub struct Errors {
+    pub messages: String
 }
 
 // impls
-impl<'a> Errors<'a> {
-    pub fn new(messages: &'a str) -> Errors<'a> {
+impl Errors {
+    pub fn new<S>(messages: S) -> Errors where S: Into<String> {
         Errors {
-            messages: messages
+            messages: messages.into()
         }
     }
 }

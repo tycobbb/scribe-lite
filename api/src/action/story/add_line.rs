@@ -8,7 +8,7 @@ pub struct AddLine;
 
 // impls
 impl<'a> AddLine {
-    pub fn call(&self) -> Event<'a> {
+    pub fn call(&self) -> Event {
         let repo = story::Repo::connect();
 
         let result = repo
@@ -34,9 +34,9 @@ impl<'a> AddLine {
 }
 
 impl AddLine {
-    fn errors<'a>(_: diesel::result::Error) -> action::Errors<'a> {
-        action::Errors {
-            messages: "Errors adding line to story."
-        }
+    fn errors(_: diesel::result::Error) -> action::Errors {
+        action::Errors::new(
+            "Errors adding line to story."
+        )
     }
 }
