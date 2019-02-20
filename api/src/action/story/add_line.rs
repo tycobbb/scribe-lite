@@ -1,14 +1,14 @@
-use core::action;
 use core::db::Connected;
 use domain::story;
+use action::action::{ self, Action };
 use action::event::*;
 
 // types
 pub struct AddLine;
 
 // impls
-impl<'a> AddLine {
-    pub fn call(&self) -> Event {
+impl Action for AddLine {
+    fn call(&self) -> Event {
         let repo = story::Repo::connect();
 
         let result = repo
@@ -34,8 +34,8 @@ impl<'a> AddLine {
 }
 
 impl AddLine {
-    fn errors(_: diesel::result::Error) -> action::Errors {
-        action::Errors::new(
+    fn errors(_: diesel::result::Error) -> action::Error {
+        action::Error::new(
             "Errors adding line to story."
         )
     }

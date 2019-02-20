@@ -1,7 +1,7 @@
 use diesel::prelude::*;
 use core::db;
-use domain::story::story::Story;
-use domain::story::record::Record;
+use super::story::Story;
+use super::record::Record;
 
 // types
 pub struct Factory {

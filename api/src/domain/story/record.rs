@@ -1,6 +1,6 @@
 use chrono::NaiveDateTime;
 use core::db::schema::stories;
-use super::Story;
+use super::story::Story;
 use super::line;
 
 // types

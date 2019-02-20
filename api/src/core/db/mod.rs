@@ -1,7 +1,7 @@
 mod connect;
-use core::db::connect::*;
+use self::connect::*;
 
 pub mod connected;
-pub use core::db::connected::*;
+pub use self::connected::*;
 
 pub mod schema;

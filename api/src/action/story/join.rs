@@ -1,14 +1,14 @@
-use core::action;
 use core::db::Connected;
 use domain::story;
+use action::action::{ self, Action };
 use action::event::*;
 
 // types
 pub struct Join;
 
 // impls
-impl<'a> Join {
-    pub fn call(&self) -> Event {
+impl Action for Join {
+    fn call(&self) -> Event {
         let repo   = story::Repo::connect();
         let prompt = repo.today()
             .or_else(|_| story::Factory::consume(repo).create_for_today())
@@ -20,8 +20,8 @@ impl<'a> Join {
 }
 
 impl Join {
-    fn errors(_: diesel::result::Error) -> action::Errors {
-        action::Errors::new(
+    fn errors(_: diesel::result::Error) -> action::Error {
+        action::Error::new(
             "Errors joining story."
         )
     }

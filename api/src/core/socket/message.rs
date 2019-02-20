@@ -1,9 +1,8 @@
-use serde::Serialize;
 use serde_json as json;
-use core::action as action;
-use core::action::Action;
-use socket;
-use socket::event::{ NameIn, NameOut };
+use serde::Serialize;
+use core::errors;
+use core::socket;
+use super::event::{ NameIn, NameOut };
 
 // types
 #[derive(Deserialize, Debug)]
@@ -24,7 +23,7 @@ pub struct MessageOut {
 #[serde(rename_all="lowercase")]
 pub enum Payload {
     Data(json::Value),
-    Errors(action::Errors)
+    Errors(errors::Errors)
 }
 
 // impls
@@ -52,7 +51,7 @@ impl MessageOut {
         )
     }
 
-    pub fn errors(name: NameOut, errors: action::Errors) -> MessageOut {
+    pub fn errors(name: NameOut, errors: errors::Errors) -> MessageOut {
         MessageOut::new(
             name,
             Payload::Errors(errors)

@@ -1,10 +1,8 @@
 use serde::Serialize;
 use serde_json as json;
-use core::action;
-use core::socket;
-use core::socket::{ NameIn, NameOut };
+use core::socket::{ self, NameIn, NameOut };
+use super::action::{ self, Action };
 use super::event::*;
-use super::event::Event::*;
 use super::story;
 
 // types
@@ -23,8 +21,8 @@ impl socket::Routes for Routes {
 impl Routes {
     fn resolve_event(&self, event: Event) -> socket::Result<socket::MessageOut> {
         match event {
-            ShowPreviousLine(res) => self.resolve_event_result(NameOut::ShowPreviousLine, res),
-            ShowThanks(res)       => self.resolve_event_result(NameOut::ShowThanks, res)
+            Event::ShowPreviousLine(res) => self.resolve_event_result(NameOut::ShowPreviousLine, res),
+            Event::ShowThanks(res)       => self.resolve_event_result(NameOut::ShowThanks, res)
         }
     }
 
@@ -35,8 +33,8 @@ impl Routes {
 
         let message = match encoded {
             Ok(Ok(json))   => socket::MessageOut::data(name, json),
-            Err(errors)    => socket::MessageOut::errors(name, errors)
-            Ok(Err(error)) => return Err(socket::Error::EncodeFailed(error)),
+            Err(errors)    => socket::MessageOut::errors(name, errors),
+            Ok(Err(error)) => return Err(socket::Error::EncodeFailed(error))
         };
 
         Ok(message)

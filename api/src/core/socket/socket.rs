@@ -1,10 +1,9 @@
 use serde_json as json;
-use core::action as action;
+use core::errors;
 use core::socket;
-use super::routes;
 use super::routes::Routes;
 use super::event::NameOut;
-use socket::message::{ MessageIn, MessageOut };
+use super::message::*;
 
 // types
 pub struct Socket<'a, T> where T: Routes {
@@ -52,7 +51,7 @@ impl<'a, T> Socket<'a, T> where T: Routes {
 
         let message = MessageOut::errors(
             NameOut::NetworkError,
-            action::Errors::new(
+            errors::Errors::new(
                 "Network Error"
             )
         );

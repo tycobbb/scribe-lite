@@ -1,7 +1,6 @@
 use yansi::Paint;
-use socket::socket;
-use socket::socket::Socket;
-use socket::routes::Routes;
+use super::socket::{ self, Socket };
+use super::routes::Routes;
 
 // constants
 pub const HOST: &'static str = "127.0.0.1:8080";

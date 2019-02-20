@@ -1,5 +1,5 @@
 pub mod line;
-pub use domain::story::line::line::*;
+pub use self::line::*;
 
 pub mod record;
-pub use domain::story::line::record::*;
+pub use self::record::*;

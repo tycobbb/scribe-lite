@@ -2,8 +2,7 @@ use chrono::Utc;
 use diesel::prelude::*;
 use core::db;
 use core::empty;
-use domain::story;
-use domain::story::line;
+use domain::story::{ self, line };
 
 // types
 pub struct Repo {
