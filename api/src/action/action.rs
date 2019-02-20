@@ -1,4 +1,3 @@
-use serde::Serialize;
 use core::errors;
 use super::event::Event;
 
@@ -10,7 +9,7 @@ pub trait Action {
 }
 
 // a result type for actions
-pub type Result<T> where T: Serialize =
+pub type Result<T> =
     std::result::Result<T, Error>;
 
 // a user-facing errors type

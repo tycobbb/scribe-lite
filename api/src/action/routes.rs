@@ -12,21 +12,21 @@ pub struct Routes;
 impl socket::Routes for Routes {
     fn resolve<'a>(&self, msg: socket::MessageIn<'a>) -> socket::Result<socket::MessageOut> {
         match msg.name {
-            NameIn::StoryJoin    => self.resolve_event(story::Join.call()),
-            NameIn::StoryAddLine => self.resolve_event(story::AddLine.call())
+            NameIn::StoryJoin    => self.to_action(&story::Join),
+            NameIn::StoryAddLine => self.to_action(&story::AddLine)
         }
     }
 }
 
 impl Routes {
-    fn resolve_event(&self, event: Event) -> socket::Result<socket::MessageOut> {
-        match event {
-            Event::ShowPreviousLine(res) => self.resolve_event_result(NameOut::ShowPreviousLine, res),
-            Event::ShowThanks(res)       => self.resolve_event_result(NameOut::ShowThanks, res)
+    fn to_action(&self, action: &Action) -> socket::Result<socket::MessageOut> {
+        match action.call() {
+            Event::ShowPreviousLine(res) => self.to_message(NameOut::ShowPreviousLine, res),
+            Event::ShowThanks(res)       => self.to_message(NameOut::ShowThanks, res)
         }
     }
 
-    fn resolve_event_result<T>(&self, name: NameOut, result: action::Result<T>) -> socket::Result<socket::MessageOut> where T: Serialize {
+    fn to_message<T>(&self, name: NameOut, result: action::Result<T>) -> socket::Result<socket::MessageOut> where T: Serialize {
         let encoded = result.map(|data| {
             json::to_value(data)
         });

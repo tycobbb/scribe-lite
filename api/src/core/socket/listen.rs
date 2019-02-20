@@ -1,5 +1,5 @@
 use yansi::Paint;
-use super::socket::{ self, Socket };
+use super::socket::Socket;
 use super::routes::Routes;
 
 // constants

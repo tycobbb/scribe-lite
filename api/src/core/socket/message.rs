@@ -1,5 +1,4 @@
 use serde_json as json;
-use serde::Serialize;
 use core::errors;
 use core::socket;
 use super::event::{ NameIn, NameOut };
