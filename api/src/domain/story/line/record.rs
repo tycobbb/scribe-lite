@@ -37,6 +37,7 @@ impl Line {
     }
 
     pub fn to_new_record(&self, story_id: i32) -> NewRecord {
+        // see: https://stackoverflow.com/a/34978794/755957
         NewRecord {
             text:     &self.text,
             name:     self.name.as_ref().map(String::as_ref),

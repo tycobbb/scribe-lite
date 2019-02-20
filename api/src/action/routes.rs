@@ -2,9 +2,8 @@ use serde::Serialize;
 use serde_json as json;
 use core::action;
 use core::socket;
-use core::socket::routes;
-use core::socket::{ EventIn, EventOut };
-use super::event;
+use core::socket::{ NameIn, NameOut };
+use super::event::*;
 use super::event::Event::*;
 use super::story;
 
@@ -13,26 +12,33 @@ pub struct Routes;
 
 // impls
 impl socket::Routes for Routes {
-    fn resolve<'a>(&self, msg: socket::MessageIn<'a>) -> socket::RouteOut {
+    fn resolve<'a>(&self, msg: socket::MessageIn<'a>) -> socket::Result<socket::MessageOut> {
         match msg.name {
-            EventIn::StoryJoin    => self.resolve_event(story::Join.call()),
-            EventIn::StoryAddLine => self.resolve_event(story::AddLine.call())
+            NameIn::StoryJoin    => self.resolve_event(story::Join.call()),
+            NameIn::StoryAddLine => self.resolve_event(story::AddLine.call())
         }
     }
 }
 
 impl Routes {
-    fn resolve_event(&self, event: event::Event) -> socket::RouteOut {
+    fn resolve_event(&self, event: Event) -> socket::Result<socket::MessageOut> {
         match event {
-            ShowPreviousLine(res) => socket::RouteOut::new(EventOut::ShowPreviousLine, self.encode_result(res)),
-            ShowThanks(res)       => socket::RouteOut::new(EventOut::ShowThanks, self.encode_result(res))
+            ShowPreviousLine(res) => self.resolve_event_result(NameOut::ShowPreviousLine, res),
+            ShowThanks(res)       => self.resolve_event_result(NameOut::ShowThanks, res)
         }
     }
 
-    fn encode_result<T>(&self, result: action::Result<T>) -> socket::Result<json::Value> where T: Serialize {
-        let value = result
-            .map_err(socket::Error::ActionFailed)?;
-        json::to_value(value)
-            .map_err(socket::Error::EncodeFailed)
+    fn resolve_event_result<T>(&self, name: NameOut, result: action::Result<T>) -> socket::Result<socket::MessageOut> where T: Serialize {
+        let encoded = result.map(|data| {
+            json::to_value(data)
+        });
+
+        let message = match encoded {
+            Ok(Ok(json))   => socket::MessageOut::data(name, json),
+            Err(errors)    => socket::MessageOut::errors(name, errors)
+            Ok(Err(error)) => return Err(socket::Error::EncodeFailed(error)),
+        };
+
+        Ok(message)
     }
 }

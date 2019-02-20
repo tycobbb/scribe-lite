@@ -3,14 +3,18 @@ use socket::socket;
 use socket::socket::Socket;
 use socket::routes::Routes;
 
+// constants
+pub const HOST: &'static str = "127.0.0.1:8080";
+
+// fns
 pub fn listen<T>(routes: &'static T) where T: Routes + Send + Sync {
     std::thread::spawn(move || {
         println!("🧦  {} {}",
             Paint::default("Socket is listening on").bold(),
-            Paint::default(socket::HOST.replace("127.0.0.1", "http://localhost")).bold().underline()
+            Paint::default(HOST.replace("127.0.0.1", "http://localhost")).bold().underline()
         );
 
-        ws::listen(socket::HOST, |out| {
+        ws::listen(HOST, |out| {
             let socket = Socket::new(out, routes);
 
             move |msg: ws::Message| {

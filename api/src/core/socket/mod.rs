@@ -1,16 +1,17 @@
 mod socket;
 
 pub mod result;
-pub use core::socket::result::*;
+pub use self::result::*;
 
 pub mod event;
-pub use core::socket::event::*;
+pub use self::event::*;
 
 pub mod message;
-pub use core::socket::message::*;
-
-pub mod routes;
-pub use core::socket::routes::*;
+pub use self::message::*;
 
 pub mod listen;
-pub use core::socket::listen::*;
+pub use self::listen::*;
+
+pub mod routes;
+pub use self::routes::*;
+

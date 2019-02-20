@@ -3,19 +3,19 @@ use serde_json as json;
 use core::action as action;
 use core::action::Action;
 use socket;
-use socket::event::{ EventIn, EventOut };
+use socket::event::{ NameIn, NameOut };
 
 // types
 #[derive(Deserialize, Debug)]
 pub struct MessageIn<'a> {
-    pub name: EventIn,
+    pub name: NameIn,
     #[serde(borrow)]
     pub params: &'a json::value::RawValue
 }
 
 #[derive(Serialize, Debug)]
 pub struct MessageOut {
-    pub name: EventOut,
+    pub name: NameOut,
     #[serde(flatten)]
     pub payload: Payload
 }
@@ -38,21 +38,21 @@ impl<'a> MessageIn<'a> {
 
 impl MessageOut {
     // init / factories
-    pub fn new(name: EventOut, payload: Payload) -> MessageOut {
+    pub fn new(name: NameOut, payload: Payload) -> MessageOut {
         MessageOut {
             name: name,
             payload: payload
         }
     }
 
-    pub fn data(name: EventOut, value: json::Value) -> MessageOut {
+    pub fn data(name: NameOut, value: json::Value) -> MessageOut {
         MessageOut::new(
             name,
             Payload::Data(value)
         )
     }
 
-    pub fn errors(name: EventOut, errors: action::Errors) -> MessageOut {
+    pub fn errors(name: NameOut, errors: action::Errors) -> MessageOut {
         MessageOut::new(
             name,
             Payload::Errors(errors)

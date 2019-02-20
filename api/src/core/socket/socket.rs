@@ -1,11 +1,10 @@
+use serde_json as json;
 use core::action as action;
-use socket;
-use socket::routes::*;
-use socket::event::EventOut;
+use core::socket;
+use super::routes;
+use super::routes::Routes;
+use super::event::NameOut;
 use socket::message::{ MessageIn, MessageOut };
-
-// constants
-pub const HOST: &'static str = "127.0.0.1:8080";
 
 // types
 pub struct Socket<'a, T> where T: Routes {
@@ -39,19 +38,12 @@ impl<'a, T> Socket<'a, T> where T: Routes {
             .and_then(MessageIn::decode)?;
 
         // if decoded, respond with an outgoing message
-        let route = self.routes
-            .resolve(incoming);
-
-        let outgoing = match route.result {
-            Ok(v) => MessageOut::data(route.name, v),
-            Err(socket::Error::ActionFailed(e)) => MessageOut::errors(route.name, e),
-            Err(e) => return Err(e)
-        };
-
-        let json = outgoing.encode()?;
+        let outgoing = self.routes
+            .resolve(incoming)?
+            .encode()?;
 
         // send the response
-        self.send(json)
+        self.send(outgoing)
             .map_err(socket::Error::SocketFailed)
     }
 
@@ -59,7 +51,7 @@ impl<'a, T> Socket<'a, T> where T: Routes {
         println!("socket error: {:?}", error);
 
         let message = MessageOut::errors(
-            EventOut::NetworkError,
+            NameOut::NetworkError,
             action::Errors::new(
                 "Network Error"
             )

@@ -1,6 +1,6 @@
 // types
 #[derive(Deserialize, Debug)]
-pub enum EventIn {
+pub enum NameIn {
     #[serde(rename = "STORY.JOIN")]
     StoryJoin,
     #[serde(rename = "STORY.ADD_LINE")]
@@ -8,7 +8,7 @@ pub enum EventIn {
 }
 
 #[derive(Serialize, Debug)]
-pub enum EventOut {
+pub enum NameOut {
     #[serde(rename = "NETWORK_ERROR")]
     NetworkError,
     #[serde(rename = "SHOW_PREVIOUS_LINE")]
