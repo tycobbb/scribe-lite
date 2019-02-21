@@ -6,9 +6,18 @@ use action::event::*;
 // types
 pub struct AddLine;
 
+#[derive(Deserialize, Debug)]
+pub struct NewLine<'a> {
+    text:  &'a str,
+    name:  Option<&'a str>,
+    email: Option<&'a str>
+}
+
 // impls
-impl Action for AddLine {
-    fn call(&self) -> Event {
+impl<'a> Action<'a> for AddLine {
+    type Args = NewLine<'a>;
+
+    fn call(&self, line: NewLine<'a>) -> Event {
         let repo = story::Repo::connect();
 
         let result = repo
@@ -21,9 +30,9 @@ impl Action for AddLine {
         };
 
         story.add_line(
-            "This is a real fake line",
-            Some("Real Fake"),
-            Some("real@fake.com")
+            line.text,
+            line.name,
+            line.email
         );
 
         let result = repo.save(&mut story)

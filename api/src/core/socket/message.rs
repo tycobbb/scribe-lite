@@ -1,6 +1,6 @@
+use serde::Deserialize;
 use serde_json as json;
-use core::errors;
-use core::socket;
+use core::{ errors, socket };
 use super::event::{ NameIn, NameOut };
 
 // types
@@ -28,8 +28,13 @@ pub enum Payload {
 // impls
 impl<'a> MessageIn<'a> {
     // json
-    pub fn decode(json: &'a str) -> socket::Result<MessageIn<'a>> {
-        serde_json::from_str(json)
+    pub fn decode(json_str: &'a str) -> socket::Result<MessageIn> {
+        json::from_str(json_str)
+            .map_err(socket::Error::DecodeFailed)
+    }
+
+    pub fn decode_args<T>(&self) -> socket::Result<T> where T: Deserialize<'a> {
+        json::from_str(self.args.get())
             .map_err(socket::Error::DecodeFailed)
     }
 }
@@ -59,7 +64,7 @@ impl MessageOut {
 
     // json
     pub fn encode(&self) -> socket::Result<String> {
-        serde_json::to_string(&self)
+        json::to_string(&self)
             .map_err(socket::Error::EncodeFailed)
     }
 }

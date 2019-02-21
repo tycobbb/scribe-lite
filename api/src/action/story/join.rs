@@ -7,8 +7,10 @@ use action::event::*;
 pub struct Join;
 
 // impls
-impl Action for Join {
-    fn call(&self) -> Event {
+impl<'a> Action<'a> for Join {
+    type Args = ();
+
+    fn call(&self, _: ()) -> Event {
         let repo   = story::Repo::connect();
         let prompt = repo.today()
             .or_else(|_| story::Factory::consume(repo).create_for_today())
