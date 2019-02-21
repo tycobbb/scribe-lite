@@ -1,64 +1,37 @@
-use core::errors;
-use core::socket;
+use yansi::{ Paint, Color };
 use super::routes::Routes;
-use super::event::NameOut;
-use super::message::*;
+use super::connection::Connection;
+
+// constants
+const HOST: &'static str = "127.0.0.1:8080";
 
 // types
-pub struct Socket<'a, T> where T: Routes {
-    out:    ws::Sender,
-    routes: &'a T
-}
+pub struct Socket;
 
 // impls
-impl<'a, T> Socket<'a, T> where T: Routes {
-    // init
-    pub fn new(out: ws::Sender, routes: &'a T) -> Socket<'a, T> {
-        Socket {
-            out:    out,
-            routes: routes
+impl Socket {
+    pub fn listen<T>(&self, routes: &'static T) where T: Routes + Send + Sync {
+        let result = ws::listen(HOST, |out| {
+            let connection = Connection::new(out, routes);
+            move |msg: ws::Message| {
+                connection.handle(msg)
+            }
+        });
+
+        self.notify(result);
+    }
+
+    fn notify(&self, result: ws::Result<()>) {
+        if let Err(error) = result {
+            println!("🧦  {}: {}",
+                Paint::default("Socket failed to start").bold().fg(Color::Red),
+                error
+            );
+        } else {
+            println!("🧦  {} {}",
+                Paint::default("Socket is listening on").bold(),
+                Paint::default(HOST.replace("127.0.0.1", "http://localhost")).bold().underline()
+            );
         }
-    }
-
-    // handle
-    pub fn handle(&self, msg: ws::Message) -> ws::Result<()> {
-        self.send_response(msg)
-            .or_else(|error| {
-                self.send_error(error)
-            })
-    }
-
-    fn send_response(&self, msg: ws::Message) -> socket::Result<()> {
-        // try to decode message
-        let incoming = msg
-            .as_text()
-            .map_err(socket::Error::SocketFailed)
-            .and_then(MessageIn::decode)?;
-
-        // if decoded, respond with an outgoing message
-        let outgoing = self.routes
-            .resolve(incoming)?
-            .encode()?;
-
-        // send the response
-        self.send(outgoing)
-            .map_err(socket::Error::SocketFailed)
-    }
-
-    fn send_error(&self, error: socket::Error) -> ws::Result<()> {
-        println!("socket error: {:?}", error);
-
-        let message = MessageOut::errors(
-            NameOut::NetworkError,
-            errors::Errors::new(
-                "Network Error"
-            )
-        );
-
-        self.send(message.encode().unwrap())
-    }
-
-    fn send(&self, text: String) -> ws::Result<()> {
-        self.out.send(ws::Message::text(text))
     }
 }

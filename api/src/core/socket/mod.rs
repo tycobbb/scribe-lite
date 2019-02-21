@@ -1,4 +1,5 @@
 mod socket;
+mod connection;
 
 pub mod result;
 pub use self::result::*;
