@@ -58,9 +58,9 @@ type Msg
   | ChangeEmail String
   | ChangeName String
   | JoinStory
-  | JoinStoryDone (Socket.Result Prompt)
+  | ShowPrompt (Socket.Result Prompt)
   | AddLine
-  | AddLineDone (Socket.Result Bool)
+  | ShowThanks (Socket.Result Bool)
   | Ignored
 
 update : Session -> Msg -> Model -> State
@@ -78,7 +78,7 @@ update session msg model =
     JoinStory ->
       model
         |> State.withCmd joinStory
-    JoinStoryDone result ->
+    ShowPrompt result ->
       case result of
         Ok prompt ->
           model
@@ -89,7 +89,7 @@ update session msg model =
     AddLine ->
       model
         |> State.withCmd (addLine model)
-    AddLineDone result ->
+    ShowThanks result ->
       case result of
         Ok _ ->
           model
@@ -111,24 +111,25 @@ setPrompt { text, name } model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
-    [ joinStoryDone
-    , addLineDone
+    [ showPrompt
+    , showThanks
     ]
 
--- STORY.JOIN
+-- socket.out: JOIN_STORY
+joinStory : Cmd Msg
+joinStory =
+  JE.null
+    |> Socket.Message "JOIN_STORY"
+    |> Socket.push
+
+-- socket.in: SHOW_PREVIOUS_LINE
 type alias Prompt =
   { text : String
   , name : Maybe String
   }
 
-joinStory : Cmd Msg
-joinStory =
-  JE.null
-    |> Socket.Message "STORY.JOIN"
-    |> Socket.push
-
-joinStoryDone : Sub Msg
-joinStoryDone =
+showPrompt : Sub Msg
+showPrompt =
   let
     decodePrompt =
       JD.map2 Prompt
@@ -136,10 +137,10 @@ joinStoryDone =
         (JD.field "name" (JD.nullable JD.string))
   in
     decodePrompt
-      |> Socket.Event "STORY.JOIN.DONE"
-      |> Socket.subscribe JoinStoryDone Ignored
+      |> Socket.Event "SHOW_PROMPT"
+      |> Socket.subscribe ShowPrompt Ignored
 
--- STORY.ADD_LINE
+-- socket.out: ADD_LINE
 addLine : Model -> Cmd Msg
 addLine model =
   let
@@ -151,14 +152,15 @@ addLine model =
         ]
   in
     data
-      |> Socket.Message "STORY.ADD_LINE"
+      |> Socket.Message "ADD_LINE"
       |> Socket.push
 
-addLineDone : Sub Msg
-addLineDone =
+-- socket.in: SHOW_THANKS
+showThanks : Sub Msg
+showThanks =
   JD.null True
-    |> Socket.Event "STORY.ADD_LINE.DONE"
-    |> Socket.subscribe AddLineDone Ignored
+    |> Socket.Event "SHOW_THANKS"
+    |> Socket.subscribe ShowThanks Ignored
 
 -- view
 view : Model -> Html Msg

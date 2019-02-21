@@ -15,7 +15,7 @@ impl Action for Join {
             .map_err(Join::errors)
             .map(|story| story.next_line_prompt());
 
-        Event::ShowPreviousLine(prompt)
+        Event::ShowPrompt(prompt)
     }
 }
 

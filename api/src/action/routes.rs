@@ -12,8 +12,8 @@ pub struct Routes;
 impl socket::Routes for Routes {
     fn resolve<'a>(&self, msg: socket::MessageIn<'a>) -> socket::Result<socket::MessageOut> {
         match msg.name {
-            NameIn::StoryJoin    => self.to_action(&story::Join),
-            NameIn::StoryAddLine => self.to_action(&story::AddLine)
+            NameIn::JoinStory => self.to_action(&story::Join),
+            NameIn::AddLine   => self.to_action(&story::AddLine)
         }
     }
 }
@@ -21,8 +21,8 @@ impl socket::Routes for Routes {
 impl Routes {
     fn to_action(&self, action: &Action) -> socket::Result<socket::MessageOut> {
         match action.call() {
-            Event::ShowPreviousLine(res) => self.to_message(NameOut::ShowPreviousLine, res),
-            Event::ShowThanks(res)       => self.to_message(NameOut::ShowThanks, res)
+            Event::ShowPrompt(res) => self.to_message(NameOut::ShowPrompt, res),
+            Event::ShowThanks(res) => self.to_message(NameOut::ShowThanks, res)
         }
     }
 

@@ -1,18 +1,18 @@
 // types
 #[derive(Deserialize, Debug)]
 pub enum NameIn {
-    #[serde(rename = "STORY.JOIN")]
-    StoryJoin,
-    #[serde(rename = "STORY.ADD_LINE")]
-    StoryAddLine
+    #[serde(rename = "JOIN_STORY")]
+    JoinStory,
+    #[serde(rename = "ADD_LINE")]
+    AddLine
 }
 
 #[derive(Serialize, Debug)]
 pub enum NameOut {
     #[serde(rename = "NETWORK_ERROR")]
     NetworkError,
-    #[serde(rename = "SHOW_PREVIOUS_LINE")]
-    ShowPreviousLine,
+    #[serde(rename = "SHOW_PROMPT")]
+    ShowPrompt,
     #[serde(rename = "SHOW_THANKS")]
     ShowThanks,
 }

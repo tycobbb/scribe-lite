@@ -57,10 +57,12 @@ view _ =
     ]
 
 -- styles
+sceneA : H.Attribute m
 sceneA =
   css
     [ justifyContent center ]
 
+messageS : List (H.Attribute m) -> List (Html m) -> Html m
 messageS =
   H.styled H.p
     [ Fonts.lg
@@ -72,6 +74,7 @@ messageS =
       ]
     ]
 
+buttonS : List (H.Attribute m) -> List (Html m) -> Html m
 buttonS =
   H.styled H.div
     [ marginTop (px 65)

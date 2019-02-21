@@ -8,7 +8,7 @@ use super::event::{ NameIn, NameOut };
 pub struct MessageIn<'a> {
     pub name: NameIn,
     #[serde(borrow)]
-    pub params: &'a json::value::RawValue
+    pub args: &'a json::value::RawValue
 }
 
 #[derive(Serialize, Debug)]
