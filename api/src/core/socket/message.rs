@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{ Serialize, Deserialize };
 use serde_json as json;
 use core::{ errors, socket };
 use super::event::{ NameIn, NameOut };
@@ -67,4 +67,22 @@ impl MessageOut {
         json::to_string(&self)
             .map_err(socket::Error::EncodeFailed)
     }
+
+    pub fn encoding_result<T>(
+        name:   NameOut,
+        result: Result<T, errors::Errors>
+    ) -> socket::Result<MessageOut> where T: Serialize {
+        let encoded = result.map(|data| {
+            json::to_value(data)
+        });
+
+        let msg = match encoded {
+            Ok(Ok(json))   => MessageOut::data(name, json),
+            Err(errors)    => MessageOut::errors(name, errors),
+            Ok(Err(error)) => return Err(socket::Error::EncodeFailed(error))
+        };
+
+        Ok(msg)
+    }
+
 }

@@ -1,5 +1,4 @@
 use serde::{ Serialize, Deserialize };
-use serde_json as json;
 use core::socket::{ self, NameIn, NameOut };
 use super::action::{ self, Action };
 use super::event::*;
@@ -23,7 +22,9 @@ impl Routes {
         action: &Action<'a, Args=T>,
         msg:    socket::MessageIn<'a>
     ) -> socket::Result<socket::MessageOut> where T: Deserialize<'a> {
-        match action.call(msg.decode_args()?) {
+        let args = msg.decode_args()?;
+
+        match action.call(args) {
             Event::ShowPrompt(res) => self.to_message(NameOut::ShowPrompt, res),
             Event::ShowThanks(res) => self.to_message(NameOut::ShowThanks, res)
         }
@@ -33,16 +34,6 @@ impl Routes {
         name:   NameOut,
         result: action::Result<T>
     ) -> socket::Result<socket::MessageOut> where T: Serialize {
-        let encoded = result.map(|data| {
-            json::to_value(data)
-        });
-
-        let msg = match encoded {
-            Ok(Ok(json))   => socket::MessageOut::data(name, json),
-            Err(errors)    => socket::MessageOut::errors(name, errors),
-            Ok(Err(error)) => return Err(socket::Error::EncodeFailed(error))
-        };
-
-        Ok(msg)
+        socket::MessageOut::encoding_result(name, result)
     }
 }
