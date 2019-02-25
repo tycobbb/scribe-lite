@@ -1,64 +1,49 @@
-use core::errors;
+use std::rc::Rc;
 use core::socket;
 use super::routes::Routes;
-use super::event::NameOut;
+use super::channel::Channel;
 use super::message::*;
 
 // types
-pub struct Connection<'a, T> where T: Routes {
-    out:    ws::Sender,
-    routes: &'a T
+pub struct Connection {
+    routes:  Rc<Routes>,
+    channel: Rc<Channel>
 }
 
 // impls
-impl<'a, T> Connection<'a, T> where T: Routes {
+impl Connection {
     // init
-    pub fn new(out: ws::Sender, routes: &'a T) -> Connection<'a, T> {
+    pub fn new(routes: Rc<Routes>, channel: Rc<Channel>) -> Connection {
         Connection {
-            out:    out,
-            routes: routes
+            routes:  routes,
+            channel: channel
         }
     }
 
     // handle
-    pub fn handle(&self, msg: ws::Message) -> ws::Result<()> {
-        self.send_response(msg)
-            .or_else(|error| {
-                self.send_error(error)
-            })
-    }
-
-    fn send_response(&self, msg: ws::Message) -> socket::Result<()> {
-        // try to decode message
-        let incoming = msg
+    pub fn handle(self, msg: ws::Message) {
+        let decoded = msg
             .as_text()
             .map_err(socket::Error::SocketFailed)
-            .and_then(MessageIn::decode)?;
+            .and_then(MessageIn::decode);
 
-        // if decoded, respond with an outgoing message
-        let outgoing = self.routes
-            .resolve(incoming)?
-            .encode()?;
+        // send error if decode failed
+        let incoming = match decoded {
+            Ok(message) => message,
+            Err(error)  => return self.channel.send_error(error)
+        };
 
-        // send the response
-        self.send(outgoing)
-            .map_err(socket::Error::SocketFailed)
-    }
+        // send any outoing messages from the route
+        let channel = self.channel.clone();
+        self.routes.resolve(incoming, Box::new(move |outgoing: socket::Result<MessageOut>| {
+            let encoded = outgoing.and_then(|message| {
+                message.encode()
+            });
 
-    fn send_error(&self, error: socket::Error) -> ws::Result<()> {
-        println!("socket error: {:?}", error);
-
-        let message = MessageOut::errors(
-            NameOut::NetworkError,
-            errors::Errors::new(
-                "Network Error"
-            )
-        );
-
-        self.send(message.encode().unwrap())
-    }
-
-    fn send(&self, text: String) -> ws::Result<()> {
-        self.out.send(ws::Message::text(text))
+            match encoded {
+                Ok(outgoing) => channel.send(outgoing),
+                Err(error)   => channel.send_error(error)
+            };
+        }));
     }
 }

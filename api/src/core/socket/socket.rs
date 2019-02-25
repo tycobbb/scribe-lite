@@ -1,5 +1,7 @@
+use std::rc::Rc;
 use yansi::{ Paint, Color };
 use super::routes::Routes;
+use super::channel::Channel;
 use super::connection::Connection;
 
 // constants
@@ -10,11 +12,15 @@ pub struct Socket;
 
 // impls
 impl Socket {
-    pub fn listen<T>(&self, routes: &'static T) where T: Routes + Send + Sync {
+    pub fn listen(&self, routes: Rc<Routes>) {
         let result = ws::listen(HOST, |out| {
-            let connection = Connection::new(out, routes);
+            let channel = Rc::new(Channel::new(out));
+            let routes  = routes.clone();
+
             move |msg: ws::Message| {
-                connection.handle(msg)
+                let connection = Connection::new(routes.clone(), channel.clone());
+                connection.handle(msg);
+                Ok(())
             }
         });
 

@@ -20,10 +20,11 @@ mod core;
 mod domain;
 mod action;
 
+use std::rc::Rc;
 use core::socket;
 
 fn main() {
     dotenv::dotenv().ok();
-    socket::listen(&action::Routes);
+    socket::listen(|| Rc::new(action::Routes));
     rocket::ignite().mount("/", routes![]).launch();
 }

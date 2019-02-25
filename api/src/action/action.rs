@@ -8,7 +8,7 @@ pub trait Action<'a> {
     type Args: Deserialize<'a>;
 
     // fires the action and returns the payload
-    fn call(&self, args: Self::Args) -> Event;
+    fn call(&self, args: Self::Args, sink: Box<Fn(Event)>);
 }
 
 // a result type for actions

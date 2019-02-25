@@ -1,6 +1,6 @@
-use serde::{ Serialize, Deserialize };
+use serde::Deserialize;
 use core::socket::{ self, NameIn, NameOut };
-use super::action::{ self, Action };
+use super::action::Action;
 use super::event::*;
 use super::story;
 
@@ -9,31 +9,39 @@ pub struct Routes;
 
 // impls
 impl socket::Routes for Routes {
-    fn resolve<'a>(&self, msg: socket::MessageIn<'a>) -> socket::Result<socket::MessageOut> {
+    fn resolve<'a>(&self, msg: socket::MessageIn<'a>, sink: socket::Sink) {
         match msg.name {
-            NameIn::JoinStory => self.to_action(&story::Join, msg),
-            NameIn::AddLine   => self.to_action(&story::AddLine, msg)
+            NameIn::JoinStory => self.to_action(&story::Join, msg, sink),
+            NameIn::AddLine   => self.to_action(&story::AddLine, msg, sink)
         }
     }
 }
 
 impl Routes {
-    fn to_action<'a, T>(&self,
-        action: &Action<'a, Args=T>,
-        msg:    socket::MessageIn<'a>
-    ) -> socket::Result<socket::MessageOut> where T: Deserialize<'a> {
-        let args = msg.decode_args()?;
+    fn to_action<'a, A>(&self,
+        action: &Action<'a, Args=A>,
+        msg:    socket::MessageIn<'a>,
+        sink:   socket::Sink
+    ) where A: Deserialize<'a> {
+        let args = match msg.decode_args() {
+            Ok(args)   => args,
+            Err(error) => return sink(Err(error))
+        };
 
-        match action.call(args) {
-            Event::ShowPrompt(res) => self.to_message(NameOut::ShowPrompt, res),
-            Event::ShowThanks(res) => self.to_message(NameOut::ShowThanks, res)
-        }
-    }
-
-    fn to_message<T>(&self,
-        name:   NameOut,
-        result: action::Result<T>
-    ) -> socket::Result<socket::MessageOut> where T: Serialize {
-        socket::MessageOut::encoding_result(name, result)
+        action.call(args, Box::new(move |event: Event| {
+            sink(event.into_message())
+        }));
     }
 }
+
+impl Event {
+    fn into_message(self) -> socket::Result<socket::MessageOut> {
+        use socket::MessageOut;
+
+        match self {
+            Event::ShowPrompt(res) => MessageOut::encoding_result(NameOut::ShowPrompt, res),
+            Event::ShowThanks(res) => MessageOut::encoding_result(NameOut::ShowThanks, res)
+        }
+    }
+}
+

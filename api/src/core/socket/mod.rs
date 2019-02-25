@@ -1,4 +1,5 @@
 mod socket;
+mod channel;
 mod connection;
 
 pub mod result;

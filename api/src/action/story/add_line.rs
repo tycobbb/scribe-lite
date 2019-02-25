@@ -17,7 +17,7 @@ pub struct NewLine<'a> {
 impl<'a> Action<'a> for AddLine {
     type Args = NewLine<'a>;
 
-    fn call(&self, line: NewLine<'a>) -> Event {
+    fn call(&self, line: NewLine<'a>, sink: Box<Fn(Event)>) {
         let repo = story::Repo::connect();
 
         let result = repo
@@ -26,7 +26,7 @@ impl<'a> Action<'a> for AddLine {
 
         let mut story = match result {
             Ok(s)  => s,
-            Err(e) => return Event::ShowThanks(Err(e))
+            Err(e) => return sink(Event::ShowThanks(Err(e)))
         };
 
         story.add_line(
@@ -38,7 +38,7 @@ impl<'a> Action<'a> for AddLine {
         let result = repo.save(&mut story)
             .map_err(AddLine::errors);
 
-        Event::ShowThanks(result)
+        sink(Event::ShowThanks(result));
     }
 }
 
