@@ -14,16 +14,6 @@ global =
       , Fonts.regular
       , lineHeight (num 1.35)
       ]
-    , fontFace
-      [ Fonts.serif
-      , Fonts.regular
-      , fontSrc "/fonts/Montserrat-Regular.ttf"
-      ]
-    , fontFace
-      [ Fonts.serif
-      , Fonts.medium
-      , fontSrc "/fonts/Montserrat-Medium.ttf"
-      ]
     ]
 
 -- helpers

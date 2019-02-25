@@ -5,7 +5,7 @@ import Css exposing (..)
 -- names
 serif : Style
 serif =
-  fontFamilies [ "Montserrat" ]
+  fontFamilies [ "sans-serif" ]
 
 -- weights
 regular : Style
