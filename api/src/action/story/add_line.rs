@@ -1,4 +1,4 @@
-use core::db::Connected;
+use core::db;
 use domain::story;
 use action::action::{ self, Action };
 use action::event::*;
@@ -18,10 +18,11 @@ impl<'a> Action<'a> for AddLine {
     type Args = NewLine<'a>;
 
     fn call(&self, line: NewLine<'a>, sink: Box<Fn(Event)>) {
-        let repo = story::Repo::connect();
+        let conn = db::connect();
+        let repo = story::Repo::new(&conn);
 
         let result = repo
-            .today()
+            .find_for_today()
             .map_err(AddLine::errors);
 
         let mut story = match result {

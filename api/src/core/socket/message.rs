@@ -84,5 +84,4 @@ impl MessageOut {
 
         Ok(msg)
     }
-
 }

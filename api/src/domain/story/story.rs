@@ -1,5 +1,7 @@
 use super::line::Line;
 use super::prompt::Prompt;
+use super::author::Author;
+use super::queue::*;
 
 // types
 #[derive(Debug)]
@@ -7,6 +9,7 @@ pub struct Story {
     pub id:           i32,
     pub lines:        Vec<Line>,
     pub has_new_line: bool,
+    queue: Queue
 }
 
 // impls
@@ -15,11 +18,16 @@ impl Story {
         Story {
             id:           id,
             lines:        lines,
-            has_new_line: false
+            has_new_line: false,
+            queue:        Queue::new()
         }
     }
 
     // commands
+    pub fn join(&mut self, author: Author) {
+        self.queue.join(author);
+    }
+
     pub fn add_line(&mut self,
         text:  &str,
         name:  Option<&str>,
@@ -35,10 +43,8 @@ impl Story {
     }
 
     // queries
-    pub fn next_line_prompt(&self) -> Prompt {
-        self.previous_line()
-            .map(Prompt::from_line)
-            .unwrap_or_default()
+    pub fn is_available(&self) -> bool {
+        self.queue.is_empty()
     }
 
     pub fn new_line(&self) -> Option<&Line> {
@@ -55,5 +61,11 @@ impl Story {
         } else {
             self.lines.last()
         }
+    }
+
+    pub fn next_line_prompt(&self) -> Prompt {
+        self.previous_line()
+            .map(Prompt::from_line)
+            .unwrap_or_default()
     }
 }

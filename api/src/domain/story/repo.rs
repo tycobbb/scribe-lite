@@ -1,34 +1,44 @@
 use chrono::Utc;
 use diesel::prelude::*;
-use core::db;
 use core::empty;
-use domain::story::{ self, line };
+use domain::story;
+use super::line;
+use super::story::Story;
+use super::factory::Factory;
 
 // types
-pub struct Repo {
-    conn: diesel::PgConnection
+pub struct Repo<'a> {
+    conn: &'a diesel::PgConnection
 }
 
 // impls
-impl Repo {
+impl<'a> Repo<'a> {
+    // init
+    pub fn new(conn: &'a diesel::PgConnection) -> Self {
+        Repo {
+            conn: conn
+        }
+    }
+
     // commands
     #[must_use]
-    pub fn save(&self, story: &mut story::Story) -> QueryResult<()> {
+    pub fn save(&self, story: &mut Story) -> QueryResult<()> {
         use core::db::schema::lines;
 
-        if let Some(line) = story.new_line() {
-            line
-                .to_new_record(story.id)
-                .insert_into(lines::table)
-                .execute(&self.conn)
-                .map(empty::ignore)?;
-        }
+        let new_line = match story.new_line() {
+            Some(line) => line,
+            None       => return Ok(())
+        };
 
-        Ok(())
+        new_line
+            .to_new_record(story.id)
+            .insert_into(lines::table)
+            .execute(self.conn)
+            .map(empty::ignore)
     }
 
     // queries
-    pub fn today(&self) -> QueryResult<story::Story> {
+    pub fn find_for_today(&self) -> QueryResult<Story> {
         use core::db::schema::{ stories, lines };
 
         // find today's story
@@ -38,26 +48,19 @@ impl Repo {
 
         let story = stories::table
             .filter(stories::created_at.gt(midnight))
-            .first::<story::Record>(&self.conn)?;
+            .first::<story::Record>(self.conn)?;
 
         // find the most recent line
         let lines = line::Record::belonging_to(&story)
             .order_by(lines::created_at.desc())
             .limit(1)
-            .load::<line::Record>(&self.conn)?;
+            .load::<line::Record>(self.conn)?;
 
-        Ok(story::Story::from_db(story, lines))
-    }
-}
-
-impl db::Connected for Repo {
-    fn conn(self) -> diesel::PgConnection {
-        self.conn
+        Ok(Story::from_db(story, lines))
     }
 
-    fn from_conn(conn: diesel::PgConnection) -> Self {
-        Repo {
-            conn: conn
-        }
+    pub fn find_or_create_for_today(&self) -> QueryResult<Story> {
+        self.find_for_today()
+            .or_else(|_| Factory::new(self.conn).create_for_today())
     }
 }

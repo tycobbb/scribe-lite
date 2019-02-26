@@ -6,5 +6,7 @@ use super::action;
 #[derive(Debug)]
 pub enum Event {
     ShowPrompt(action::Result<story::Prompt>),
+    ShowQueue(action::Result<usize>),
     ShowThanks(action::Result<()>),
+    ShowInternalError
 }

@@ -13,6 +13,10 @@ pub enum NameOut {
     NetworkError,
     #[serde(rename = "SHOW_PROMPT")]
     ShowPrompt,
+    #[serde(rename = "SHOW_QUEUE")]
+    ShowQueue,
     #[serde(rename = "SHOW_THANKS")]
     ShowThanks,
+    #[serde(rename = "SHOW_INTERNAL_ERROR")]
+    ShowInternalError,
 }

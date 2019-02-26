@@ -39,8 +39,10 @@ impl Event {
         use socket::MessageOut;
 
         match self {
-            Event::ShowPrompt(res) => MessageOut::encoding_result(NameOut::ShowPrompt, res),
-            Event::ShowThanks(res) => MessageOut::encoding_result(NameOut::ShowThanks, res)
+            Event::ShowPrompt(res)   => MessageOut::encoding_result(NameOut::ShowPrompt, res),
+            Event::ShowQueue(_)      => MessageOut::encoding_result(NameOut::ShowQueue, Ok(())),
+            Event::ShowThanks(res)   => MessageOut::encoding_result(NameOut::ShowThanks, res),
+            Event::ShowInternalError => MessageOut::encoding_result(NameOut::ShowInternalError, Ok(()))
         }
     }
 }
