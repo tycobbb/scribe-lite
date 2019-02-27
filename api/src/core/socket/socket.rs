@@ -13,6 +13,11 @@ pub struct Socket;
 // impls
 impl Socket {
     pub fn listen(&self, routes: Rc<Routes>) {
+        println!("🧦  {} {}",
+            Paint::default("Socket is listening on").bold(),
+            Paint::default(HOST.replace("127.0.0.1", "http://localhost")).bold().underline()
+        );
+
         let result = ws::listen(HOST, |out| {
             let channel = Rc::new(Channel::new(out));
             let routes  = routes.clone();
@@ -30,13 +35,12 @@ impl Socket {
     fn notify(&self, result: ws::Result<()>) {
         if let Err(error) = result {
             println!("🧦  {}: {}",
-                Paint::default("Socket failed to start").bold().fg(Color::Red),
+                Paint::default("Socket finished with error").bold().fg(Color::Red),
                 error
             );
         } else {
-            println!("🧦  {} {}",
-                Paint::default("Socket is listening on").bold(),
-                Paint::default(HOST.replace("127.0.0.1", "http://localhost")).bold().underline()
+            println!("🧦  {}",
+                Paint::default("Socket finished").bold()
             );
         }
     }

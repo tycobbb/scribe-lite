@@ -30,7 +30,7 @@ impl<'a> Action<'a> for Join {
 }
 
 impl Join {
-    // events
+    // async events
     fn on_new_position(&self, sink: Box<Fn(Event)>) -> Box<Fn(story::Position)> {
         Box::new(move |position| {
             let conn  = db::connect();
