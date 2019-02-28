@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use core::db::schema::lines;
-use domain::story::Record as Story;
 use super::line::*;
+use super::super::Record as Story;
 
 // types
 #[derive(Debug, Identifiable, Associations, Queryable)]

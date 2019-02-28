@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 use core::socket;
 use super::routes::Routes;
 use super::channel::Channel;
@@ -6,14 +6,14 @@ use super::message::*;
 
 // types
 pub struct Connection {
-    routes:  Rc<Routes>,
-    channel: Rc<Channel>
+    routes:  Arc<Routes>,
+    channel: Arc<Channel>
 }
 
 // impls
 impl Connection {
     // init
-    pub fn new(routes: Rc<Routes>, channel: Rc<Channel>) -> Connection {
+    pub fn new(routes: Arc<Routes>, channel: Arc<Channel>) -> Connection {
         Connection {
             routes:  routes,
             channel: channel

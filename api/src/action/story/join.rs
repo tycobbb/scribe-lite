@@ -1,4 +1,5 @@
 use core::db;
+use core::sink::Sink;
 use domain::story;
 use action::event::*;
 use action::action::Action;
@@ -10,7 +11,7 @@ pub struct Join;
 impl<'a> Action<'a> for Join {
     type Args = ();
 
-    fn call(&self, _: (), sink: Box<Fn(Event)>) {
+    fn call(&self, _: (), sink: Sink<Event>) {
         let conn   = db::connect();
         let repo   = story::Repo::new(&conn);
         let result = repo.find_or_create_for_today();
@@ -31,7 +32,7 @@ impl<'a> Action<'a> for Join {
 
 impl Join {
     // async events
-    fn on_new_position(&self, sink: Box<Fn(Event)>) -> Box<Fn(story::Position)> {
+    fn on_new_position(&self, sink: Sink<Event>) -> Sink<story::Position> {
         Box::new(move |position| {
             let conn  = db::connect();
             let repo  = story::Repo::new(&conn);
@@ -40,12 +41,11 @@ impl Join {
                 Err(_) => return sink(Event::ShowInternalError)
             };
 
-            match position {
-                story::Position::Ready =>
-                    sink(Event::ShowPrompt(Ok(story.next_line_prompt()))),
-                story::Position::Behind(others) =>
-                    sink(Event::ShowQueue(Ok(others)))
-            };
+            if position.is_ready() {
+                sink(Event::ShowPrompt(Ok(story.next_line_prompt())));
+            } else {
+                sink(Event::ShowQueue(Ok(position)));
+            }
         })
     }
 }

@@ -1,7 +1,6 @@
+use super::queue::{ self, Author };
 use super::line::Line;
 use super::prompt::Prompt;
-use super::author::Author;
-use super::queue::*;
 
 // types
 #[derive(Debug)]
@@ -9,7 +8,6 @@ pub struct Story {
     pub id:           i32,
     pub lines:        Vec<Line>,
     pub has_new_line: bool,
-    queue: Queue
 }
 
 // impls
@@ -18,14 +16,19 @@ impl Story {
         Story {
             id:           id,
             lines:        lines,
-            has_new_line: false,
-            queue:        Queue::new()
+            has_new_line: false
         }
     }
 
     // commands
     pub fn join(&mut self, author: Author) {
-        self.queue.join(author);
+        let mut queue = queue::Repo.find_for_today();
+        queue.join(author);
+    }
+
+    pub fn leave(&mut self) {
+        let mut queue = queue::Repo.find_for_today();
+        queue.leave();
     }
 
     pub fn add_line(&mut self,
@@ -44,7 +47,8 @@ impl Story {
 
     // queries
     pub fn is_available(&self) -> bool {
-        self.queue.is_empty()
+        let queue = queue::Repo.find_for_today();
+        queue.is_empty()
     }
 
     pub fn new_line(&self) -> Option<&Line> {

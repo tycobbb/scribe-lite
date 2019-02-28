@@ -58,6 +58,7 @@ type Msg
   | ChangeEmail String
   | ChangeName String
   | JoinStory
+  | ShowQueue (Socket.Result Position)
   | ShowPrompt (Socket.Result Prompt)
   | AddLine
   | ShowThanks (Socket.Result Bool)
@@ -78,6 +79,14 @@ update session msg model =
     JoinStory ->
       model
         |> State.withCmd joinStory
+    ShowQueue result ->
+      case result of
+        Ok position ->
+          model
+            |> setPrompt ({ text = "You waiting for " ++ String.fromInt position.behind ++ " people to finish.", name = Just "In line!" })
+            |> State.withoutCmd
+        Err _ ->
+          State.just model
     ShowPrompt result ->
       case result of
         Ok prompt ->
@@ -111,7 +120,8 @@ setPrompt { text, name } model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
-    [ showPrompt
+    [ showQueue
+    , showPrompt
     , showThanks
     ]
 
@@ -121,6 +131,22 @@ joinStory =
   JE.null
     |> Socket.Message "JOIN_STORY"
     |> Socket.push
+
+-- socket.in: SHOW_QUEUE
+type alias Position =
+  { behind : Int
+  }
+
+showQueue : Sub Msg
+showQueue =
+  let
+    decodePosition =
+      JD.map Position
+        (JD.field "behind" JD.int)
+  in
+    decodePosition
+      |> Socket.Event "SHOW_QUEUE"
+      |> Socket.subscribe ShowQueue Ignored
 
 -- socket.in: SHOW_PREVIOUS_LINE
 type alias Prompt =

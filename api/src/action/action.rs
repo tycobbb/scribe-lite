@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use core::errors;
+use core::sink::Sink;
 use super::event::Event;
 
 // types
@@ -8,7 +9,7 @@ pub trait Action<'a> {
     type Args: Deserialize<'a>;
 
     // fires the action and returns the payload
-    fn call(&self, args: Self::Args, sink: Box<Fn(Event)>);
+    fn call(&self, args: Self::Args, sink: Sink<Event>);
 }
 
 // a result type for actions

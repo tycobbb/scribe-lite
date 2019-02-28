@@ -40,7 +40,7 @@ impl Event {
 
         match self {
             Event::ShowPrompt(res)   => MessageOut::encoding_result(NameOut::ShowPrompt, res),
-            Event::ShowQueue(_)      => MessageOut::encoding_result(NameOut::ShowQueue, Ok(())),
+            Event::ShowQueue(res)    => MessageOut::encoding_result(NameOut::ShowQueue, res),
             Event::ShowThanks(res)   => MessageOut::encoding_result(NameOut::ShowThanks, res),
             Event::ShowInternalError => MessageOut::encoding_result(NameOut::ShowInternalError, Ok(()))
         }

@@ -1,9 +1,9 @@
 use chrono::Utc;
 use diesel::prelude::*;
 use core::empty;
-use domain::story;
 use super::line;
 use super::story::Story;
+use super::record::Record;
 use super::factory::Factory;
 
 // types
@@ -48,7 +48,7 @@ impl<'a> Repo<'a> {
 
         let story = stories::table
             .filter(stories::created_at.gt(midnight))
-            .first::<story::Record>(self.conn)?;
+            .first::<Record>(self.conn)?;
 
         // find the most recent line
         let lines = line::Record::belonging_to(&story)
