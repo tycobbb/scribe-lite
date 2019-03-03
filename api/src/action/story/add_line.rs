@@ -28,7 +28,7 @@ impl<'a> Action<'a> for AddLine {
 
         let mut story = match result {
             Ok(s)  => s,
-            Err(e) => return sink(Event::ShowThanks(Err(e)))
+            Err(e) => return sink(Event::ShowAddLineError(e))
         };
 
         story.add_line(
@@ -41,12 +41,12 @@ impl<'a> Action<'a> for AddLine {
             .map_err(AddLine::errors);
 
         if let Err(e) = result {
-            return sink(Event::ShowThanks(Err(e)));
+            return sink(Event::ShowAddLineError(e));
         }
 
         story.leave();
 
-        sink(Event::ShowThanks(Ok(())))
+        sink(Event::ShowThanks);
     }
 }
 

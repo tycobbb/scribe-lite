@@ -1,4 +1,3 @@
-use core::errors;
 use core::socket;
 use super::event::NameOut;
 use super::message::MessageOut;
@@ -22,20 +21,18 @@ impl Channel {
         let result = self.out.send(ws::Message::text(text));
 
         if let Err(error) = result {
-            println!("[socket] send error: {}", error)
+            error!("[socket] failed to send message: {}", error)
         }
     }
 
     pub fn send_error(&self, error: socket::Error) {
-        println!("socket error: {:?}", error);
+        error!("[socket] internal error: {:?}", error);
 
-        let message = MessageOut::errors(
-            NameOut::NetworkError,
-            errors::Errors::new(
-                "Network Error"
-            )
-        );
+        let message = MessageOut::named(NameOut::ShowInternalError);
 
-        self.send(message.encode().unwrap());
+        match message.encode() {
+            Ok(text)   => self.send(text),
+            Err(error) => error!("[socket] failed to encode internal error: {:?}", error)
+        };
     }
 }

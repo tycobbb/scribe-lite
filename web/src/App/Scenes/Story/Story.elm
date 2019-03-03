@@ -54,57 +54,45 @@ initModel line =
 
 -- update
 type Msg
-  = LineMsg Line.Msg
+  = JoinStory
   | ChangeEmail String
   | ChangeName String
-  | JoinStory
-  | ShowQueue (Socket.Result Position)
-  | ShowPrompt (Socket.Result Prompt)
   | AddLine
-  | ShowThanks (Socket.Result Bool)
+  | ShowQueue Position
+  | ShowPrompt Prompt
+  | ShowThanks Bool
+  | LineMsg Line.Msg
   | Ignored
 
 update : Session -> Msg -> Model -> State
 update session msg model =
   case msg of
-    LineMsg lineMsg ->
-      State.just model
-        |> State.merge setLine LineMsg (Line.update lineMsg model.line)
+    JoinStory ->
+      model
+        |> State.withCmd joinStory
     ChangeEmail email ->
       { model | email = email }
         |> State.withoutCmd
     ChangeName name ->
       { model | name = name }
         |> State.withoutCmd
-    JoinStory ->
-      model
-        |> State.withCmd joinStory
-    ShowQueue result ->
-      case result of
-        Ok position ->
-          model
-            |> setPrompt ({ text = "You waiting for " ++ String.fromInt position.behind ++ " people to finish.", name = Just "In line!" })
-            |> State.withoutCmd
-        Err _ ->
-          State.just model
-    ShowPrompt result ->
-      case result of
-        Ok prompt ->
-          model
-            |> setPrompt prompt
-            |> State.withoutCmd
-        Err _ ->
-          State.just model
     AddLine ->
       model
         |> State.withCmd (addLine model)
-    ShowThanks result ->
-      case result of
-        Ok _ ->
-          model
-            |> State.withCmd (Nav.replaceUrl session.key "/thanks")
-        Err _ ->
-          State.just model
+    ShowQueue position ->
+      model
+        |> setPrompt ({ text = "You waiting for " ++ String.fromInt position.behind ++ " people to finish.", name = Just "In line!" })
+        |> State.withoutCmd
+    ShowPrompt prompt ->
+      model
+        |> setPrompt prompt
+        |> State.withoutCmd
+    ShowThanks _ ->
+      model
+        |> State.withCmd (Nav.replaceUrl session.key "/thanks")
+    LineMsg lineMsg ->
+      State.just model
+        |> State.merge setLine LineMsg (Line.update lineMsg model.line)
     Ignored ->
       State.just model
 
@@ -129,7 +117,7 @@ subscriptions model =
 joinStory : Cmd Msg
 joinStory =
   JE.null
-    |> Socket.Message "JOIN_STORY"
+    |> Socket.MessageOut "JOIN_STORY"
     |> Socket.push
 
 -- socket.in: SHOW_QUEUE
@@ -159,8 +147,8 @@ showPrompt =
   let
     decodePrompt =
       JD.map2 Prompt
-        (JD.field "text" JD.string)
-        (JD.field "name" (JD.nullable JD.string))
+        (JD.field "text" <| JD.string)
+        (JD.field "name" <| JD.nullable JD.string)
   in
     decodePrompt
       |> Socket.Event "SHOW_PROMPT"
@@ -178,7 +166,7 @@ addLine model =
         ]
   in
     data
-      |> Socket.Message "ADD_LINE"
+      |> Socket.MessageOut "ADD_LINE"
       |> Socket.push
 
 -- socket.in: SHOW_THANKS

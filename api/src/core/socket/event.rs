@@ -9,14 +9,16 @@ pub enum NameIn {
 
 #[derive(Serialize, Debug)]
 pub enum NameOut {
-    #[serde(rename = "NETWORK_ERROR")]
-    NetworkError,
+    // story
     #[serde(rename = "SHOW_PROMPT")]
     ShowPrompt,
     #[serde(rename = "SHOW_QUEUE")]
     ShowQueue,
     #[serde(rename = "SHOW_THANKS")]
     ShowThanks,
+    #[serde(rename = "SHOW_ADD_LINE_ERROR")]
+    ShowAddLineError,
+    // shared
     #[serde(rename = "SHOW_INTERNAL_ERROR")]
-    ShowInternalError,
+    ShowInternalError
 }

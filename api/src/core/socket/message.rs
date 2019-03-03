@@ -1,6 +1,6 @@
 use serde::{ Serialize, Deserialize };
 use serde_json as json;
-use core::{ errors, socket };
+use core::socket;
 use super::event::{ NameIn, NameOut };
 
 // types
@@ -14,15 +14,7 @@ pub struct MessageIn<'a> {
 #[derive(Serialize, Debug)]
 pub struct MessageOut {
     pub name: NameOut,
-    #[serde(flatten)]
-    pub payload: Payload
-}
-
-#[derive(Serialize, Debug)]
-#[serde(rename_all="lowercase")]
-pub enum Payload {
-    Data(json::Value),
-    Errors(errors::Errors)
+    pub data: json::Value
 }
 
 // impls
@@ -41,47 +33,31 @@ impl<'a> MessageIn<'a> {
 
 impl MessageOut {
     // init / factories
-    pub fn new(name: NameOut, payload: Payload) -> MessageOut {
+    pub fn new(name: NameOut, data: json::Value) -> MessageOut {
         MessageOut {
             name: name,
-            payload: payload
+            data: data
         }
     }
 
-    pub fn data(name: NameOut, value: json::Value) -> MessageOut {
-        MessageOut::new(
-            name,
-            Payload::Data(value)
-        )
-    }
-
-    pub fn errors(name: NameOut, errors: errors::Errors) -> MessageOut {
-        MessageOut::new(
-            name,
-            Payload::Errors(errors)
-        )
+    pub fn named(name: NameOut) -> MessageOut {
+        MessageOut::new(name, json::Value::Null)
     }
 
     // json
+    pub fn from_name(name: NameOut) -> socket::Result<MessageOut> {
+        Ok(MessageOut::named(name))
+    }
+
+    pub fn from_data<T>(name: NameOut, value: T) -> socket::Result<MessageOut> where T: Serialize {
+        let data = json::to_value(value)
+            .map_err(socket::Error::EncodeFailed)?;
+
+        Ok(MessageOut::new(name, data))
+    }
+
     pub fn encode(&self) -> socket::Result<String> {
         json::to_string(&self)
             .map_err(socket::Error::EncodeFailed)
-    }
-
-    pub fn encoding_result<T>(
-        name:   NameOut,
-        result: Result<T, errors::Errors>
-    ) -> socket::Result<MessageOut> where T: Serialize {
-        let encoded = result.map(|data| {
-            json::to_value(data)
-        });
-
-        let msg = match encoded {
-            Ok(Ok(json))   => MessageOut::data(name, json),
-            Err(errors)    => MessageOut::errors(name, errors),
-            Ok(Err(error)) => return Err(socket::Error::EncodeFailed(error))
-        };
-
-        Ok(msg)
     }
 }

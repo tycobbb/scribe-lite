@@ -23,7 +23,7 @@ impl<'a> Action<'a> for Join {
 
         if story.is_available() {
             story.join(story::Author::Active);
-            sink(Event::ShowPrompt(Ok(story.next_line_prompt())));
+            sink(Event::ShowPrompt(story.next_line_prompt()));
         } else {
             story.join(story::Author::Waiting(self.on_new_position(sink))
         }
@@ -42,9 +42,9 @@ impl Join {
             };
 
             if position.is_ready() {
-                sink(Event::ShowPrompt(Ok(story.next_line_prompt())));
+                sink(Event::ShowPrompt(story.next_line_prompt()));
             } else {
-                sink(Event::ShowQueue(Ok(position)));
+                sink(Event::ShowQueue(position));
             }
         })
     }

@@ -1,4 +1,4 @@
-port module Socket exposing (Message, Event, Result, send, recv, push, subscribe)
+port module Socket exposing (MessageOut, Event, send, recv, push, subscribe)
 
 import Json.Encode as JE
 import Json.Decode as JD
@@ -7,125 +7,83 @@ import Json.Decode as JD
 port send : JE.Value -> Cmd msg
 port recv : (JD.Value -> msg) -> Sub msg
 
--- envelope
-type alias Envelope p =
-  { name    : String
-  , payload : p
-  }
-
--- envelope.coding
-encodeEnvelope : Envelope JE.Value -> JE.Value
-encodeEnvelope envelope =
-  JE.object
-    [ ("name", JE.string envelope.name)
-    , ("args", envelope.payload)
-    ]
-
-decodeEnvelope : JD.Decoder p -> JD.Decoder (Envelope p)
-decodeEnvelope decodeP =
-  JD.map2 Envelope
-    (JD.field "name" JD.string)
-    (decodeP)
-
--- message (push)
-type alias Message =
-  { name : String
-  , data : JE.Value
-  }
-
-push : Message -> Cmd msg
-push message =
-  Envelope message.name message.data
-    |> encodeEnvelope
-    |> send
-
--- event (subscribe)
+-- types
 type alias Event a =
   { name    : String
   , decoder : JD.Decoder a
   }
 
-type alias EventResult a
-  = Result.Result EventError a
+type alias MessageOut =
+  { name : String
+  , args : JE.Value
+  }
 
-type EventError
-  = ServiceFailed ServiceError
+type alias MessageIn v =
+  { name : String
+  , data : v
+  }
+
+-- types/Result
+type alias Result a =
+  Result.Result Error a
+
+type Error
+  = MismatchedEvent
   | DecodeFailed JD.Error
-  | MismatchedEvent
 
-subscribe : (Result a -> msg) -> msg -> Event a -> Sub msg
+-- commands/push
+push : MessageOut -> Cmd msg
+push message =
+  encodeMessage message
+    |> send
+
+-- commands/subscribe
+subscribe : (a -> msg) -> msg -> Event a -> Sub msg
 subscribe toMsg toIgnore event =
   recv (\data ->
     data
-      |> decodeEventResult event
-      |> messageFromResult toMsg toIgnore)
+      |> decodeResult event
+      |> triggerEvent toMsg toIgnore)
 
-decodeEventResult : Event a -> JD.Value -> EventResult a
-decodeEventResult event data =
+decodeResult : Event a -> JD.Value -> Result a
+decodeResult event data =
   data
-    |> decodeEventValue decodeResponse
-    |> Result.andThen (selectEventResult event.name)
-    |> Result.andThen (decodeEventValue event.decoder)
+    |> decodeValue decodeMessage
+    |> Result.andThen (selectEvent event.name)
+    |> Result.andThen (decodeValue event.decoder)
 
-selectEventResult : String -> Response a -> EventResult a
-selectEventResult name response =
-  if response.name /= name then
-    Err MismatchedEvent
+selectEvent : String -> MessageIn JD.Value -> Result JD.Value
+selectEvent name response =
+  if response.name == name then
+    Ok response.data
   else
-    response.payload
-      |> Result.mapError ServiceFailed
+    Err MismatchedEvent
 
-decodeEventValue : JD.Decoder a -> JD.Value -> EventResult a
-decodeEventValue decoder value =
+triggerEvent : (a -> msg) -> msg -> Result a -> msg
+triggerEvent toMsg toIgnore result =
+  case result of
+    Ok data ->
+      toMsg data
+    Err MismatchedEvent ->
+      toIgnore
+    Err (DecodeFailed error) ->
+      Debug.log "Socket.Event" error |> always toIgnore
+
+-- impls/coding
+decodeValue : JD.Decoder a -> JD.Value -> Result a
+decodeValue decoder value =
   JD.decodeValue decoder value
     |> Result.mapError DecodeFailed
 
-messageFromResult : (Result a -> msg) -> msg -> EventResult a -> msg
-messageFromResult toMsg toIgnore result =
-  case result of
-    Ok data ->
-      toMsg (Ok data)
-    Err (ServiceFailed error) ->
-      toMsg (Err error)
-    Err (DecodeFailed error) ->
-      Debug.log "Socket.Event" error
-        |> always toIgnore
-    Err MismatchedEvent ->
-      toIgnore
+decodeMessage : JD.Decoder (MessageIn JD.Value)
+decodeMessage =
+  JD.map2 MessageIn
+    (JD.field "name" JD.string)
+    (JD.field "data" JD.value)
 
--- event.response
-type alias Response v =
-  Envelope (Result v)
-
-type alias Result a
-  = Result.Result ServiceError a
-
-type alias ServiceError =
-  { message : String
-  }
-
--- event.response.coding
-decodeResponse : JD.Decoder (Response JD.Value)
-decodeResponse =
-  decodeEnvelope decodePayload
-
-decodePayload : JD.Decoder (Result JD.Value)
-decodePayload =
-  JD.map2 decodeResult
-    (JD.maybe (JD.field "error" decodeError))
-    (JD.maybe (JD.field "data"  JD.value))
-
-decodeResult : Maybe ServiceError -> Maybe JD.Value -> Result JD.Value
-decodeResult error data =
-  data
-    |> Result.fromMaybe error
-    |> Result.mapError (Maybe.withDefault unknownError)
-
-decodeError : JD.Decoder ServiceError
-decodeError =
-  JD.map ServiceError
-    (JD.field "message" JD.string)
-
-unknownError : ServiceError
-unknownError =
-  ServiceError "Unknown error."
+encodeMessage : MessageOut -> JE.Value
+encodeMessage message =
+  JE.object
+    [ ("name", JE.string message.name)
+    , ("args", message.args)
+    ]
