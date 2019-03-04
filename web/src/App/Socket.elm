@@ -54,10 +54,9 @@ decodeResult event data =
 
 selectEvent : String -> MessageIn JD.Value -> Result JD.Value
 selectEvent name response =
-  if response.name == name then
-    Ok response.data
-  else
-    Err MismatchedEvent
+  if response.name == name
+    then Ok response.data
+    else Err MismatchedEvent
 
 triggerEvent : (a -> msg) -> msg -> Result a -> msg
 triggerEvent toMsg toIgnore result =

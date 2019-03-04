@@ -1,4 +1,4 @@
-module Scenes.Story.Line exposing (State, Model, Msg, init, update, view)
+module Scenes.Story.Editor exposing (State, Model, Msg, init, update, view)
 
 import Browser.Dom as Dom
 import Css exposing (..)

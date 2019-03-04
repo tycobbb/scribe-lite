@@ -8,7 +8,6 @@ import Html.Styled.Events exposing (onInput, onSubmit)
 import Json.Encode as JE
 import Json.Decode as JD exposing (field)
 
-import Scenes.Story.Line as Line
 import Session exposing (Session)
 import Socket
 import State
@@ -16,8 +15,10 @@ import Styles.Colors as Colors
 import Styles.Fonts as Fonts
 import Styles.Mixins as Mixins
 import Timers
-import Views.Button as Button
+
+import Scenes.Story.Editor as Editor
 import Views.Scene as Scene
+import Views.Button as Button
 
 -- constants
 background : Color
@@ -28,28 +29,65 @@ background =
 type alias State =
   State.Pair Model Msg
 
-type alias Model =
-  { line   : Line.Model
-  , prompt : String
-  , author : String
-  , email  : String
-  , name   : String
-  }
-
 init : State
 init =
-  Line.init
-    |> State.map initModel LineMsg
+  Editor.init
+    |> State.map initModel EditorMsg
     -- workaround https://github.com/elm/compiler/issues/1776
     |> State.joinCmd (Timers.async JoinStory)
 
-initModel : Line.Model -> Model
-initModel line =
-  { line   = line
-  , prompt = ""
-  , author = ""
-  , email  = ""
-  , name   = ""
+-- model
+type alias Model =
+  { editor   : Editor.Model
+  , isQueued : Bool
+  , date     : String
+  , title    : String
+  , subtitle : String
+  , email    : String
+  , name     : String
+  }
+
+initModel : Editor.Model -> Model
+initModel editor =
+  { editor   = editor
+  , isQueued = True
+  , date     = "Friday May 24 (2017)"
+  , title    = ""
+  , subtitle = ""
+  , email    = ""
+  , name     = ""
+  }
+
+isValid : Model -> Bool
+isValid model =
+  not model.isQueued && isEmailValid model && isEmailValid model
+
+isLineValid : Model -> Bool
+isLineValid model =
+  not <| String.isEmpty model.editor.value
+
+isEmailValid : Model -> Bool
+isEmailValid model =
+  String.contains "@" model.email
+
+setEditor : Editor.Model -> Model -> Model
+setEditor editor model =
+  { model | editor = editor }
+
+setPrompt : Prompt -> Model -> Model
+setPrompt { text, name } model =
+  { model
+  | isQueued = False
+  , title    = text
+  , subtitle = Maybe.withDefault "" name
+  }
+
+setPosition : Position -> Model -> Model
+setPosition { behind } model =
+  { model
+  | isQueued = True
+  , title    = "You're the " ++ String.fromInt behind ++ " person in line."
+  , subtitle = "In Queue!"
   }
 
 -- update
@@ -61,7 +99,7 @@ type Msg
   | ShowQueue Position
   | ShowPrompt Prompt
   | ShowThanks Bool
-  | LineMsg Line.Msg
+  | EditorMsg Editor.Msg
   | Ignored
 
 update : Session -> Msg -> Model -> State
@@ -81,7 +119,7 @@ update session msg model =
         |> State.withCmd (addLine model)
     ShowQueue position ->
       model
-        |> setPrompt ({ text = "You waiting for " ++ String.fromInt position.behind ++ " people to finish.", name = Just "In line!" })
+        |> setPosition position
         |> State.withoutCmd
     ShowPrompt prompt ->
       model
@@ -90,19 +128,11 @@ update session msg model =
     ShowThanks _ ->
       model
         |> State.withCmd (Nav.replaceUrl session.key "/thanks")
-    LineMsg lineMsg ->
+    EditorMsg lineMsg ->
       State.just model
-        |> State.merge setLine LineMsg (Line.update lineMsg model.line)
+        |> State.merge setEditor EditorMsg (Editor.update lineMsg model.editor)
     Ignored ->
       State.just model
-
-setLine : Line.Model -> Model -> Model
-setLine line model =
-  { model | line = line }
-
-setPrompt : Prompt -> Model -> Model
-setPrompt { text, name } model =
-  { model | prompt = text, author = Maybe.withDefault "" name }
 
 -- subscriptions
 subscriptions : Model -> Sub Msg
@@ -160,7 +190,7 @@ addLine model =
   let
     data =
       JE.object
-        [ ("text",  JE.string model.line.value)
+        [ ("text",  JE.string model.editor.value)
         , ("email", JE.string model.email)
         , ("name",  JE.string model.name)
         ]
@@ -181,67 +211,101 @@ view : Model -> Html Msg
 view model =
   Scene.view []
     [ Scene.viewContent []
-      [ headerS []
-        [ H.text "Friday May 24 (2017)" ]
+      [ viewHeader model
       , viewForm model
-        [ authorS []
-          [ H.text model.author ]
-        , promptS []
-          [ H.text model.prompt ]
-        , Line.view model.line
-            |> H.map LineMsg
+        [ viewEditor model
         , viewEmailField model
-        , viewSubmitRow model
-          [ viewNameField model
-          , Button.view "Submit" False
-          ]
+        , viewNameField model
+        , viewSubmit model
         ]
       ]
     ]
 
+-- view/header
+viewHeader : Model -> Html m
+viewHeader model =
+  headerS []
+    [ dateS []
+      [ H.text "Friday May 24 (2017)" ]
+    , subtitleS []
+      [ H.text model.subtitle ]
+    , titleS []
+      [ H.text model.title ]
+    ]
+
+-- view/form
 viewForm : Model -> List (Html Msg) -> Html Msg
 viewForm model =
-  if String.isEmpty model.prompt then
-    (\_ -> H.text "")
-  else
-    formS [ onSubmit AddLine ]
+  formS [ onSubmit AddLine ]
 
+-- view/editor
+viewEditor : Model -> Html Msg
+viewEditor model =
+  if model.isQueued
+    then H.text ""
+    else Editor.view model.editor |> H.map EditorMsg
+
+-- view/author
 viewEmailField : Model -> Html Msg
 viewEmailField model =
-  if String.isEmpty model.line.value then
-    H.text ""
-  else
-    emailFieldS
-      [ onInput ChangeEmail
-      , placeholder "E-mail Address"
-      , attribute "type" "email"
-      , value model.email
-      ] []
+  emailFieldS
+    [ onInput ChangeEmail
+    , placeholder "E-mail Address"
+    , attribute "type" "email"
+    , value model.email
+    ] []
 
 viewNameField : Model -> Html Msg
 viewNameField model =
-  nameFieldS
-    [ onInput ChangeName
-    , placeholder "Name to Display (Optional)"
-    , value model.name
-    ] []
-
-viewSubmitRow : Model -> List (Html Msg) -> Html Msg
-viewSubmitRow model =
-  if List.any String.isEmpty [model.line.value, model.email] then
-    (\_ -> H.text "")
+  if not <| isEmailValid model then
+    H.text ""
   else
-    submitRowS []
+    nameFieldS
+      [ onInput ChangeName
+      , placeholder "Name to Display (Optional)"
+      , value model.name
+      ] []
 
--- styles
+-- view/submit
+viewSubmit : Model -> Html Msg
+viewSubmit model =
+  if not <| isValid model
+    then H.text ""
+    else Button.view "Submit" False
+
+-- view/header/styles
 headerS : List (H.Attribute m) -> List (Html m) -> Html m
 headerS =
   H.styled H.header
+    [ displayFlex
+    , flexDirection column
+    ]
+
+dateS : List (H.Attribute m) -> List (Html m) -> Html m
+dateS =
+  H.styled H.p
     [ Fonts.md
     , alignSelf center
     , color Colors.gray0
     ]
 
+subtitleS : List (H.Attribute m) -> List (Html m) -> Html m
+subtitleS =
+  H.styled H.p
+    [ marginBottom (px 20)
+    , Fonts.sm
+    , color Colors.gray0
+    ]
+
+titleS : List (H.Attribute m) -> List (Html m) -> Html m
+titleS =
+  H.styled H.p
+    [ marginBottom (px 60)
+    , Fonts.lg
+    , color Colors.secondary
+    ]
+
+-- view/form/styles
 formS : List (H.Attribute m) -> List (Html m) -> Html m
 formS =
   H.styled H.form
@@ -251,22 +315,7 @@ formS =
     , justifyContent center
     ]
 
-authorS : List (H.Attribute m) -> List (Html m) -> Html m
-authorS =
-  H.styled H.p
-    [ marginBottom (px 20)
-    , Fonts.sm
-    , color Colors.gray0
-    ]
-
-promptS : List (H.Attribute m) -> List (Html m) -> Html m
-promptS =
-  H.styled H.p
-    [ marginBottom (px 60)
-    , Fonts.lg
-    , color Colors.secondary
-    ]
-
+-- view/author/styles
 emailFieldS : List (H.Attribute m) -> List (Html m) -> Html m
 emailFieldS =
   H.styled H.input
@@ -284,13 +333,4 @@ nameFieldS =
     , flex (int 1)
     , Fonts.sm
     , color Colors.gray1
-    ]
-
-submitRowS : List (H.Attribute m) -> List (Html m) -> Html m
-submitRowS =
-  H.styled H.div
-    [ displayFlex
-    , justifyContent spaceBetween
-    , alignItems center
-    , transform (translateY (px 20))
     ]
