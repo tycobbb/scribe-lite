@@ -58,9 +58,10 @@ initModel editor =
   , name     = ""
   }
 
+-- model/queries
 isValid : Model -> Bool
 isValid model =
-  not model.isQueued && isEmailValid model && isEmailValid model
+  not model.isQueued && isLineValid model && isEmailValid model
 
 isLineValid : Model -> Bool
 isLineValid model =
@@ -70,6 +71,7 @@ isEmailValid : Model -> Bool
 isEmailValid model =
   String.contains "@" model.email
 
+-- model/commands
 setEditor : Editor.Model -> Model -> Model
 setEditor editor model =
   { model | editor = editor }
@@ -82,13 +84,25 @@ setPrompt { text, name } model =
   , subtitle = Maybe.withDefault "" name
   }
 
-setPosition : Position -> Model -> Model
-setPosition { behind } model =
+setQueue : Position -> Model -> Model
+setQueue { behind } model =
   { model
   | isQueued = True
-  , title    = "You're the " ++ String.fromInt behind ++ " person in line."
-  , subtitle = "In Queue!"
+  , title    = "You're the " ++ toOrdinal behind ++ " person in line."
   }
+
+-- model/helpers
+toOrdinal : Int -> String
+toOrdinal number =
+  let
+    string = String.fromInt number
+  in
+    case (modBy 10 (number // 10), modBy 10 number) of
+      (1, _) -> string ++ "th"
+      (_, 1) -> string ++ "st"
+      (_, 2) -> string ++ "nd"
+      (_, 3) -> string ++ "rd"
+      (_, _) -> string ++ "th"
 
 -- update
 type Msg
@@ -119,7 +133,7 @@ update session msg model =
         |> State.withCmd (addLine model)
     ShowQueue position ->
       model
-        |> setPosition position
+        |> setQueue position
         |> State.withoutCmd
     ShowPrompt prompt ->
       model
@@ -215,8 +229,10 @@ view model =
       , viewForm model
         [ viewEditor model
         , viewEmailField model
-        , viewNameField model
-        , viewSubmit model
+        , submitRowS []
+          [ viewNameField model
+          , viewSubmit model
+          ]
         ]
       ]
     ]
@@ -292,15 +308,15 @@ dateS =
 subtitleS : List (H.Attribute m) -> List (Html m) -> Html m
 subtitleS =
   H.styled H.p
-    [ marginBottom (px 20)
-    , Fonts.sm
+    [ Fonts.sm
+    , height (em 1)
     , color Colors.gray0
     ]
 
 titleS : List (H.Attribute m) -> List (Html m) -> Html m
 titleS =
   H.styled H.p
-    [ marginBottom (px 60)
+    [ marginTop (px 20)
     , Fonts.lg
     , color Colors.secondary
     ]
@@ -312,10 +328,15 @@ formS =
     [ flex (int 1)
     , displayFlex
     , flexDirection column
-    , justifyContent center
+    , marginTop (px 60)
     ]
 
 -- view/author/styles
+submitRowS : List (H.Attribute m) -> List (Html m) -> Html m
+submitRowS =
+  H.styled H.div
+    [ displayFlex ]
+
 emailFieldS : List (H.Attribute m) -> List (Html m) -> Html m
 emailFieldS =
   H.styled H.input
