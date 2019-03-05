@@ -33,8 +33,6 @@ init : State
 init =
   Editor.init
     |> State.map initModel EditorMsg
-    -- workaround https://github.com/elm/compiler/issues/1776
-    |> State.joinCmd (Timers.async JoinStory)
 
 -- model
 type alias Model =
@@ -106,8 +104,7 @@ toOrdinal number =
 
 -- update
 type Msg
-  = JoinStory
-  | ChangeEmail String
+  = ChangeEmail String
   | ChangeName String
   | AddLine
   | ShowQueue Position
@@ -119,9 +116,6 @@ type Msg
 update : Session -> Msg -> Model -> State
 update session msg model =
   case msg of
-    JoinStory ->
-      model
-        |> State.withCmd joinStory
     ChangeEmail email ->
       { model | email = email }
         |> State.withoutCmd
@@ -157,14 +151,7 @@ subscriptions model =
     , showThanks
     ]
 
--- socket.out: JOIN_STORY
-joinStory : Cmd Msg
-joinStory =
-  JE.null
-    |> Socket.MessageOut "JOIN_STORY"
-    |> Socket.push
-
--- socket.in: SHOW_QUEUE
+-- socket/in/SHOW_QUEUE
 type alias Position =
   { behind : Int
   }
@@ -180,7 +167,7 @@ showQueue =
       |> Socket.Event "SHOW_QUEUE"
       |> Socket.subscribe ShowQueue Ignored
 
--- socket.in: SHOW_PREVIOUS_LINE
+-- socket/in/SHOW_PREVIOUS_LINE
 type alias Prompt =
   { text : String
   , name : Maybe String
@@ -198,7 +185,7 @@ showPrompt =
       |> Socket.Event "SHOW_PROMPT"
       |> Socket.subscribe ShowPrompt Ignored
 
--- socket.out: ADD_LINE
+-- socket/out/ADD_LINE
 addLine : Model -> Cmd Msg
 addLine model =
   let
@@ -213,7 +200,7 @@ addLine model =
       |> Socket.MessageOut "ADD_LINE"
       |> Socket.push
 
--- socket.in: SHOW_THANKS
+-- socket/in/SHOW_THANKS
 showThanks : Sub Msg
 showThanks =
   JD.null True

@@ -19,6 +19,14 @@ pub struct MessageOut {
 
 // impls
 impl<'a> MessageIn<'a> {
+    // init / factories
+    pub fn new(name: NameIn, args: &'a json::value::RawValue) -> MessageIn {
+        MessageIn {
+            name: name,
+            args: args
+        }
+    }
+
     // json
     pub fn decode(json_str: &'a str) -> socket::Result<MessageIn> {
         json::from_str(json_str)
