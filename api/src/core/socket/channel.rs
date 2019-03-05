@@ -1,38 +1,30 @@
-use core::socket;
-use super::event::NameOut;
-use super::message::MessageOut;
+use std::sync::Arc;
+use super::routes::Routes;
+use super::sender::Sender;
+use super::connection::Connection;
 
 // types
 pub struct Channel {
-    out: ws::Sender,
+    routes: Arc<Routes>
 }
 
 // impls
 impl Channel {
     // init
-    pub fn new(out: ws::Sender) -> Channel {
+    pub fn new(routes: Arc<Routes>) -> Channel {
         Channel {
-            out: out
+            routes: routes
         }
     }
+}
 
-    // commands
-    pub fn send(&self, text: String) {
-        let result = self.out.send(ws::Message::text(text));
+impl ws::Factory for Channel {
+    type Handler = Connection;
 
-        if let Err(error) = result {
-            error!("[socket] failed to send message: {}", error)
-        }
-    }
-
-    pub fn send_error(&self, error: socket::Error) {
-        error!("[socket] internal error: {:?}", error);
-
-        let message = MessageOut::named(NameOut::ShowInternalError);
-
-        match message.encode() {
-            Ok(text)   => self.send(text),
-            Err(error) => error!("[socket] failed to encode internal error: {:?}", error)
-        };
+    fn connection_made(&mut self, out: ws::Sender) -> Connection {
+        Connection::new(
+            self.routes.clone(),
+            Arc::new(Sender::new(out))
+        )
     }
 }
