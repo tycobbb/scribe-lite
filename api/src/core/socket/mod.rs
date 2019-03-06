@@ -1,7 +1,8 @@
 mod socket;
 mod channel;
 mod connection;
-mod sender;
+mod sink;
+pub use self::sink::*;
 
 pub mod result;
 pub use self::result::*;
@@ -17,4 +18,3 @@ pub use self::listen::*;
 
 pub mod routes;
 pub use self::routes::*;
-

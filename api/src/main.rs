@@ -32,13 +32,12 @@ mod domain;
 mod action;
 
 // main
-use std::sync::Arc;
 use core::socket;
 use core::logger;
 
 fn main() {
     logger::setup();
     dotenv::dotenv().ok();
-    socket::listen(Arc::new(action::Routes));
+    socket::listen(action::Routes);
     rocket::ignite().mount("/", routes![]).launch();
 }

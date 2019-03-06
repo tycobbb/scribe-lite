@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use yansi::{ Paint, Color };
 use super::routes::Routes;
 use super::channel::Channel;
@@ -11,7 +10,7 @@ pub struct Socket;
 
 // impls
 impl Socket {
-    pub fn listen(&self, routes: Arc<Routes>) {
+    pub fn listen<R>(&self, routes: R) where R: Routes + Clone {
         info!("🧦  {} {}",
             Paint::default("Socket is starting on").bold(),
             Paint::default(HOST.replace("127.0.0.1", "http://localhost")).bold().underline()

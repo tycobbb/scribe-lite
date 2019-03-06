@@ -1,46 +1,36 @@
-use std::sync::Arc;
 use serde_json as json;
 use core::socket;
 use super::routes::Routes;
-use super::sender::Sender;
+use super::sink::Sink;
 use super::event::NameIn;
 use super::message::{ MessageIn, MessageOut };
 
 // types
-pub struct Connection {
-    routes: Arc<Routes>,
-    out:    Arc<Sender>
+pub struct Connection<R> where R: Routes {
+    routes: R,
+    sink:   Sink
 }
 
 // impls
-impl Connection {
+impl<R> Connection<R> where R: Routes {
     // init
-    pub fn new(routes: Arc<Routes>, out: Arc<Sender>) -> Connection {
+    pub fn new(routes: R, sink: Sink) -> Connection<R> {
         Connection {
             routes: routes,
-            out:    out
+            sink:   sink
         }
     }
 
     // commands
     fn on_incoming(&self, incoming: MessageIn) {
-        let out = self.out.clone();
+        let sink = self.sink.clone();
 
         // send any outoing messages from the route
-        self.routes.resolve(incoming, Box::new(move |outgoing: socket::Result<MessageOut>| {
-            let encoded = outgoing.and_then(|message| {
-                message.encode()
-            });
-
-            match encoded {
-                Ok(outgoing) => out.send(outgoing),
-                Err(error)   => out.send_error(error)
-            };
-        }));
+        self.routes.resolve(incoming, sink)
     }
 }
 
-impl ws::Handler for Connection {
+impl<R> ws::Handler for Connection<R> where R: Routes {
     fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
         // TODO: can we avoid RawValue? maybe by using resource-based routing
         // to split message from event/resource name:
@@ -61,7 +51,7 @@ impl ws::Handler for Connection {
         // send error if decode failed
         let incoming = match decoded {
             Ok(message) => message,
-            Err(error)  => return Ok(self.out.send_error(error))
+            Err(error)  => return Ok(self.sink.send(Err(error))
         };
 
         self.on_incoming(incoming);

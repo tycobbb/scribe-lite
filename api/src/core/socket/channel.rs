@@ -1,30 +1,29 @@
-use std::sync::Arc;
 use super::routes::Routes;
-use super::sender::Sender;
+use super::sink::Sink;
 use super::connection::Connection;
 
 // types
-pub struct Channel {
-    routes: Arc<Routes>
+pub struct Channel<R> where R: Routes + Clone {
+    routes: R
 }
 
 // impls
-impl Channel {
+impl<R> Channel<R> where R: Routes + Clone {
     // init
-    pub fn new(routes: Arc<Routes>) -> Channel {
+    pub fn new(routes: R) -> Self {
         Channel {
             routes: routes
         }
     }
 }
 
-impl ws::Factory for Channel {
-    type Handler = Connection;
+impl<R> ws::Factory for Channel<R> where R: Routes + Clone {
+    type Handler = Connection<R>;
 
-    fn connection_made(&mut self, out: ws::Sender) -> Connection {
+    fn connection_made(&mut self, out: ws::Sender) -> Self::Handler {
         Connection::new(
             self.routes.clone(),
-            Arc::new(Sender::new(out))
+            Sink::new(out)
         )
     }
 }

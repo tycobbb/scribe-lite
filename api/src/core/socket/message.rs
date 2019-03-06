@@ -53,19 +53,15 @@ impl MessageOut {
     }
 
     // json
-    pub fn from_name(name: NameOut) -> socket::Result<MessageOut> {
-        Ok(MessageOut::named(name))
+    pub fn encode(&self) -> socket::Result<String> {
+        json::to_string(&self)
+            .map_err(socket::Error::EncodeFailed)
     }
 
-    pub fn from_data<T>(name: NameOut, value: T) -> socket::Result<MessageOut> where T: Serialize {
+    pub fn encoding_data<T>(name: NameOut, value: T) -> socket::Result<MessageOut> where T: Serialize {
         let data = json::to_value(value)
             .map_err(socket::Error::EncodeFailed)?;
 
         Ok(MessageOut::new(name, data))
-    }
-
-    pub fn encode(&self) -> socket::Result<String> {
-        json::to_string(&self)
-            .map_err(socket::Error::EncodeFailed)
     }
 }

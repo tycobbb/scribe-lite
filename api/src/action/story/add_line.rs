@@ -1,8 +1,8 @@
 use core::db;
-use core::sink::Sink;
 use domain::story;
-use action::action::{ self, Action };
 use action::event::*;
+use action::routes::Sink;
+use action::action::{ self, Action };
 
 // types
 pub struct AddLine;
@@ -18,7 +18,7 @@ pub struct NewLine<'a> {
 impl<'a> Action<'a> for AddLine {
     type Args = NewLine<'a>;
 
-    fn call(&self, line: NewLine<'a>, sink: Sink<Event>) {
+    fn call(&self, line: NewLine<'a>, sink: Sink) {
         let conn = db::connect();
         let repo = story::Repo::new(&conn);
 
@@ -28,7 +28,7 @@ impl<'a> Action<'a> for AddLine {
 
         let mut story = match result {
             Ok(s)  => s,
-            Err(e) => return sink(Event::ShowAddLineError(e))
+            Err(e) => return sink.send(Event::ShowAddLineError(e))
         };
 
         story.add_line(
@@ -41,12 +41,12 @@ impl<'a> Action<'a> for AddLine {
             .map_err(AddLine::errors);
 
         if let Err(e) = result {
-            return sink(Event::ShowAddLineError(e));
+            return sink.send(Event::ShowAddLineError(e));
         }
 
         story.leave();
 
-        sink(Event::ShowThanks);
+        sink.send(Event::ShowThanks);
     }
 }
 
