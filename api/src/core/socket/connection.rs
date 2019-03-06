@@ -68,4 +68,11 @@ impl ws::Handler for Connection {
 
         Ok(())
     }
+
+    fn on_close(&mut self, _: ws::CloseCode, _: &str) {
+        // TODO: see on_open
+        if let Ok(value) = json::value::RawValue::from_string("null".to_owned()) {
+            self.on_incoming(MessageIn::new(NameIn::LeaveStory, &value));
+        }
+    }
 }

@@ -11,8 +11,9 @@ pub struct Routes;
 impl socket::Routes for Routes {
     fn resolve<'a>(&self, msg: socket::MessageIn<'a>, sink: socket::Sink) {
         match msg.name {
-            NameIn::JoinStory => self.to_action(&story::Join, msg, sink),
-            NameIn::AddLine   => self.to_action(&story::AddLine, msg, sink)
+            NameIn::JoinStory  => self.to_action(&story::Join, msg, sink),
+            NameIn::AddLine    => self.to_action(&story::AddLine, msg, sink),
+            NameIn::LeaveStory => self.to_action(&story::Leave, msg, sink)
         }
     }
 }
@@ -47,4 +48,3 @@ impl Event {
         }
     }
 }
-

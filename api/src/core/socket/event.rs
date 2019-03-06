@@ -4,7 +4,9 @@ pub enum NameIn {
     #[serde(rename = "JOIN_STORY")]
     JoinStory,
     #[serde(rename = "ADD_LINE")]
-    AddLine
+    AddLine,
+    #[serde(rename = "LEAVE_STORY")]
+    LeaveStory
 }
 
 #[derive(Serialize, Debug)]
