@@ -1,6 +1,8 @@
 use chrono::NaiveDateTime;
 use core::db::schema::stories;
+use domain::Id;
 use super::story::Story;
+use super::queue::{ Queue, Author };
 use super::line;
 
 // types
@@ -9,7 +11,8 @@ use super::line;
 pub struct Record {
     pub id:         i32,
     pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime
+    pub updated_at: NaiveDateTime,
+    pub queue:      Option<Vec<i32>>
 }
 
 // impls
@@ -23,8 +26,14 @@ impl Story {
             .into_iter()
             .map(line::Line::from_db);
 
+        let author_ids = record.queue
+            .unwrap_or_default()
+            .into_iter()
+            .map(Id);
+
         Story::new(
-            record.id,
+            Id(record.id),
+            Queue::new(author_ids.collect()),
             lines.collect()
         )
     }

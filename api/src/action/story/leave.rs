@@ -21,6 +21,6 @@ impl<'a> Action<'a> for Leave {
             Err(_) => return sink.send(Event::ShowInternalError)
         };
 
-        story.leave();
+        story.leave(sink.id().into());
     }
 }

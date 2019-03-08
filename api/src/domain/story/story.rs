@@ -1,34 +1,35 @@
-use super::queue::{ self, Author };
+use domain::Id;
 use super::line::Line;
+use super::queue::{ Queue, Author };
 use super::prompt::Prompt;
 
 // types
 #[derive(Debug)]
 pub struct Story {
-    pub id:           i32,
-    pub lines:        Vec<Line>,
-    pub has_new_line: bool,
+    pub id:           Id,
+    queue:            Queue,
+    lines:            Vec<Line>,
+    pub has_new_line: bool
 }
 
 // impls
 impl Story {
-    pub fn new(id: i32, lines: Vec<Line>) -> Self {
+    pub fn new(id: Id, queue: Queue, lines: Vec<Line>) -> Self {
         Story {
             id:           id,
+            queue:        queue,
             lines:        lines,
             has_new_line: false
         }
     }
 
     // commands
-    pub fn join(&mut self, author: Author) {
-        let mut queue = queue::Repo.find_for_today();
-        queue.join(author);
+    pub fn join(&mut self, author_id: Id) {
+        self.queue.join(author_id);
     }
 
-    pub fn leave(&mut self) {
-        let mut queue = queue::Repo.find_for_today();
-        queue.leave();
+    pub fn leave(&mut self, author_id: Id) {
+        self.queue.leave(author_id);
     }
 
     pub fn add_line(&mut self,
@@ -47,8 +48,7 @@ impl Story {
 
     // queries
     pub fn is_available(&self) -> bool {
-        let queue = queue::Repo.find_for_today();
-        queue.is_empty()
+        self.queue.is_empty()
     }
 
     pub fn new_line(&self) -> Option<&Line> {

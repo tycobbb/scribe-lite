@@ -44,7 +44,7 @@ impl<'a> Action<'a> for AddLine {
             return sink.send(Event::ShowAddLineError(e));
         }
 
-        story.leave();
+        story.leave(sink.id().into());
 
         sink.send(Event::ShowThanks);
     }

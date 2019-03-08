@@ -6,10 +6,12 @@ use super::routes::Sink;
 // a user-facing errors type
 pub type Error = errors::Errors;
 
-// a command type that produces a serializable value or a user-facing error
+// a command type that can produce events
 pub trait Action<'a> {
     type Args: Deserialize<'a>;
 
-    // fires the action and returns the payload
+    // fires the action
+    // - args:   the action's arguments, if any
+    // - events: a sink for sending any produced events
     fn call(&self, args: Self::Args, sink: Sink);
 }

@@ -17,6 +17,11 @@ impl Sink {
         }
     }
 
+    // props
+    pub fn id(&self) -> u32 {
+        self.out.connection_id()
+    }
+
     // commands
     pub fn send(&self, outgoing: socket::Result<MessageOut>) {
         let mut encoded = outgoing.and_then(|message| {

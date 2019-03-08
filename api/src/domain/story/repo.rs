@@ -31,7 +31,7 @@ impl<'a> Repo<'a> {
         };
 
         new_line
-            .to_new_record(story.id)
+            .to_new_record(story.id.0)
             .insert_into(lines::table)
             .execute(self.conn)
             .map(empty::ignore)

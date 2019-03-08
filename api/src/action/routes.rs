@@ -40,12 +40,19 @@ impl socket::Routes for Routes {
 }
 
 impl Sink {
+    // init
     pub fn new(sink: socket::Sink) -> Self {
         Sink {
             sink: sink
         }
     }
 
+    // props
+    pub fn id(&self) -> i32 {
+        self.sink.id() as i32
+    }
+
+    // commands
     pub fn send(&self, event: Event) {
         // helper
         fn to_message<T>(name: NameOut, value: T) -> socket::Result<socket::MessageOut> where T: Serialize {

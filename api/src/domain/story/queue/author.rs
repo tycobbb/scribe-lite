@@ -1,9 +1,10 @@
-use std::fmt;
+use domain::Id;
 
 // types
-pub enum Author {
-    Active,
-    Waiting(Box<Fn(Position) + Send>)
+#[derive(Debug)]
+pub struct Author<'a> {
+    id:       &'a Id,
+    position: Position
 }
 
 #[derive(Debug, Serialize)]
@@ -12,34 +13,14 @@ pub struct Position {
 }
 
 // impls
-impl Author {
-    // commands
-    pub fn notify(&self, position: Position) {
-        if let Author::Waiting(handler) = self {
-            handler(position);
-        }
-    }
-}
-
-impl Position {
+impl<'a> Author<'a> {
     // init / factories
-    pub fn new(behind: usize) -> Position {
-        Position {
-            behind: behind
-        }
-    }
-
-    // queries
-    pub fn is_ready(&self) -> bool {
-        self.behind == 0
-    }
-}
-
-impl fmt::Debug for Author {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Author::Active     => write!(f, "Author(Active)"),
-            Author::Waiting(_) => write!(f, "Author(Waiting)")
+    pub fn new(id: &'a Id, behind: usize) -> Author<'a> {
+        Author {
+            id: id,
+            position: Position {
+                behind: behind
+            }
         }
     }
 }
