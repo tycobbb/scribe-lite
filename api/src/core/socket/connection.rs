@@ -3,7 +3,7 @@ use core::socket;
 use super::routes::Routes;
 use super::sink::Sink;
 use super::event::NameIn;
-use super::message::{ MessageIn, MessageOut };
+use super::message::MessageIn;
 
 // types
 pub struct Connection<R> where R: Routes {

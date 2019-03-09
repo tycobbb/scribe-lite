@@ -12,8 +12,6 @@ extern crate dotenv;
 extern crate chrono;
 #[macro_use]
 extern crate diesel;
-#[macro_use]
-extern crate lazy_static;
 
 // api
 #[macro_use]

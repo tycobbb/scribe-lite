@@ -2,8 +2,8 @@ use chrono::NaiveDateTime;
 use core::db::schema::stories;
 use domain::Id;
 use super::story::Story;
-use super::queue::{ Queue, Author };
 use super::line;
+use super::queue;
 
 // types
 #[derive(Debug, Identifiable, Queryable)]
@@ -12,29 +12,39 @@ pub struct Record {
     pub id:         i32,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    pub queue:      Option<Vec<i32>>
+    pub author_ids: Option<Vec<i32>>
+}
+
+#[derive(Debug, AsChangeset)]
+#[table_name="stories"]
+pub struct AuthorsChangeset {
+    pub author_ids: Option<Vec<i32>>
 }
 
 // impls
 impl Story {
-    pub fn from_db_initial(record: Record) -> Self {
-        Story::from_db(record, vec![])
+    pub fn from_record_initial(record: Record) -> Self {
+        Story::from_record(record, vec![])
     }
 
-    pub fn from_db(record: Record, lines: Vec<line::Record>) -> Self {
+    pub fn from_record(record: Record, lines: Vec<line::Record>) -> Self {
         let lines = lines
             .into_iter()
-            .map(line::Line::from_db);
+            .map(line::Line::from_record);
 
-        let author_ids = record.queue
-            .unwrap_or_default()
-            .into_iter()
-            .map(Id);
+        let queue =
+            queue::Queue::from_column(record.author_ids);
 
         Story::new(
             Id(record.id),
-            Queue::new(author_ids.collect()),
+            queue,
             lines.collect()
         )
+    }
+
+    pub fn into_authors_changeset(&self) -> AuthorsChangeset {
+        AuthorsChangeset {
+            author_ids: self.queue.into_column()
+        }
     }
 }

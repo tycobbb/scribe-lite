@@ -1,11 +1,7 @@
 use serde::Deserialize;
-use core::errors;
 use super::routes::Sink;
 
 // types
-// a user-facing errors type
-pub type Error = errors::Errors;
-
 // a command type that can produce events
 pub trait Action<'a> {
     type Args: Deserialize<'a>;

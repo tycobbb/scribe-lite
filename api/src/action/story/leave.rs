@@ -12,15 +12,31 @@ impl<'a> Action<'a> for Leave {
     type Args = ();
 
     fn call(&self, _: (), sink: Sink) {
-        let conn   = db::connect();
-        let repo   = story::Repo::new(&conn);
-        let result = repo.find_or_create_for_today();
+        let conn = db::connect();
+        let repo = story::Repo::new(&conn);
 
-        let mut story = match result {
+        // find story
+        let mut story = match repo.find_for_today() {
             Ok(s)  => s,
             Err(_) => return sink.send(Event::ShowInternalError)
         };
 
+        // leave story
         story.leave(sink.id().into());
+
+        // save updates
+        if let Err(_) = repo.save_queue(&mut story) {
+            return sink.send(Event::ShowInternalError);
+        }
+
+        // send updates to story authors
+        // TODO: share with other actions
+        for author in story.authors_with_new_positions() {
+            if author.is_active() {
+                sink.send(Event::ShowPrompt(story.next_line_prompt()));
+            } else {
+                sink.send(Event::ShowQueue(author.position));
+            }
+        }
     }
 }

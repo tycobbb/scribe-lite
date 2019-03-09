@@ -23,6 +23,6 @@ impl<'a> Factory<'a> {
         diesel::insert_into(stories::table)
             .default_values()
             .get_result::<Record>(self.conn)
-            .map(Story::from_db_initial)
+            .map(Story::from_record_initial)
     }
 }

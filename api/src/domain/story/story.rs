@@ -7,8 +7,8 @@ use super::prompt::Prompt;
 #[derive(Debug)]
 pub struct Story {
     pub id:           Id,
-    queue:            Queue,
-    lines:            Vec<Line>,
+    pub(super) queue: Queue,
+    pub(super) lines: Vec<Line>,
     pub has_new_line: bool
 }
 
@@ -46,11 +46,7 @@ impl Story {
         self.has_new_line = true
     }
 
-    // queries
-    pub fn is_available(&self) -> bool {
-        self.queue.is_empty()
-    }
-
+    // queries/lines
     pub fn new_line(&self) -> Option<&Line> {
         if self.has_new_line {
             self.lines.last()
@@ -71,5 +67,14 @@ impl Story {
         self.previous_line()
             .map(Prompt::from_line)
             .unwrap_or_default()
+    }
+
+    // queries/authors
+    pub fn new_author(&self) -> Option<Author> {
+        self.queue.new_author()
+    }
+
+    pub fn authors_with_new_positions(&self) -> Vec<Author> {
+        self.queue.authors_with_new_positions()
     }
 }

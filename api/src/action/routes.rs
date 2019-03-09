@@ -64,7 +64,6 @@ impl Sink {
             Event::ShowQueue(v)        => to_message(NameOut::ShowQueue, v),
             Event::ShowPrompt(v)       => to_message(NameOut::ShowPrompt, v),
             Event::ShowThanks          => to_message(NameOut::ShowThanks, ()),
-            Event::ShowAddLineError(e) => to_message(NameOut::ShowAddLineError, e),
             Event::ShowInternalError   => to_message(NameOut::ShowInternalError, ())
         };
 

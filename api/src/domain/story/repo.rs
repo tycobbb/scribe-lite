@@ -22,7 +22,21 @@ impl<'a> Repo<'a> {
 
     // commands
     #[must_use]
-    pub fn save(&self, story: &mut Story) -> QueryResult<()> {
+    pub fn save_queue(&self, story: &mut Story) -> QueryResult<()> {
+        use core::db::schema::stories;
+
+        let target = stories::table
+            .filter(stories::id.eq(story.id.0));
+
+        let updated = diesel::update(target)
+            .set(story.into_authors_changeset())
+            .execute(self.conn);
+
+        updated.map(empty::ignore)
+    }
+
+    #[must_use]
+    pub fn save_new_line(&self, story: &mut Story) -> QueryResult<()> {
         use core::db::schema::lines;
 
         let new_line = match story.new_line() {
@@ -30,11 +44,20 @@ impl<'a> Repo<'a> {
             None       => return Ok(())
         };
 
-        new_line
-            .to_new_record(story.id.0)
+        let inserted = new_line
+            .into_new_record(&story.id)
             .insert_into(lines::table)
-            .execute(self.conn)
-            .map(empty::ignore)
+            .execute(self.conn);
+
+        inserted.map(empty::ignore)
+    }
+
+    #[must_use]
+    pub fn save_queue_and_new_line(&self, story: &mut Story) -> QueryResult<()> {
+        self.conn.transaction(|| {
+            self.save_queue(story)?;
+            self.save_new_line(story)
+        })
     }
 
     // queries
@@ -56,7 +79,7 @@ impl<'a> Repo<'a> {
             .limit(1)
             .load::<line::Record>(self.conn)?;
 
-        Ok(Story::from_db(story, lines))
+        Ok(Story::from_record(story, lines))
     }
 
     pub fn find_or_create_for_today(&self) -> QueryResult<Story> {

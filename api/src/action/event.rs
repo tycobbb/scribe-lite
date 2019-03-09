@@ -1,5 +1,4 @@
 use domain::story;
-use super::action;
 
 // types
 // Event is a list of events that actions can trigger.
@@ -9,7 +8,6 @@ pub enum Event {
     ShowQueue(story::Position),
     ShowPrompt(story::Prompt),
     ShowThanks,
-    ShowAddLineError(action::Error),
     // shared
     ShowInternalError
 }

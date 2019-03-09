@@ -18,8 +18,6 @@ pub enum NameOut {
     ShowQueue,
     #[serde(rename = "SHOW_THANKS")]
     ShowThanks,
-    #[serde(rename = "SHOW_ADD_LINE_ERROR")]
-    ShowAddLineError,
     // shared
     #[serde(rename = "SHOW_INTERNAL_ERROR")]
     ShowInternalError

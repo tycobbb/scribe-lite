@@ -1,5 +1,6 @@
 use chrono::NaiveDateTime;
 use core::db::schema::lines;
+use domain::Id;
 use super::line::*;
 use super::super::Record as Story;
 
@@ -28,7 +29,7 @@ pub struct NewRecord<'a> {
 
 // impls
 impl Line {
-    pub fn from_db(record: Record) -> Self {
+    pub fn from_record(record: Record) -> Self {
         Line::new(
             record.text,
             record.name,
@@ -36,13 +37,13 @@ impl Line {
         )
     }
 
-    pub fn to_new_record(&self, story_id: i32) -> NewRecord {
+    pub fn into_new_record(&self, story_id: &Id) -> NewRecord {
         // see: https://stackoverflow.com/a/34978794/755957
         NewRecord {
             text:     &self.text,
             name:     self.name.as_ref().map(String::as_ref),
             email:    self.email.as_ref().map(String::as_ref),
-            story_id: story_id
+            story_id: story_id.0
         }
     }
 }

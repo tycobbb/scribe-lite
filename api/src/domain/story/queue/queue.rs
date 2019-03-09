@@ -4,9 +4,9 @@ use super::author::Author;
 // types
 #[derive(Debug)]
 pub struct Queue {
-    author_ids:           Vec<Id>,
-    has_new_author:       bool,
-    removed_author_index: Option<usize>
+    pub(super) author_ids: Vec<Id>,
+    pub has_new_author:    bool,
+    removed_author_index:  Option<usize>
 }
 
 
@@ -66,13 +66,5 @@ impl Queue {
         }
 
         authors
-    }
-
-    fn len(&self) -> usize {
-        self.author_ids.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
     }
 }

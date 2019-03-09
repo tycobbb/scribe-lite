@@ -3,13 +3,13 @@ use domain::Id;
 // types
 #[derive(Debug)]
 pub struct Author<'a> {
-    id:       &'a Id,
-    position: Position
+    pub id:       &'a Id,
+    pub position: Position
 }
 
 #[derive(Debug, Serialize)]
 pub struct Position {
-    behind: usize
+    pub behind: usize
 }
 
 // impls
@@ -22,5 +22,10 @@ impl<'a> Author<'a> {
                 behind: behind
             }
         }
+    }
+
+    // queries
+    pub fn is_active(&self) -> bool {
+        self.position.behind == 0
     }
 }
