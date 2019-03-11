@@ -1,4 +1,5 @@
 use yansi::{ Paint, Color };
+use core::empty;
 use super::routes::Routes;
 use super::channel::Channel;
 
@@ -16,11 +17,11 @@ impl Socket {
             Paint::default(HOST.replace("127.0.0.1", "http://localhost")).bold().underline()
         );
 
-        let result = ws::WebSocket::new(Channel::new(routes))
+        let finished = ws::WebSocket::new(Channel::new(routes))
             .and_then(|s| s.listen(HOST))
-            .map(|_| ());
+            .map(empty::ignore);
 
-        self.notify(result);
+        self.notify(finished);
     }
 
     fn notify(&self, result: ws::Result<()>) {

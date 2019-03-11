@@ -49,11 +49,15 @@ impl Sink {
 
     // props
     pub fn id(&self) -> i32 {
-        self.sink.id() as i32
+        self.sink.id as i32
     }
 
     // commands
     pub fn send(&self, event: Event) {
+        self.send_to(self.sink.id, event);
+    }
+
+    pub fn send_to(&self, id: u32, event: Event) {
         // helper
         fn to_message<T>(name: NameOut, value: T) -> socket::Result<socket::MessageOut> where T: Serialize {
             socket::MessageOut::encoding_data(name, value)
@@ -67,7 +71,6 @@ impl Sink {
             Event::ShowInternalError   => to_message(NameOut::ShowInternalError, ())
         };
 
-        self.sink.send(message);
+        self.sink.send_to(id, message);
     }
-
 }

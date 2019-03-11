@@ -33,9 +33,9 @@ impl<'a> Action<'a> for Leave {
         // TODO: share with other actions
         for author in story.authors_with_new_positions() {
             if author.is_active() {
-                sink.send(Event::ShowPrompt(story.next_line_prompt()));
+                sink.send_to(author.id.0 as u32, Event::ShowPrompt(story.next_line_prompt()));
             } else {
-                sink.send(Event::ShowQueue(author.position));
+                sink.send_to(author.id.0 as u32, Event::ShowQueue(author.position));
             }
         }
     }

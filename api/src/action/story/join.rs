@@ -30,12 +30,13 @@ impl<'a> Action<'a> for Join {
         }
 
         // send updates to story authors
-        // TODO: share with other actions
+        // TODO: use author_by_id instead?
         let author = match story.new_author() {
             Some(author) => author,
             None         => return sink.send(Event::ShowInternalError)
         };
 
+        // TODO: share with other actions
         if author.is_active() {
             sink.send(Event::ShowPrompt(story.next_line_prompt()));
         } else {

@@ -21,12 +21,14 @@ impl<R> Connection<R> where R: Routes {
         }
     }
 
-    // commands
-    fn on_incoming(&self, incoming: MessageIn) {
-        let sink = self.sink.clone();
+    // queries
+    pub fn id(&self) -> u32 {
+        self.sink.id
+    }
 
-        // send any outoing messages from the route
-        self.routes.resolve(incoming, sink)
+    // commands
+    fn resolve(&self, incoming: MessageIn) {
+        self.routes.resolve(incoming, self.sink.clone())
     }
 }
 
@@ -36,7 +38,7 @@ impl<R> ws::Handler for Connection<R> where R: Routes {
         // to split message from event/resource name:
         // https://github.com/housleyjk/ws-rs/blob/master/examples/router.rs
         if let Ok(value) = json::value::RawValue::from_string("null".to_owned()) {
-            self.on_incoming(MessageIn::new(NameIn::JoinStory, &value));
+            self.resolve(MessageIn::new(NameIn::JoinStory, &value));
         }
 
         Ok(())
@@ -54,7 +56,7 @@ impl<R> ws::Handler for Connection<R> where R: Routes {
             Err(error)  => return Ok(self.sink.send(Err(error))
         };
 
-        self.on_incoming(incoming);
+        self.resolve(incoming);
 
         Ok(())
     }
@@ -62,7 +64,7 @@ impl<R> ws::Handler for Connection<R> where R: Routes {
     fn on_close(&mut self, _: ws::CloseCode, _: &str) {
         // TODO: see on_open
         if let Ok(value) = json::value::RawValue::from_string("null".to_owned()) {
-            self.on_incoming(MessageIn::new(NameIn::LeaveStory, &value));
+            self.resolve(MessageIn::new(NameIn::LeaveStory, &value));
         }
     }
 }

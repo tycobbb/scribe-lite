@@ -1,29 +1,31 @@
 use core::socket;
 use super::event::NameOut;
 use super::message::MessageOut;
+use super::channel::Clients;
 
 // types
 #[derive(Clone)]
 pub struct Sink {
-    out: ws::Sender
+    pub id:  u32,
+    clients: Clients
 }
 
 // impls
 impl Sink {
     // init
-    pub fn new(out: ws::Sender) -> Self {
+    pub fn new(id: u32, clients: Clients) -> Self {
         Sink {
-            out: out
+            id:      id,
+            clients: clients
         }
-    }
-
-    // props
-    pub fn id(&self) -> u32 {
-        self.out.connection_id()
     }
 
     // commands
     pub fn send(&self, outgoing: socket::Result<MessageOut>) {
+        self.send_to(self.id, outgoing);
+    }
+
+    pub fn send_to(&self, id: u32, outgoing: socket::Result<MessageOut>) {
         let mut encoded = outgoing.and_then(|message| {
             message.encode()
         });
@@ -40,11 +42,6 @@ impl Sink {
             Err(error) => return error!("[socket] failed to encode internal error: {:?}", error)
         };
 
-        // send message
-        let sent = self.out.send(ws::Message::text(text));
-
-        if let Err(error) = sent {
-            error!("[socket] failed to send message: {}", error)
-        }
+        self.clients.send_to(id, ws::Message::text(text));
     }
 }
