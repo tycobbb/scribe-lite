@@ -55,16 +55,9 @@ impl Story {
         }
     }
 
-    pub fn previous_line(&self) -> Option<&Line> {
-        if self.has_new_line {
-            self.lines.get(self.lines.len() - 2)
-        } else {
-            self.lines.last()
-        }
-    }
-
     pub fn next_line_prompt(&self) -> Prompt {
-        self.previous_line()
+        self.lines
+            .last()
             .map(Prompt::from_line)
             .unwrap_or_default()
     }

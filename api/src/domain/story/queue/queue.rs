@@ -38,6 +38,7 @@ impl Queue {
             None    => return warn!("attempted to remove an author that was not in the queue")
         };
 
+        self.removed_author_index = Some(index);
         self.author_ids.remove(index);
     }
 
