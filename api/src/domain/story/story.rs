@@ -24,11 +24,11 @@ impl Story {
     }
 
     // commands
-    pub fn join(&mut self, author_id: Id) {
+    pub fn join(&mut self, author_id: &Id) {
         self.queue.join(author_id);
     }
 
-    pub fn leave(&mut self, author_id: Id) {
+    pub fn leave(&mut self, author_id: &Id) {
         self.queue.leave(author_id);
     }
 

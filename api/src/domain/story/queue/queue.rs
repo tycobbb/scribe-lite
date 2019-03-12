@@ -21,18 +21,18 @@ impl Queue {
     }
 
     // commands
-    pub fn join(&mut self, author_id: Id) {
+    pub fn join(&mut self, author_id: &Id) {
         self.has_new_author = true;
-        self.author_ids.push(author_id);
+        self.author_ids.push(author_id.clone());
     }
 
-    pub fn leave(&mut self, author_id: Id) {
+    pub fn leave(&mut self, author_id: &Id) {
         if self.author_ids.len() == 0 {
             warn!("attempted to leave an empty queue");
             return
         }
 
-        let position = self.author_ids.iter().position(|id| id == &author_id);
+        let position = self.author_ids.iter().position(|id| id == author_id);
         let index = match position {
             Some(i) => i,
             None    => return warn!("attempted to remove an author that was not in the queue")

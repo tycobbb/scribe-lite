@@ -1,11 +1,12 @@
 use serde_json as json;
-use core::socket;
+use core::{ socket, Id };
 use super::routes::Routes;
 use super::sink::Sink;
 use super::event::NameIn;
 use super::message::MessageIn;
 
 // types
+#[derive(Debug)]
 pub struct Connection<R> where R: Routes {
     routes: R,
     sink:   Sink
@@ -21,9 +22,9 @@ impl<R> Connection<R> where R: Routes {
         }
     }
 
-    // queries
-    pub fn id(&self) -> u32 {
-        self.sink.id
+    // props
+    pub fn id(&self) -> &Id {
+        &self.sink.id
     }
 
     // commands

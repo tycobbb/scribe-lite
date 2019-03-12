@@ -11,14 +11,14 @@ impl Queue {
         let author_ids = column
             .unwrap_or_default()
             .into_iter()
-            .map(Id);
+            .map(Id::from);
 
         Queue::new(author_ids.collect())
     }
 
     pub fn into_column(&self) -> Column {
         let ids = self.author_ids.iter()
-            .map(|id| id.0);
+            .map(|id| id.into());
 
         Some(ids.collect())
     }

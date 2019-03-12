@@ -1,0 +1,40 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "attach",
+      "name": "Debug API",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=api",
+          "--package=api"
+        ],
+        "filter": {
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}/api"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug API Tests",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=api",
+          "--package=api"
+        ],
+        "filter": {
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}/api"
+    }
+  ]
+}

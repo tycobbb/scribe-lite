@@ -36,7 +36,7 @@ impl Story {
             queue::Queue::from_column(record.author_ids);
 
         Story::new(
-            Id(record.id),
+            Id::from(record.id),
             queue,
             lines.collect()
         )

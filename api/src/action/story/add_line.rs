@@ -46,9 +46,9 @@ impl<'a> Action<'a> for AddLine {
         // TODO: share this with the other actions
         for author in story.authors_with_new_positions() {
             if author.is_active() {
-                sink.send_to(author.id.0 as u32, Event::ShowPrompt(story.next_line_prompt()));
+                sink.send_to(author.id.into(), Event::ShowPrompt(story.next_line_prompt()));
             } else {
-                sink.send_to(author.id.0 as u32, Event::ShowQueue(author.position));
+                sink.send_to(author.id.into(), Event::ShowQueue(author.position));
             }
         }
 

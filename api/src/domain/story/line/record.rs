@@ -43,7 +43,7 @@ impl Line {
             text:     &self.text,
             name:     self.name.as_ref().map(String::as_ref),
             email:    self.email.as_ref().map(String::as_ref),
-            story_id: story_id.0
+            story_id: story_id.into()
         }
     }
 }

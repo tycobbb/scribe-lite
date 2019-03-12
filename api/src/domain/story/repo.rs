@@ -26,7 +26,7 @@ impl<'a> Repo<'a> {
         use core::db::schema::stories;
 
         let target = stories::table
-            .filter(stories::id.eq(story.id.0));
+            .filter(stories::id.eq(i32::from(&story.id)));
 
         let updated = diesel::update(target)
             .set(story.into_authors_changeset())

@@ -22,7 +22,7 @@ impl<'a> Action<'a> for Leave {
         };
 
         // leave story
-        story.leave(sink.id().into());
+        story.leave(sink.id());
 
         // save updates
         if let Err(_) = repo.save_queue(&mut story) {
@@ -33,9 +33,9 @@ impl<'a> Action<'a> for Leave {
         // TODO: share with other actions
         for author in story.authors_with_new_positions() {
             if author.is_active() {
-                sink.send_to(author.id.0 as u32, Event::ShowPrompt(story.next_line_prompt()));
+                sink.send_to(author.id, Event::ShowPrompt(story.next_line_prompt()));
             } else {
-                sink.send_to(author.id.0 as u32, Event::ShowQueue(author.position));
+                sink.send_to(author.id, Event::ShowQueue(author.position));
             }
         }
     }

@@ -1,19 +1,20 @@
+use core::Id;
 use core::socket;
 use super::event::NameOut;
 use super::message::MessageOut;
-use super::channel::Clients;
+use super::client::Clients;
 
 // types
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Sink {
-    pub id:  u32,
+    pub id:  Id,
     clients: Clients
 }
 
 // impls
 impl Sink {
     // init
-    pub fn new(id: u32, clients: Clients) -> Self {
+    pub fn new(id: Id, clients: Clients) -> Self {
         Sink {
             id:      id,
             clients: clients
@@ -22,10 +23,10 @@ impl Sink {
 
     // commands
     pub fn send(&self, outgoing: socket::Result<MessageOut>) {
-        self.send_to(self.id, outgoing);
+        self.send_to(&self.id, outgoing);
     }
 
-    pub fn send_to(&self, id: u32, outgoing: socket::Result<MessageOut>) {
+    pub fn send_to(&self, id: &Id, outgoing: socket::Result<MessageOut>) {
         let mut encoded = outgoing.and_then(|message| {
             message.encode()
         });
