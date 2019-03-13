@@ -3,6 +3,7 @@ use domain::story;
 use action::event::*;
 use action::routes::Sink;
 use action::action::Action;
+use super::notify::*;
 
 // types
 pub struct Leave;
@@ -30,13 +31,6 @@ impl<'a> Action<'a> for Leave {
         }
 
         // send updates to story authors
-        // TODO: share with other actions
-        for author in story.authors_with_new_positions() {
-            if author.is_active() {
-                sink.send_to(author.id, Event::ShowPrompt(story.next_line_prompt()));
-            } else {
-                sink.send_to(author.id, Event::ShowQueue(author.position));
-            }
-        }
+        notify_authors_with_new_positions(&story, &sink);
     }
 }

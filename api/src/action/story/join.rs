@@ -3,6 +3,7 @@ use domain::story;
 use action::event::*;
 use action::routes::Sink;
 use action::action::Action;
+use super::notify::*;
 
 // types
 pub struct Join;
@@ -30,17 +31,7 @@ impl<'a> Action<'a> for Join {
         }
 
         // send updates to story authors
-        // TODO: use author_by_id instead?
-        let author = match story.new_author() {
-            Some(author) => author,
-            None         => return sink.send(Event::ShowInternalError)
-        };
-
-        // TODO: share with other actions
-        if author.is_active() {
-            sink.send(Event::ShowPrompt(story.next_line_prompt()));
-        } else {
-            sink.send(Event::ShowQueue(author.position));
-        }
+        // notify author
+        notify_new_author(&story, &sink);
     }
 }
