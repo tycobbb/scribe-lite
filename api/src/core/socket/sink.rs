@@ -1,6 +1,6 @@
 use core::Id;
 use core::socket;
-use super::event::NameOut;
+use super::event::{ NameOut, Scheduled };
 use super::message::MessageOut;
 use super::client::Clients;
 
@@ -22,10 +22,6 @@ impl Sink {
     }
 
     // commands
-    pub fn send(&self, outgoing: socket::Result<MessageOut>) {
-        self.send_to(&self.id, outgoing);
-    }
-
     pub fn send_to(&self, id: &Id, outgoing: socket::Result<MessageOut>) {
         let mut encoded = outgoing.and_then(|message| {
             message.encode()
@@ -44,5 +40,9 @@ impl Sink {
         };
 
         self.clients.send_to(id, ws::Message::text(text));
+    }
+
+    pub fn schedule_for(&self, id: &Id, ms: u64, event: Scheduled) {
+        self.clients.schedule_for(id, ms, event.token());
     }
 }

@@ -1,9 +1,10 @@
 use core::db;
 use domain::story;
-use action::event::*;
+use action::event::Event;
 use action::routes::Sink;
 use action::action::Action;
-use super::notify::*;
+use super::notify::notify_authors_with_new_positions;
+
 
 // types
 pub struct Leave;

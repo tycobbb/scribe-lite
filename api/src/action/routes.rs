@@ -1,6 +1,6 @@
 use serde::{ Serialize, Deserialize };
 use core::Id;
-use core::socket::{ self, NameIn, NameOut };
+use core::socket::{ self, NameIn, NameOut, Scheduled };
 use super::action::Action;
 use super::event::*;
 use super::story;
@@ -25,7 +25,7 @@ impl socket::Routes for Routes {
         ) where A: Deserialize<'a> {
             let args = match msg.decode_args() {
                 Ok(args)   => args,
-                Err(error) => return sink.send(Err(error))
+                Err(error) => return sink.send_to(&sink.id, Err(error))
             };
 
             action.call(args, Sink::new(sink));
@@ -69,9 +69,23 @@ impl Sink {
             Event::ShowQueue(v)        => to_message(NameOut::ShowQueue, v),
             Event::ShowPrompt(v)       => to_message(NameOut::ShowPrompt, v),
             Event::ShowThanks          => to_message(NameOut::ShowThanks, ()),
-            Event::ShowInternalError   => to_message(NameOut::ShowInternalError, ())
+            Event::ShowInternalError   => to_message(NameOut::ShowInternalError, ()),
+            Event::CheckPulse1         => to_message(NameOut::CheckPulse, ())
         };
 
         self.sink.send_to(id, message);
+    }
+
+    pub fn schedule(&self, ms: u64, event: Event) {
+        self.schedule_for(self.id(), ms, event)
+    }
+
+    pub fn schedule_for(&self, id: &Id, ms: u64, event: Event) {
+        let scheduled = match event {
+            Event::CheckPulse1 => Scheduled::CHECK_PULSE_1,
+            _                  => return error!("[routes] attempted to schedule unhandled event={:?}", event)
+        };
+
+        self.sink.schedule_for(id, ms, scheduled);
     }
 }

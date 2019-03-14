@@ -54,7 +54,7 @@ impl<R> ws::Handler for Connection<R> where R: Routes {
         // send error if decode failed
         let incoming = match decoded {
             Ok(message) => message,
-            Err(error)  => return Ok(self.sink.send(Err(error))
+            Err(error)  => return Ok(self.sink.send_to(self.id(), Err(error))
         };
 
         self.resolve(incoming);

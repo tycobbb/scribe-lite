@@ -11,6 +11,7 @@ pub struct Socket;
 
 // impls
 impl Socket {
+    // commands
     pub fn listen<R>(&self, routes: R) where R: Routes + Clone {
         info!("🧦  {} {}",
             Paint::default("Socket is starting on").bold(),
@@ -21,10 +22,11 @@ impl Socket {
             .and_then(|s| s.listen(HOST))
             .map(empty::ignore);
 
-        self.notify(finished);
+        self.on_finished(finished);
     }
 
-    fn notify(&self, result: ws::Result<()>) {
+    // events
+    fn on_finished(&self, result: ws::Result<()>) {
         if let Err(error) = result {
             error!("🧦  {}: {}",
                 Paint::default("Socket finished with error").bold().fg(Color::Red),

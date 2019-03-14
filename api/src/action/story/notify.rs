@@ -16,9 +16,13 @@ pub fn notify_authors_with_new_positions(story: &story::Story, sink: &Sink) {
 }
 
 fn notify_author(author: story::Author, story: &story::Story, sink: &Sink) {
-    if author.is_active() {
-        sink.send(Event::ShowPrompt(story.next_line_prompt()));
-    } else {
+    if !author.is_active() {
         sink.send(Event::ShowQueue(author.position));
+        return
     }
+
+    // show prompt
+    sink.send(Event::ShowPrompt(story.next_line_prompt()));
+    // schedule first pulse check in 30s
+    sink.schedule(30_000, Event::CheckPulse1);
 }

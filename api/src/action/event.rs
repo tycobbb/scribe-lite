@@ -8,6 +8,7 @@ pub enum Event {
     ShowQueue(story::Position),
     ShowPrompt(story::Prompt),
     ShowThanks,
+    CheckPulse1,
     // shared
     ShowInternalError
 }

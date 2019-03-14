@@ -3,7 +3,7 @@ use domain::story;
 use action::event::*;
 use action::routes::Sink;
 use action::action::Action;
-use super::notify::*;
+use super::notify::notify_new_author;
 
 // types
 pub struct Join;
@@ -30,7 +30,6 @@ impl<'a> Action<'a> for Join {
             return sink.send(Event::ShowInternalError);
         }
 
-        // send updates to story authors
         // notify author
         notify_new_author(&story, &sink);
     }

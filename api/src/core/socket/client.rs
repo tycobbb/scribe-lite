@@ -26,7 +26,13 @@ impl Client {
 
     pub fn send(&self, message: ws::Message) {
         if let Err(error) = self.0.send(message) {
-            error!("[socket] failed to send message: {}", error)
+            error!("[socket] failed to send message ({})", error)
+        }
+    }
+
+    pub fn schedule(&self, ms: u64, token: ws::util::Token) {
+        if let Err(error) = self.0.timeout(ms, token) {
+            error!("[socket] failed to schedule token={:?} ({})", token, error)
         }
     }
 }
@@ -40,11 +46,24 @@ impl Clients {
 
     // commands
     pub fn send_to(&self, id: &Id, message: ws::Message) {
+        self.with_client(id, |client| {
+            client.send(message);
+        })
+    }
+
+    pub fn schedule_for(&self, id: &Id, ms: u64, token: ws::util::Token) {
+        self.with_client(id, |client| {
+            client.schedule(ms, token);
+        })
+    }
+
+    // queries
+    fn with_client<F>(&self, id: &Id, handler: F) where F: FnOnce(&Client) {
         let clients = self.clients.borrow();
 
         match clients.get(id) {
-            Some(client) => client.send(message),
-            None         => return error!("[socket] attempted to send to unknown client id={:?}", id)
+            Some(client) => handler(client),
+            None         => error!("[socket] attempted to send to unknown client id={:?}", id)
         };
     }
 }
