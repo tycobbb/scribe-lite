@@ -3,8 +3,28 @@
   "configurations": [
     {
       "type": "lldb",
-      "request": "attach",
+      "request": "launch",
       "name": "Debug API",
+      "env": {
+        "RUST_LOG": "error,api=debug,rocket=debug,ws=debug"
+      },
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=api",
+          "--package=api"
+        ],
+        "filter": {
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}/api"
+    },
+    {
+      "type": "lldb",
+      "request": "attach",
+      "name": "Debug API (Attach)",
       "cargo": {
         "args": [
           "build",

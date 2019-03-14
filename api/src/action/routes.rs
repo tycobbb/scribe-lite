@@ -33,9 +33,10 @@ impl socket::Routes for Routes {
 
         // routes/in
         match msg.name {
-            NameIn::JoinStory  => to_action(&story::Join, msg, sink),
-            NameIn::AddLine    => to_action(&story::AddLine, msg, sink),
-            NameIn::LeaveStory => to_action(&story::Leave, msg, sink)
+            NameIn::JoinStory   => to_action(&story::Join, msg, sink),
+            NameIn::AddLine     => to_action(&story::AddLine, msg, sink),
+            NameIn::LeaveStory  => to_action(&story::Leave, msg, sink),
+            NameIn::CheckPulse1 => to_action(&story::CheckPulse, msg, sink)
         }
     }
 }

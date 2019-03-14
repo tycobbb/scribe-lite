@@ -6,7 +6,9 @@ pub enum NameIn {
     #[serde(rename = "ADD_LINE")]
     AddLine,
     #[serde(rename = "LEAVE_STORY")]
-    LeaveStory
+    LeaveStory,
+    #[serde(rename = "CHECK_PULSE_1")]
+    CheckPulse1
 }
 
 #[derive(Serialize, Debug)]
@@ -25,7 +27,7 @@ pub enum NameOut {
     ShowInternalError
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Scheduled(
     ws::util::Token
 );
@@ -33,11 +35,15 @@ pub struct Scheduled(
 // impls
 impl Scheduled {
     // options
-    pub const CHECK_PULSE_1: Scheduled = Scheduled::new(10);
+    pub const CHECK_PULSE_1: Scheduled = Scheduled::val(10);
 
     // lifetime
-    const fn new(value: usize) -> Scheduled {
+    const fn val(value: usize) -> Scheduled {
         Scheduled(ws::util::Token(value))
+    }
+
+    pub fn new(token: ws::util::Token) -> Scheduled {
+        Scheduled(token)
     }
 
     // queries

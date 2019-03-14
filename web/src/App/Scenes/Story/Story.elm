@@ -110,6 +110,7 @@ type Msg
   | ShowQueue Position
   | ShowPrompt Prompt
   | ShowThanks Bool
+  | CheckPulse Bool
   | EditorMsg Editor.Msg
   | Ignored
 
@@ -136,6 +137,9 @@ update session msg model =
     ShowThanks _ ->
       model
         |> State.withCmd (Nav.replaceUrl session.key "/thanks")
+    CheckPulse _ ->
+      Debug.log "Story" "Checking pulse..."
+        |> always (State.just model)
     EditorMsg lineMsg ->
       State.just model
         |> State.merge setEditor EditorMsg (Editor.update lineMsg model.editor)
@@ -184,6 +188,13 @@ showPrompt =
     decodePrompt
       |> Socket.Event "SHOW_PROMPT"
       |> Socket.subscribe ShowPrompt Ignored
+
+-- socket/in/CHECK_PULSE
+checkPulse : Sub Msg
+checkPulse =
+  JD.null True
+    |> Socket.Event "CHECK_PULSE"
+    |> Socket.subscribe CheckPulse Ignored
 
 -- socket/out/ADD_LINE
 addLine : Model -> Cmd Msg
