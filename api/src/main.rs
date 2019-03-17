@@ -1,5 +1,4 @@
 #![allow(proc_macro_derive_resolution_fallback)]
-#![feature(proc_macro_hygiene, decl_macro, custom_attribute)]
 
 // logging
 #[macro_use]
@@ -14,8 +13,6 @@ extern crate chrono;
 extern crate diesel;
 
 // api
-#[macro_use]
-extern crate rocket;
 extern crate ws;
 
 // serialization
@@ -37,5 +34,4 @@ fn main() {
     logger::setup();
     dotenv::dotenv().ok();
     socket::listen(action::Routes);
-    rocket::ignite().mount("/", routes![]).launch();
 }
