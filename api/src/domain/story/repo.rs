@@ -1,6 +1,6 @@
 use chrono::Utc;
 use diesel::prelude::*;
-use core::empty;
+use crate::core::empty;
 use super::line;
 use super::story::Story;
 use super::record::Record;
@@ -23,7 +23,7 @@ impl<'a> Repo<'a> {
     // commands
     #[must_use]
     pub fn save_queue(&self, story: &mut Story) -> QueryResult<()> {
-        use core::db::schema::stories;
+        use crate::core::db::schema::stories;
 
         let target = stories::table
             .filter(stories::id.eq(i32::from(&story.id)));
@@ -37,7 +37,7 @@ impl<'a> Repo<'a> {
 
     #[must_use]
     pub fn save_new_line(&self, story: &mut Story) -> QueryResult<()> {
-        use core::db::schema::lines;
+        use crate::core::db::schema::lines;
 
         let new_line = match story.new_line() {
             Some(line) => line,
@@ -62,7 +62,7 @@ impl<'a> Repo<'a> {
 
     // queries
     pub fn find_for_today(&self) -> QueryResult<Story> {
-        use core::db::schema::{ stories, lines };
+        use crate::core::db::schema::{ stories, lines };
 
         // find today's story
         let midnight = Utc::today()

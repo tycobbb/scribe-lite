@@ -1,6 +1,7 @@
-use serde::{ Serialize, Deserialize };
 use serde_json as json;
-use core::socket;
+use serde::{ Serialize, Deserialize };
+use serde_derive::{ Serialize, Deserialize };
+use crate::core::socket;
 use super::event::{ NameIn, NameOut };
 
 // types

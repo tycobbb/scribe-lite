@@ -1,4 +1,4 @@
-use domain::story;
+use crate::domain::story;
 
 // types
 // Event is a list of events that actions can trigger.

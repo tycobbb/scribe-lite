@@ -1,8 +1,8 @@
-use core::db;
-use domain::story;
-use action::event::Event;
-use action::routes::Sink;
-use action::action::Action;
+use crate::core::db;
+use crate::domain::story;
+use crate::action::event::Event;
+use crate::action::routes::Sink;
+use crate::action::action::Action;
 use super::notify::notify_authors_with_new_positions;
 
 

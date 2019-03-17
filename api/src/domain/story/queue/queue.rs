@@ -1,4 +1,4 @@
-use domain::Id;
+use crate::domain::Id;
 use super::author::Author;
 
 // types

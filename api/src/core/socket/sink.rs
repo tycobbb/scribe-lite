@@ -1,5 +1,5 @@
-use core::Id;
-use core::socket;
+use crate::core::Id;
+use crate::core::socket;
 use super::event::{ NameOut, Scheduled };
 use super::message::MessageOut;
 use super::client::Clients;

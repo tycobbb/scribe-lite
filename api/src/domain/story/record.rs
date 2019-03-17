@@ -1,6 +1,6 @@
 use chrono::NaiveDateTime;
-use core::db::schema::stories;
-use domain::Id;
+use crate::core::db::schema::stories;
+use crate::domain::Id;
 use super::story::Story;
 use super::line;
 use super::queue;

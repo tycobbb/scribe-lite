@@ -18,7 +18,7 @@ impl<'a> Factory<'a> {
 
     // commands
     pub fn create_for_today(&self) -> QueryResult<Story> {
-        use core::db::schema::stories;
+        use crate::core::db::schema::stories;
 
         diesel::insert_into(stories::table)
             .default_values()

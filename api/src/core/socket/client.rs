@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use core::id::Id;
+use crate::core::id::Id;
 
 // aliases
 pub type ClientById =

@@ -1,4 +1,4 @@
-use domain::Id;
+use crate::domain::Id;
 use super::line::Line;
 use super::queue::{ Queue, Author };
 use super::prompt::Prompt;

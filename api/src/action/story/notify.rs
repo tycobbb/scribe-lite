@@ -1,6 +1,6 @@
-use domain::story;
-use action::event::*;
-use action::routes::Sink;
+use crate::domain::story;
+use crate::action::event::*;
+use crate::action::routes::Sink;
 
 pub fn notify_new_author(story: &story::Story, sink: &Sink) {
     match story.new_author() {

@@ -1,8 +1,8 @@
-use core::db;
-use domain::story;
-use action::event::*;
-use action::routes::Sink;
-use action::action::Action;
+use crate::core::db;
+use crate::domain::story;
+use crate::action::event::*;
+use crate::action::routes::Sink;
+use crate::action::action::Action;
 use super::notify::notify_new_author;
 
 // types
