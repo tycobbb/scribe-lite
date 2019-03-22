@@ -3,13 +3,18 @@ use crate::action::routes::Sink;
 use crate::action::action::Action;
 
 // types
+#[derive(Debug)]
 pub struct CheckPulse;
 
 // impls
-impl<'a> Action<'a> for CheckPulse {
+impl Action for CheckPulse {
     type Args = ();
 
-    fn call(&self, _: (), sink: Sink) {
+    fn new(_: ()) -> Self {
+        CheckPulse
+    }
+
+    fn call(self, sink: Sink) {
         sink.send(Event::CheckPulse1)
     }
 }

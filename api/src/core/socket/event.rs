@@ -1,18 +1,6 @@
 use serde_derive::{ Serialize, Deserialize };
 
 // types
-#[derive(Deserialize, Debug)]
-pub enum NameIn {
-    #[serde(rename = "JOIN_STORY")]
-    JoinStory,
-    #[serde(rename = "ADD_LINE")]
-    AddLine,
-    #[serde(rename = "LEAVE_STORY")]
-    LeaveStory,
-    #[serde(rename = "CHECK_PULSE_1")]
-    CheckPulse1
-}
-
 #[derive(Serialize, Debug)]
 pub enum NameOut {
     // story
@@ -30,26 +18,22 @@ pub enum NameOut {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Scheduled(
-    ws::util::Token
+pub struct Timeout(
+    usize
 );
 
 // impls
-impl Scheduled {
-    // options
-    pub const CHECK_PULSE_1: Scheduled = Scheduled::val(10);
-
-    // lifetime
-    const fn val(value: usize) -> Scheduled {
-        Scheduled(ws::util::Token(value))
-    }
-
-    pub fn new(token: ws::util::Token) -> Scheduled {
-        Scheduled(token)
+impl Timeout {
+    pub fn new(value: usize) -> Timeout {
+        Timeout(value)
     }
 
     // queries
     pub fn token(&self) -> ws::util::Token {
-        self.0
+        ws::util::Token(self.0)
+    }
+
+    pub fn value(&self) -> usize {
+        self.token().0
     }
 }

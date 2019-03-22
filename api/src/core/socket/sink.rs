@@ -1,6 +1,6 @@
 use crate::core::Id;
 use crate::core::socket;
-use super::event::{ NameOut, Scheduled };
+use super::event::{ NameOut, Timeout };
 use super::message::MessageOut;
 use super::client::Clients;
 
@@ -42,7 +42,7 @@ impl Sink {
         self.clients.send_to(id, ws::Message::text(text));
     }
 
-    pub fn schedule_for(&self, id: &Id, ms: u64, event: Scheduled) {
+    pub fn schedule_for(&self, id: &Id, ms: u64, event: Timeout) {
         self.clients.schedule_for(id, ms, event.token());
     }
 }

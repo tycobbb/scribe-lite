@@ -5,15 +5,19 @@ use crate::action::routes::Sink;
 use crate::action::action::Action;
 use super::notify::notify_authors_with_new_positions;
 
-
 // types
+#[derive(Debug)]
 pub struct Leave;
 
 // impls
-impl<'a> Action<'a> for Leave {
+impl Action for Leave {
     type Args = ();
 
-    fn call(&self, _: (), sink: Sink) {
+    fn new(_: ()) -> Self {
+        Leave
+    }
+
+    fn call(self, sink: Sink) {
         let conn = db::connect();
         let repo = story::Repo::new(&conn);
 

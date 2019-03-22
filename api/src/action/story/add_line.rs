@@ -7,20 +7,31 @@ use crate::action::action::Action;
 use super::notify::*;
 
 // types
-pub struct AddLine;
+#[derive(Debug)]
+pub struct AddLine {
+    line: NewLine
+}
 
-#[derive(Deserialize, Debug)]
-pub struct NewLine<'a> {
-    text:  &'a str,
-    name:  Option<&'a str>,
-    email: Option<&'a str>
+// this should be borrowable when GATs are implemented
+// https://github.com/rust-lang/rust/issues/4426
+#[derive(Debug, Deserialize)]
+pub struct NewLine {
+    text:  String,
+    name:  Option<String>,
+    email: Option<String>
 }
 
 // impls
-impl<'a> Action<'a> for AddLine {
-    type Args = NewLine<'a>;
+impl Action for AddLine {
+    type Args = NewLine;
 
-    fn call(&self, line: NewLine<'a>, sink: Sink) {
+    fn new(line: NewLine) -> Self {
+        AddLine {
+            line: line
+        }
+    }
+
+    fn call(self, sink: Sink) {
         let conn = db::connect();
         let repo = story::Repo::new(&conn);
 
@@ -32,9 +43,9 @@ impl<'a> Action<'a> for AddLine {
 
         // add line to story
         story.add_line(
-            line.text,
-            line.name,
-            line.email
+            self.line.text,
+            self.line.name,
+            self.line.email
         );
 
         story.leave(sink.id().into());

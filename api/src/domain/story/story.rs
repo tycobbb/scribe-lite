@@ -33,16 +33,11 @@ impl Story {
     }
 
     pub fn add_line(&mut self,
-        text:  &str,
-        name:  Option<&str>,
-        email: Option<&str>
+        text:  String,
+        name:  Option<String>,
+        email: Option<String>
     ) {
-        self.lines.push(Line::new(
-            text.into(),
-            name.map(Into::into),
-            email.map(Into::into)
-        ));
-
+        self.lines.push(Line::new(text, name, email));
         self.has_new_line = true
     }
 

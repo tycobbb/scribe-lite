@@ -1,6 +1,6 @@
 use serde::{ Serialize, Deserialize };
 use crate::core::Id;
-use crate::core::socket::{ self, NameIn, NameOut, Scheduled };
+use crate::core::socket::{ self, NameOut };
 use super::action::Action;
 use super::event::*;
 use super::story;
@@ -16,28 +16,64 @@ pub struct Sink {
 
 // impls
 impl socket::Routes for Routes {
-    fn resolve<'a>(&self, msg: socket::MessageIn<'a>, sink: socket::Sink) {
-        // helper
+    // commands
+    fn connect(&self, sink: socket::Sink) {
+        story::Join.call(Sink::new(sink));
+    }
+
+    fn on_message<'a>(&self, msg: socket::MessageIn<'a>, sink: socket::Sink) -> socket::Result<()> {
+        fn to_action<'a, A, T>(
+            event: fn(A) -> EventIn,
+            msg:   socket::MessageIn<'a>
+        ) -> socket::Result<EventIn> where A: Action<Args=T>, T: Deserialize<'a> {
+            msg.decode_args().map(|args| event(A::new(args)))
+        }
+
+        let action = match msg.name {
+            "ADD_LINE"      => to_action(EventIn::AddLine, msg),
+            "CHECK_PULSE_1" => to_action(EventIn::CheckPulse1, msg),
+            _               => return Ok(error!("[routes] received unknown msg={:?}", msg))
+        };
+
+        action.map(|event| {
+            self.execute(event, sink)
+        })
+    }
+
+    fn on_timeout(&self, timeout: socket::Timeout, sink: socket::Sink) -> socket::Result<()> {
         fn to_action<'a, A>(
-            action: &Action<'a, Args=A>,
-            msg:    socket::MessageIn<'a>,
-            sink:   socket::Sink
-        ) where A: Deserialize<'a> {
-            let args = match msg.decode_args() {
-                Ok(args)   => args,
-                Err(error) => return sink.send_to(&sink.id, Err(error))
-            };
-
-            action.call(args, Sink::new(sink));
+            event: fn(A) -> EventIn,
+        ) -> EventIn where A: Action<Args=()> {
+            event(A::new(()))
         }
 
-        // routes/in
-        match msg.name {
-            NameIn::JoinStory   => to_action(&story::Join, msg, sink),
-            NameIn::AddLine     => to_action(&story::AddLine, msg, sink),
-            NameIn::LeaveStory  => to_action(&story::Leave, msg, sink),
-            NameIn::CheckPulse1 => to_action(&story::CheckPulse, msg, sink)
-        }
+        let scheduled = match Scheduled::from_raw(timeout.value()) {
+            Some(scheduled) => scheduled,
+            None            => return Ok(error!("[routes] received unknown timeout={:?}", timeout))
+        };
+
+        let action = match scheduled {
+            Scheduled::CheckPulse1 => to_action(EventIn::CheckPulse1)
+        };
+
+        self.execute(action, sink);
+        Ok(())
+    }
+
+    fn disconnect(&self, sink: socket::Sink) {
+        story::Leave.call(Sink::new(sink));
+    }
+}
+
+impl Routes {
+    fn execute(&self, event: EventIn, sink: socket::Sink) {
+        let sink = Sink::new(sink);
+
+        match event {
+            EventIn::AddLine(action)     => action.call(sink),
+            EventIn::CheckPulse1(action) => action.call(sink),
+            EventIn::NotFound            => return
+        };
     }
 }
 
@@ -83,7 +119,7 @@ impl Sink {
 
     pub fn schedule_for(&self, id: &Id, ms: u64, event: Event) {
         let scheduled = match event {
-            Event::CheckPulse1 => Scheduled::CHECK_PULSE_1,
+            Event::CheckPulse1 => socket::Timeout::new(Scheduled::CheckPulse1 as usize),
             _                  => return error!("[routes] attempted to schedule unhandled event={:?}", event)
         };
 

@@ -6,13 +6,18 @@ use crate::action::action::Action;
 use super::notify::notify_new_author;
 
 // types
+#[derive(Debug)]
 pub struct Join;
 
 // impls
-impl<'a> Action<'a> for Join {
+impl Action for Join {
     type Args = ();
 
-    fn call(&self, _: (), sink: Sink) {
+    fn new(_: ()) -> Self {
+        Join
+    }
+
+    fn call(self, sink: Sink) {
         let conn = db::connect();
         let repo = story::Repo::new(&conn);
 

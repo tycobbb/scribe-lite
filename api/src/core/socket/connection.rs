@@ -1,8 +1,7 @@
-use serde_json as json;
 use crate::core::{ socket, Id };
 use super::routes::Routes;
 use super::sink::Sink;
-use super::event::{ NameIn, Scheduled };
+use super::event::Timeout;
 use super::message::MessageIn;
 
 // types
@@ -26,24 +25,11 @@ impl<R> Connection<R> where R: Routes {
     pub fn id(&self) -> &Id {
         &self.sink.id
     }
-
-    // commands
-    fn resolve(&self, incoming: MessageIn) {
-        self.routes.resolve(incoming, self.sink.clone())
-    }
-
-    fn resolve_named(&self, name: NameIn) {
-        // TODO: can we avoid RawValue? maybe by using resource-based routing
-        // to split message from event/resource name:
-        // https://github.com/housleyjk/ws-rs/blob/master/examples/router.rs
-        let value = json::value::RawValue::from_string("null".to_owned()).unwrap();
-        self.resolve(MessageIn::new(name, &value));
-    }
 }
 
 impl<R> ws::Handler for Connection<R> where R: Routes {
     fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
-        self.resolve_named(NameIn::JoinStory);
+        self.routes.connect(self.sink.clone());
         Ok(())
     }
 
@@ -53,28 +39,31 @@ impl<R> ws::Handler for Connection<R> where R: Routes {
             .map_err(socket::Error::SocketFailed)
             .and_then(MessageIn::decode);
 
-        // send error if decode failed
-        let incoming = match decoded {
-            Ok(message) => message,
-            Err(error)  => return Ok(self.sink.send_to(self.id(), Err(error)))
-        };
+        let handled = decoded.and_then(|message| {
+            self.routes.on_message(message, self.sink.clone())
+        });
 
-        self.resolve(incoming);
+        if let Err(error) = handled {
+            self.sink.send_to(self.id(), Err(error))
+        }
 
         Ok(())
     }
 
     fn on_timeout(&mut self, token: ws::util::Token) -> ws::Result<()> {
-        match Scheduled::new(token) {
-            Scheduled::CHECK_PULSE_1 =>
-                self.resolve_named(NameIn::CheckPulse1),
-            _ => error!("[socket] received unknown timeout token={:?}", token)
-        };
+        let handled = self.routes.on_timeout(
+            Timeout::new(token.0),
+            self.sink.clone()
+        );
+
+        if let Err(error) = handled {
+            self.sink.send_to(self.id(), Err(error))
+        }
 
         Ok(())
     }
 
     fn on_close(&mut self, _: ws::CloseCode, _: &str) {
-        self.resolve_named(NameIn::LeaveStory);
+        self.routes.disconnect(self.sink.clone());
     }
 }
