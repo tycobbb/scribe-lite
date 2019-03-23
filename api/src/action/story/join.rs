@@ -1,6 +1,6 @@
 use crate::core::db;
 use crate::domain::story;
-use crate::action::event::*;
+use crate::action::event::Outbound;
 use crate::action::routes::Sink;
 use crate::action::action::Action;
 use super::notify::notify_new_author;
@@ -24,7 +24,7 @@ impl Action for Join {
         // find story
         let mut story = match repo.find_or_create_for_today() {
             Ok(s)  => s,
-            Err(_) => return sink.send(Event::ShowInternalError)
+            Err(_) => return sink.send(Outbound::ShowInternalError)
         };
 
         // join story
@@ -32,7 +32,7 @@ impl Action for Join {
 
         // save updates
         if let Err(_) = repo.save_queue(&mut story) {
-            return sink.send(Event::ShowInternalError);
+            return sink.send(Outbound::ShowInternalError);
         }
 
         // notify author

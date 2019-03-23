@@ -1,22 +1,22 @@
-mod socket;
 mod channel;
 mod client;
 mod connection;
+mod socket;
 
-mod sink;
-pub use self::sink::*;
-
-mod result;
-pub use self::result::*;
-
-mod event;
-pub use self::event::*;
+mod listen;
+pub use self::listen::*;
 
 mod message;
 pub use self::message::*;
 
-mod listen;
-pub use self::listen::*;
+mod result;
+pub use self::result::*;
+
+mod sink;
+pub use self::sink::*;
+
+mod timeout;
+pub use self::timeout::*;
 
 mod routes;
 pub use self::routes::*;

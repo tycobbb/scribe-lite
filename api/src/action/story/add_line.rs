@@ -1,7 +1,7 @@
 use serde_derive::Deserialize;
 use crate::core::db;
 use crate::domain::story;
-use crate::action::event::*;
+use crate::action::event::Outbound;
 use crate::action::routes::Sink;
 use crate::action::action::Action;
 use super::notify::*;
@@ -38,7 +38,7 @@ impl Action for AddLine {
         // find story
         let mut story = match repo.find_for_today() {
             Ok(s)  => s,
-            Err(_) => return sink.send(Event::ShowInternalError)
+            Err(_) => return sink.send(Outbound::ShowInternalError)
         };
 
         // add line to story
@@ -52,12 +52,12 @@ impl Action for AddLine {
 
         // save updates
         if let Err(_) = repo.save_queue_and_new_line(&mut story) {
-            return sink.send(Event::ShowInternalError);
+            return sink.send(Outbound::ShowInternalError);
         }
 
         // send updates to story authors
         notify_authors_with_new_positions(&story, &sink);
 
-        sink.send(Event::ShowThanks);
+        sink.send(Outbound::ShowThanks);
     }
 }

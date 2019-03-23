@@ -1,6 +1,6 @@
 use crate::core::db;
 use crate::domain::story;
-use crate::action::event::Event;
+use crate::action::event;
 use crate::action::routes::Sink;
 use crate::action::action::Action;
 use super::notify::notify_authors_with_new_positions;
@@ -24,7 +24,7 @@ impl Action for Leave {
         // find story
         let mut story = match repo.find_for_today() {
             Ok(s)  => s,
-            Err(_) => return sink.send(Event::ShowInternalError)
+            Err(_) => return sink.send(event::Outbound::ShowInternalError)
         };
 
         // leave story
@@ -32,7 +32,7 @@ impl Action for Leave {
 
         // save updates
         if let Err(_) = repo.save_queue(&mut story) {
-            return sink.send(Event::ShowInternalError);
+            return sink.send(event::Outbound::ShowInternalError);
         }
 
         // send updates to story authors

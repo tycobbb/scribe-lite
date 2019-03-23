@@ -1,7 +1,7 @@
 use crate::core::{ socket, Id };
 use super::routes::Routes;
 use super::sink::Sink;
-use super::event::Timeout;
+use super::timeout::Timeout;
 use super::message::MessageIn;
 
 // types

@@ -1,8 +1,9 @@
+use serde_json as json;
 use crate::core::Id;
 use crate::core::socket;
-use super::event::{ NameOut, Timeout };
-use super::message::MessageOut;
 use super::client::Clients;
+use super::message::MessageOut;
+use super::timeout::Timeout;
 
 // types
 #[derive(Debug, Clone)]
@@ -30,7 +31,7 @@ impl Sink {
         // if error, attempt to encode an internal error
         if let Err(error) = encoded {
             error!("[socket] internal error: {:?}", error);
-            encoded = MessageOut::named(NameOut::ShowInternalError).encode();
+            encoded = MessageOut::new("SHOW_INTERNAL_ERROR", json::Value::Null).encode();
         }
 
         // extract message text, if possible

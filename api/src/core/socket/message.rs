@@ -2,7 +2,6 @@ use serde_json as json;
 use serde::{ Serialize, Deserialize };
 use serde_derive::{ Serialize, Deserialize };
 use crate::core::socket;
-use super::event::NameOut;
 
 // types
 #[derive(Deserialize, Debug)]
@@ -14,7 +13,7 @@ pub struct MessageIn<'a> {
 
 #[derive(Serialize, Debug)]
 pub struct MessageOut {
-    pub name: NameOut,
+    pub name: String,
     pub data: json::Value
 }
 
@@ -34,15 +33,11 @@ impl<'a> MessageIn<'a> {
 
 impl MessageOut {
     // init / factories
-    pub fn new(name: NameOut, data: json::Value) -> MessageOut {
+    pub fn new<T>(name: T, data: json::Value) -> MessageOut where T: Into<String> {
         MessageOut {
-            name: name,
+            name: name.into(),
             data: data
         }
-    }
-
-    pub fn named(name: NameOut) -> MessageOut {
-        MessageOut::new(name, json::Value::Null)
     }
 
     // json
@@ -51,10 +46,9 @@ impl MessageOut {
             .map_err(socket::Error::EncodeFailed)
     }
 
-    pub fn encoding_data<T>(name: NameOut, value: T) -> socket::Result<MessageOut> where T: Serialize {
-        let data = json::to_value(value)
-            .map_err(socket::Error::EncodeFailed)?;
-
-        Ok(MessageOut::new(name, data))
+    pub fn encoding_data<T>(name: String, value: T) -> socket::Result<MessageOut> where T: Serialize {
+        json::to_value(value)
+            .map_err(socket::Error::EncodeFailed)
+            .map(|data| MessageOut::new(name, data))
     }
 }

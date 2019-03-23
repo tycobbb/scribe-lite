@@ -1,7 +1,7 @@
 use crate::core::socket;
 use super::sink::Sink;
 use super::message::MessageIn;
-use super::event::Timeout;
+use super::timeout::Timeout;
 
 // types
 pub trait Routes {

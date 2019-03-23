@@ -3,17 +3,14 @@ use super::story as action;
 
 // types
 #[derive(Debug)]
-pub enum EventIn {
+pub enum Inbound {
     // story
     AddLine(action::AddLine),
-    CheckPulse1(action::CheckPulse),
-    // shared
-    NotFound
+    CheckPulse1(action::CheckPulse)
 }
 
-// Event is a list of events that actions can trigger.
 #[derive(Debug)]
-pub enum Event {
+pub enum Outbound {
     // story
     ShowQueue(model::Position),
     ShowPrompt(model::Prompt),

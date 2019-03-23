@@ -1,4 +1,4 @@
-use crate::action::event::*;
+use crate::action::event::Outbound;
 use crate::action::routes::Sink;
 use crate::action::action::Action;
 
@@ -15,6 +15,6 @@ impl Action for CheckPulse {
     }
 
     fn call(self, sink: Sink) {
-        sink.send(Event::CheckPulse1)
+        sink.send(Outbound::CheckPulse1)
     }
 }
