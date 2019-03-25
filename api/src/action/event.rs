@@ -1,23 +1,12 @@
 use crate::domain::story as model;
-use super::story as action;
 
 // types
 #[derive(Debug)]
-pub enum Inbound {
-    // story
-    AddLine(action::AddLine),
-    FindPulse(action::FindPulse),
-    TestPulse(action::TestPulse)
-}
-
-#[derive(Debug)]
 pub enum Outbound {
-    // story
     ShowQueue(model::Position),
     ShowPrompt(model::Prompt),
     ShowThanks,
     FindPulse,
-    // shared
     ShowInternalError
 }
 
