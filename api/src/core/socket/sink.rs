@@ -31,6 +31,7 @@ impl Sink {
         // if error, attempt to encode an internal error
         if let Err(error) = encoded {
             error!("[socket] internal error: {:?}", error);
+            // don't hardcode this here
             encoded = MessageOut::new("SHOW_INTERNAL_ERROR", json::Value::Null).encode();
         }
 

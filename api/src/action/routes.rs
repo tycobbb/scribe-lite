@@ -30,9 +30,8 @@ impl socket::Routes for Routes {
         }
 
         let result = match msg.name {
-            "ADD_LINE"      => to_event(Inbound::AddLine, msg),
-            "CHECK_PULSE_1" => to_event(Inbound::CheckPulse1, msg),
-            _               => return Ok(error!("[routes] received unknown msg={:?}", msg))
+            "ADD_LINE" => to_event(Inbound::AddLine, msg),
+            _          => return Ok(error!("[routes] received unknown msg={:?}", msg))
         };
 
         result.map(|event| {
@@ -53,7 +52,8 @@ impl socket::Routes for Routes {
         };
 
         let action = match scheduled {
-            Scheduled::CheckPulse1 => to_action(Inbound::CheckPulse1)
+            Scheduled::FindPulse => to_action(Inbound::FindPulse),
+            Scheduled::TestPulse => to_action(Inbound::TestPulse)
         };
 
         self.execute(action, sink);
@@ -70,8 +70,9 @@ impl Routes {
         let sink = Sink::new(sink);
 
         match event {
-            Inbound::AddLine(action)     => action.call(sink),
-            Inbound::CheckPulse1(action) => action.call(sink)
+            Inbound::AddLine(action)   => action.call(sink),
+            Inbound::FindPulse(action) => action.call(sink),
+            Inbound::TestPulse(action) => action.call(sink),
         };
     }
 }
@@ -106,7 +107,7 @@ impl Sink {
             Outbound::ShowQueue(v)  => to_message("SHOW_QUEUE",  v),
             Outbound::ShowPrompt(v) => to_message("SHOW_PROMPT", v),
             Outbound::ShowThanks    => to_message("SHOW_THANKS", ()),
-            Outbound::CheckPulse1   => to_message("CHECK_PULSE", ()),
+            Outbound::FindPulse   => to_message("CHECK_PULSE", ()),
             // shared
             Outbound::ShowInternalError => to_message("SHOW_INTERNAL_ERROR", ())
         };

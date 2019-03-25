@@ -24,6 +24,6 @@ fn notify_author(author: story::Author, story: &story::Story, sink: &Sink) {
     // show prompt
     sink.send(Outbound::ShowPrompt(story.next_line_prompt()));
 
-    // schedule first pulse check in 30s
-    sink.schedule(Scheduled::CheckPulse1, 30 * 1000);
+    // check for user activity in 30s
+    sink.schedule(Scheduled::FindPulse, 30 * 1000);
 }
