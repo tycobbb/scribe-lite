@@ -1,20 +1,20 @@
-mod queue;
+pub mod queue;
 pub use self::queue::{ Author, Position };
 
-pub mod story;
+mod story;
 pub use self::story::Story;
 
-pub mod line;
+mod line;
 pub use self::line::Line;
 
-pub mod prompt;
+mod prompt;
 pub use self::prompt::Prompt;
 
 mod record;
 use self::record::*;
 
-pub mod repo;
+mod repo;
 pub use self::repo::Repo;
 
-pub mod factory;
+mod factory;
 pub use self::factory::Factory;

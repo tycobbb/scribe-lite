@@ -29,7 +29,7 @@ impl<'a> Repo<'a> {
             .filter(stories::id.eq(i32::from(&story.id)));
 
         let updated = diesel::update(target)
-            .set(story.into_authors_changeset())
+            .set(story.make_queue_changeset())
             .execute(self.conn);
 
         updated.map(empty::ignore)

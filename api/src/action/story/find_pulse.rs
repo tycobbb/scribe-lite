@@ -16,7 +16,7 @@ impl Action for FindPulse {
 
     fn call(self, sink: Sink) {
         // send message to client
-        sink.send(Outbound::FindPulse);
+        sink.send(Outbound::CheckPulse);
 
         // schedule evaluation in 30s
         sink.schedule(Scheduled::TestPulse, 30 * 1000);

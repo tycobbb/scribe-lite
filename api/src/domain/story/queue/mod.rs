@@ -1,8 +1,8 @@
-pub mod author;
+mod author;
 pub use self::author::*;
 
-pub mod queue;
+mod queue;
 pub use self::queue::*;
 
-pub mod column;
-pub use self::column::*;
+mod record;
+pub use self::record::*;

@@ -75,7 +75,7 @@ impl Sink {
             Outbound::ShowQueue(d)      => route("SHOW_QUEUE", d),
             Outbound::ShowPrompt(d)     => route("SHOW_PROMPT", d),
             Outbound::ShowThanks        => route("SHOW_THANKS", ()),
-            Outbound::FindPulse         => route("CHECK_PULSE", ()),
+            Outbound::CheckPulse        => route("CHECK_PULSE", ()),
             Outbound::ShowInternalError => route("SHOW_INTERNAL_ERROR", ())
         };
 

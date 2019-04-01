@@ -22,9 +22,17 @@ db/m:
 	diesel migration run
 .PHONY: db/m
 
+## creates a new database migration
+db/m/new:
+	diesel migration generate PLACEHOLDER
+
 ## re-runs the most recent migration
 db/m/redo:
 	diesel migration redo
+
+## rolls back the most recent migration
+db/m/undo:
+	diesel migration revert
 
 # -- help --
 help:

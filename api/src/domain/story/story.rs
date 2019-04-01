@@ -58,11 +58,11 @@ impl Story {
     }
 
     // queries/authors
-    pub fn new_author(&self) -> Option<Author> {
+    pub fn new_author(&self) -> Option<&Author> {
         self.queue.new_author()
     }
 
-    pub fn authors_with_new_positions(&self) -> Vec<Author> {
+    pub fn authors_with_new_positions(&self) -> &[Author] {
         self.queue.authors_with_new_positions()
     }
 }

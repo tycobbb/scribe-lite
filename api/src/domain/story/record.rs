@@ -12,13 +12,13 @@ pub struct Record {
     pub id:         i32,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    pub author_ids: Option<Vec<i32>>
+    pub queue:      queue::Column
 }
 
 #[derive(Debug, AsChangeset)]
 #[table_name="stories"]
-pub struct AuthorsChangeset {
-    pub author_ids: Option<Vec<i32>>
+pub struct QueueChangeset {
+    pub queue: queue::Column
 }
 
 // impls
@@ -33,7 +33,7 @@ impl Story {
             .map(line::Line::from_record);
 
         let queue =
-            queue::Queue::from_column(record.author_ids);
+            queue::Queue::from_column(record.queue);
 
         Story::new(
             Id::from(record.id),
@@ -42,9 +42,9 @@ impl Story {
         )
     }
 
-    pub fn into_authors_changeset(&self) -> AuthorsChangeset {
-        AuthorsChangeset {
-            author_ids: self.queue.into_column()
+    pub fn make_queue_changeset(&self) -> QueueChangeset {
+        QueueChangeset {
+            queue: self.queue.into_column()
         }
     }
 }
