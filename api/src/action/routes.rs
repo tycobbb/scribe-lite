@@ -25,8 +25,9 @@ impl socket::Routes for Routes {
         use bind_action_from_message as route;
 
         match msg.name {
-            "ADD_LINE" => route::<story::AddLine>(msg, sink),
-            _          => return Ok(error!("[routes] received unknown msg={:?}", msg))
+            "ADD_LINE"   => route::<story::AddLine>(msg, sink),
+            "SEND_PULSE" => route::<story::SavePulse>(msg, sink),
+            _            => return Ok(error!("[routes] received unknown msg={:?}", msg))
         }
     }
 

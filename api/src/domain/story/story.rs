@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use crate::domain::Id;
 use super::line::Line;
 use super::queue::{ Queue, Author };
@@ -38,7 +39,11 @@ impl Story {
         email: Option<String>
     ) {
         self.lines.push(Line::new(text, name, email));
-        self.has_new_line = true
+        self.has_new_line = true;
+    }
+
+    pub fn touch(&mut self, time: NaiveDateTime) {
+        self.queue.touch(time);
     }
 
     // queries/lines

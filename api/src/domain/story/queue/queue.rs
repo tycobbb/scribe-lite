@@ -55,6 +55,15 @@ impl Queue {
         }
     }
 
+    pub fn touch(&mut self, time: NaiveDateTime) {
+        if self.authors.is_empty() {
+            warn!("[story] attempted to leave an empty queue");
+            return
+        }
+
+        self.authors[0].touch(time);
+    }
+
     // queries
     pub fn last_active_at(&self) -> Option<NaiveDateTime> {
         self.authors

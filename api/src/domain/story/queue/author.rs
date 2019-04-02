@@ -24,6 +24,14 @@ impl Author {
         };
     }
 
+    pub fn touch(&mut self, time: NaiveDateTime) {
+        // TODO: this is no good...
+        match self {
+            Author::Writer(id,  _) => *self = Author::writer(id.clone(), Some(time)),
+            Author::Waiter(_ , _) => warn!("[story] tried to call #touch on a waiter")
+        };
+    }
+
     // accessors
     pub fn id(&self) -> &Id {
         match self {

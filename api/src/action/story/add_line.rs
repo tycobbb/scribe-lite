@@ -12,8 +12,6 @@ pub struct AddLine {
     line: NewLine
 }
 
-// this should be borrowable when GATs are implemented
-// https://github.com/rust-lang/rust/issues/4426
 #[derive(Debug, Deserialize)]
 pub struct NewLine {
     text:  String,
