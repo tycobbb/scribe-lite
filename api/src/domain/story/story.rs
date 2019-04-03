@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{ DateTime, Utc };
 use crate::domain::Id;
 use super::line::Line;
 use super::queue::{ Queue, Author };
@@ -42,8 +42,12 @@ impl Story {
         self.has_new_line = true;
     }
 
-    pub fn touch(&mut self, time: NaiveDateTime) {
-        self.queue.touch(time);
+    pub fn rustle_writer(&mut self, time: DateTime<Utc>) {
+        // TODO: use DateTime<Utc> everywhere but in the Record
+        self.queue.rustle_writer(time.naive_utc());
+    }
+
+    pub fn remove_writer(&mut self) {
     }
 
     // queries/lines
@@ -69,5 +73,12 @@ impl Story {
 
     pub fn authors_with_new_positions(&self) -> &[Author] {
         self.queue.authors_with_new_positions()
+    }
+
+    // queries/writer
+    pub fn writer_last_active_at(&self) -> Option<DateTime<Utc>> {
+        self.queue
+            .last_active_at()
+            .map(|time| )
     }
 }

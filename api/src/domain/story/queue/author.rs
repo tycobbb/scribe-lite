@@ -1,5 +1,5 @@
-use serde_derive::Serialize;
 use chrono::NaiveDateTime;
+use serde_derive::Serialize;
 use crate::domain::Id;
 
 // types
@@ -16,6 +16,14 @@ pub struct Position {
 
 // impls
 impl Author {
+    // TODO: as a concept, it's probably more accurate to call all authors "writers".
+    // TODO: the way that Author is evolving feels wrong. too many methods that fail if
+    // called on the wrong type of author, and we always know at call site which type of
+    // author we expect to act on and where it would be in the vec. it may work better
+    // to have the active writer be an owned relation of the story and the other
+    // writers be part of the queue. alt, just keep the active writer out of the vec, but
+    // still managed by the queue.
+
     // commands
     pub fn become_writer(&mut self) {
         match self {
@@ -24,8 +32,7 @@ impl Author {
         };
     }
 
-    pub fn touch(&mut self, time: NaiveDateTime) {
-        // TODO: this is no good...
+    pub fn rustle(&mut self, time: NaiveDateTime) {
         match self {
             Author::Writer(id,  _) => *self = Author::writer(id.clone(), Some(time)),
             Author::Waiter(_ , _) => warn!("[story] tried to call #touch on a waiter")

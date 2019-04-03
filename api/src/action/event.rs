@@ -7,6 +7,7 @@ pub enum Outbound {
     ShowPrompt(model::Prompt),
     ShowThanks,
     CheckPulse,
+    ShowDisconnected,
     ShowInternalError
 }
 

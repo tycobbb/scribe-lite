@@ -31,6 +31,8 @@ impl Queue {
             Author::waiter(author_id, self.authors.len())
         };
 
+        // TODO: all the authors' positions are wrong as soon we mutate, revert to
+        // a vec of author ids
         self.authors.push(author)
     }
 
@@ -55,13 +57,13 @@ impl Queue {
         }
     }
 
-    pub fn touch(&mut self, time: NaiveDateTime) {
+    pub fn rustle_writer(&mut self, time: NaiveDateTime) {
         if self.authors.is_empty() {
             warn!("[story] attempted to leave an empty queue");
             return
         }
 
-        self.authors[0].touch(time);
+        self.authors[0].rustle(time)
     }
 
     // queries
