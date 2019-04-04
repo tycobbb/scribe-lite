@@ -1,4 +1,4 @@
-use chrono::{ DateTime, Utc };
+use chrono::{ Duration, Utc };
 use crate::core::db;
 use crate::domain::story;
 use crate::action::action::Action;
@@ -31,11 +31,12 @@ impl Action for TestPulse {
         // if the writer isn't idle, schedule the next pulse
         let delta = story.writer_last_active_at()
             .map(|time| Utc::now() - time)
-            .map(|time| time.num_milliseconds())
-            .unwrap_or(i64::max_value());
+            .unwrap_or(Duration::max_value());
 
-        if delta > 60 * 1000 {
-            sink.schedule(Scheduled::FindPulse, std::cmp::max(30 * 1000 - delta, 0));
+        if delta < Duration::seconds(60) {
+            let remainder        = Duration::seconds(30) - delta;
+            let remainder_millis = std::cmp::max(remainder.num_milliseconds(), 0);
+            sink.schedule(Scheduled::FindPulse, remainder_millis as u64);
             return
         }
 

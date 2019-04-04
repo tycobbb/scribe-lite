@@ -79,6 +79,6 @@ impl Story {
     pub fn writer_last_active_at(&self) -> Option<DateTime<Utc>> {
         self.queue
             .last_active_at()
-            .map(|time| )
+            .map(|time| DateTime::from_utc(time, Utc))
     }
 }
