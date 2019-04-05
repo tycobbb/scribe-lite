@@ -1,6 +1,6 @@
 use serde_json as json;
 use serde_derive::{ Serialize, Deserialize };
-use chrono::NaiveDateTime;
+use chrono::{ DateTime, NaiveDateTime, Utc };
 use crate::domain::Id;
 use super::queue::Queue;
 use super::author::Author;
@@ -11,8 +11,8 @@ pub type Column =
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Record {
-    pub author_ids:     Vec<i32>,
-    pub last_active_at: Option<NaiveDateTime>
+    pub author_ids:         Vec<i32>,
+    pub author_rustle_time: Option<NaiveDateTime>
 }
 
 // impls
@@ -26,33 +26,35 @@ impl Queue {
                 None
             });
 
-        let Record { author_ids, last_active_at } = match record {
+        let record = match record {
             Some(record) => record,
-            None         => return Queue::new(Vec::new())
+            None         => return Queue::new(Vec::new(), None)
         };
 
-        let authors = author_ids
+        let author_ids = record.author_ids
             .into_iter()
-            .map(Id::from)
-            .enumerate()
-            .map(|(i, id)| {
-                match i {
-                    0 => Author::writer(id, last_active_at),
-                    _ => Author::waiter(id, i)
-                }
-            });
+            .map(Id::from);
 
-        Queue::new(authors.collect())
+        let author_rustle_time = record.author_rustle_time
+            .map(|time| DateTime::from_utc(time, Utc));
+
+        Queue::new(
+            author_ids.collect(),
+            author_rustle_time
+        )
     }
 
     pub fn into_column(&self) -> Column {
-        let author_ids = self.author_ids()
-            .into_iter()
+        let author_ids = self.author_ids
+            .iter()
             .map(|id| id.into());
 
+        let author_rustle_time = self.author_rustle_time
+            .map(|time| time.naive_utc());
+
         let record: Record = Record {
-            author_ids:     author_ids.collect(),
-            last_active_at: self.last_active_at()
+            author_ids:         author_ids.collect(),
+            author_rustle_time: author_rustle_time
         };
 
         json::to_value(record)

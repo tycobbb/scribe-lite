@@ -1,7 +1,7 @@
 use chrono::{ DateTime, Utc };
 use crate::domain::Id;
 use super::line::Line;
-use super::queue::{ Queue, Author };
+use super::queue::{ Queue, Author, ActiveAuthor };
 use super::prompt::Prompt;
 
 // types
@@ -24,7 +24,7 @@ impl Story {
         }
     }
 
-    // commands
+    // commands/membership
     pub fn join(&mut self, author_id: &Id) {
         self.queue.join(author_id);
     }
@@ -33,6 +33,7 @@ impl Story {
         self.queue.leave(author_id);
     }
 
+    // commands/lines
     pub fn add_line(&mut self,
         text:  String,
         name:  Option<String>,
@@ -42,43 +43,39 @@ impl Story {
         self.has_new_line = true;
     }
 
-    pub fn rustle_writer(&mut self, time: DateTime<Utc>) {
-        // TODO: use DateTime<Utc> everywhere but in the Record
-        self.queue.rustle_writer(time.naive_utc());
+    // commands/pulse
+    pub fn rustle_active_author(&mut self, time: DateTime<Utc>) {
+        self.queue.rustle_active_author(time);
     }
 
-    pub fn remove_writer(&mut self) {
+    pub fn remove_active_author(&mut self) {
     }
 
     // queries/lines
     pub fn new_line(&self) -> Option<&Line> {
-        if self.has_new_line {
-            self.lines.last()
-        } else {
-            None
+        match self.has_new_line {
+            true  => self.lines.last(),
+            false => None
         }
     }
 
     pub fn next_line_prompt(&self) -> Prompt {
-        self.lines
-            .last()
-            .map(Prompt::from_line)
-            .unwrap_or_default()
+        match self.lines.last() {
+            Some(line) => Prompt::from_line(line),
+            None       => Prompt::default()
+        }
     }
 
     // queries/authors
-    pub fn new_author(&self) -> Option<&Author> {
+    pub fn active_author(&self) -> Option<ActiveAuthor> {
+        self.queue.active_author()
+    }
+
+    pub fn new_author(&self) -> Option<Author> {
         self.queue.new_author()
     }
 
-    pub fn authors_with_new_positions(&self) -> &[Author] {
+    pub fn authors_with_new_positions(&self) -> Vec<Author> {
         self.queue.authors_with_new_positions()
-    }
-
-    // queries/writer
-    pub fn writer_last_active_at(&self) -> Option<DateTime<Utc>> {
-        self.queue
-            .last_active_at()
-            .map(|time| DateTime::from_utc(time, Utc))
     }
 }

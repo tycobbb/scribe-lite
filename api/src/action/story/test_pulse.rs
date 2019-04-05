@@ -28,9 +28,10 @@ impl Action for TestPulse {
             Err(_) => return sink.send(Outbound::ShowInternalError)
         };
 
+
         // if the writer isn't idle, schedule the next pulse
-        let delta = story.writer_last_active_at()
-            .map(|time| Utc::now() - time)
+        let delta = story.active_author()
+            .and_then(|author| author.idle_time())
             .unwrap_or(Duration::max_value());
 
         if delta < Duration::seconds(60) {
@@ -41,7 +42,7 @@ impl Action for TestPulse {
         }
 
         // otherwise, remove the writer
-        story.remove_writer();
+        story.remove_active_author();
         sink.send(Outbound::ShowDisconnected);
         notify_authors_with_new_positions(&story, &sink);
 

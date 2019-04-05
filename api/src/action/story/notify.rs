@@ -15,14 +15,14 @@ pub fn notify_authors_with_new_positions(story: &story::Story, sink: &Sink) {
     }
 }
 
-fn notify_author(author: &story::Author, story: &story::Story, sink: &Sink) {
+fn notify_author(author: story::Author, story: &story::Story, sink: &Sink) {
     match author {
-        story::Author::Writer(_, _) => {
+        story::Author::Active(_) => {
             sink.send(Outbound::ShowPrompt(story.next_line_prompt()));
             sink.schedule(Scheduled::FindPulse, 30 * 1000);
         }
-        story::Author::Waiter(_, position) => {
-            sink.send(Outbound::ShowQueue(position.clone()))
+        story::Author::Queued(author) => {
+            sink.send(Outbound::ShowQueue(author.position.clone()))
         }
     };
 }

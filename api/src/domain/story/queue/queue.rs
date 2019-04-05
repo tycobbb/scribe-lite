@@ -1,20 +1,22 @@
-use chrono::NaiveDateTime;
+use chrono::{ DateTime, Utc };
 use crate::domain::Id;
-use super::author::Author;
+use super::author::{ Author, ActiveAuthor };
 
 // types
 #[derive(Debug)]
 pub struct Queue {
-    authors:              Vec<Author>,
-    pub has_new_author:   bool,
-    removed_author_index: Option<usize>
+    pub(super) author_ids:         Vec<Id>,
+    pub(super) author_rustle_time: Option<DateTime<Utc>>,
+    pub has_new_author:            bool,
+    removed_author_index:          Option<usize>
 }
 
 // impls
 impl Queue {
-    pub fn new(authors: Vec<Author>) -> Self {
+    pub fn new(author_ids: Vec<Id>, author_rustle_time: Option<DateTime<Utc>>) -> Self {
         Queue {
-            authors:              authors,
+            author_ids:           author_ids,
+            author_rustle_time:   author_rustle_time,
             has_new_author:       false,
             removed_author_index: None,
         }
@@ -23,74 +25,80 @@ impl Queue {
     // commands
     pub fn join(&mut self, author_id: &Id) {
         self.has_new_author = true;
-
-        let author_id = author_id.clone();
-        let author    = if self.authors.is_empty() {
-            Author::writer(author_id, None)
-        } else {
-            Author::waiter(author_id, self.authors.len())
-        };
-
-        // TODO: all the authors' positions are wrong as soon we mutate, revert to
-        // a vec of author ids
-        self.authors.push(author)
+        self.author_ids.push(author_id.clone());
     }
 
     pub fn leave(&mut self, author_id: &Id) {
-        if self.authors.is_empty() {
+        if self.author_ids.is_empty() {
             warn!("[story] attempted to leave an empty queue");
             return
         }
 
-        let index = match self.authors.iter().position(|a| a.id() == author_id) {
+        let index = match self.author_ids.iter().position(|id| id == author_id) {
             Some(i) => i,
             None    => return warn!("[story] attempted to remove an author that was not in the queue")
         };
 
         // remove the author
-        self.authors.remove(index);
+        self.author_ids.remove(index);
         self.removed_author_index = Some(index);
-
-        // if it was the writer, tell the new author to write
-        if index == 0 && !self.authors.is_empty() {
-            self.authors[0].become_writer();
-        }
     }
 
-    pub fn rustle_writer(&mut self, time: NaiveDateTime) {
-        if self.authors.is_empty() {
-            warn!("[story] attempted to leave an empty queue");
+    pub fn rustle_active_author(&mut self, time: DateTime<Utc>) {
+        if self.author_ids.is_empty() {
+            warn!("[story] attempted to rustle the active author of an empty queue");
             return
         }
 
-        self.authors[0].rustle(time)
+        self.author_rustle_time = Some(time)
     }
 
     // queries
-    pub fn last_active_at(&self) -> Option<NaiveDateTime> {
-        self.authors
-            .first()
-            .and_then(|author| author.last_active_at())
-    }
-
-    pub fn new_author(&self) -> Option<&Author> {
-        if !self.has_new_author {
-            None
-        } else {
-            self.authors.last()
+    pub fn active_author(&self) -> Option<ActiveAuthor> {
+        if self.author_ids.is_empty() {
+            warn!("[story] attempted to get active author of an empty queue");
+            return None
         }
+
+        Some(ActiveAuthor::new(
+            &self.author_ids[0],
+            &self.author_rustle_time
+        ))
     }
 
-    pub fn authors_with_new_positions(&self) -> &[Author] {
-        let index = self.removed_author_index
-            // default to len for an empty slice
-            .unwrap_or(self.authors.len());
+    pub fn new_author(&self) -> Option<Author> {
+        if self.author_ids.is_empty() {
+            warn!("[story] attempted to get active author of an empty queue");
+            return None
+        }
 
-        &self.authors[index..]
+        if !self.has_new_author {
+            return None
+        }
+
+        self.author_ids.last()
+            .map(|id| self.make_author(id, self.author_ids.len() - 1))
     }
 
-    // accessors
-    pub fn author_ids(&self) -> Vec<&Id> {
-        self.authors.iter().map(|author| author.id()).collect()
+    pub fn authors_with_new_positions(&self) -> Vec<Author> {
+        let index = match self.removed_author_index {
+            Some(index) => index,
+            None        => return Vec::new()
+        };
+
+        self.author_ids[index..]
+            .iter()
+            .enumerate()
+            .map(|(i, id)| self.make_author(id, i))
+            .collect()
+    }
+
+    // factories
+    fn make_author<'a>(&'a self, id: &'a Id, index: usize) -> Author<'a> {
+        if index == 0 {
+            Author::active(id, &self.author_rustle_time)
+        } else {
+            Author::queued(id, index)
+        }
     }
 }

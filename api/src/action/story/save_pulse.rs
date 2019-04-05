@@ -38,7 +38,7 @@ impl Action for SavePulse {
         };
 
         // update the timestamp
-        story.rustle_writer(DateTime::from_utc(self.pulse.timestamp, Utc));
+        story.rustle_active_author(DateTime::from_utc(self.pulse.timestamp, Utc));
 
         // save updates
         if let Err(_) = repo.save_queue(&mut story) {
