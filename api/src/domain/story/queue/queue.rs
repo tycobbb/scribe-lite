@@ -22,7 +22,7 @@ impl Queue {
         }
     }
 
-    // commands
+    // commands/membership
     pub fn join(&mut self, author_id: &Id) {
         self.has_new_author = true;
         self.author_ids.push(author_id.clone());
@@ -30,27 +30,35 @@ impl Queue {
 
     pub fn leave(&mut self, author_id: &Id) {
         if self.author_ids.is_empty() {
-            warn!("[story] attempted to leave an empty queue");
-            return
+            return warn!("[story] attempted to leave an empty queue");
         }
 
-        let index = match self.author_ids.iter().position(|id| id == author_id) {
-            Some(i) => i,
-            None    => return warn!("[story] attempted to remove an author that was not in the queue")
+        match self.author_ids.iter().position(|id| id == author_id) {
+            Some(i) => self.remove_author(i),
+            None    => warn!("[story] attempted to remove an author that was not in the queue")
         };
+    }
 
-        // remove the author
+    fn remove_author(&mut self, index: usize) {
         self.author_ids.remove(index);
         self.removed_author_index = Some(index);
     }
 
+    // commands/pulse
     pub fn rustle_active_author(&mut self, time: DateTime<Utc>) {
         if self.author_ids.is_empty() {
-            warn!("[story] attempted to rustle the active author of an empty queue");
-            return
+            return warn!("[story] attempted to rustle the active author of an empty queue");
         }
 
         self.author_rustle_time = Some(time)
+    }
+
+    pub fn remove_active_author(&mut self) {
+        if self.author_ids.is_empty() {
+            return warn!("[story] attempted to remove the active author of an empty queue");
+        }
+
+        self.remove_author(0);
     }
 
     // queries

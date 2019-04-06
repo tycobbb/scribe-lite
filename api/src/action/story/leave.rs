@@ -3,7 +3,7 @@ use crate::domain::story;
 use crate::action::event;
 use crate::action::routes::Sink;
 use crate::action::action::Action;
-use super::notify::notify_authors_with_new_positions;
+use super::shared::send_position_updates_to;
 
 // types
 #[derive(Debug)]
@@ -30,12 +30,13 @@ impl Action for Leave {
         // leave story
         story.leave(sink.id());
 
-        // save updates
         if let Err(_) = repo.save_queue(&mut story) {
             return sink.send(event::Outbound::ShowInternalError);
         }
 
         // send updates to story authors
-        notify_authors_with_new_positions(&story, &sink);
+        for author in story.authors_with_new_positions() {
+            send_position_updates_to(author, &story, &sink);
+        }
     }
 }

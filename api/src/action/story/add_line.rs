@@ -4,7 +4,7 @@ use crate::domain::story;
 use crate::action::event::Outbound;
 use crate::action::routes::Sink;
 use crate::action::action::Action;
-use super::notify::*;
+use super::shared::send_position_updates_to;
 
 // types
 #[derive(Debug)]
@@ -39,7 +39,7 @@ impl Action for AddLine {
             Err(_) => return sink.send(Outbound::ShowInternalError)
         };
 
-        // add line to story
+        // finalize the author's line
         story.add_line(
             self.line.text,
             self.line.name,
@@ -48,14 +48,15 @@ impl Action for AddLine {
 
         story.leave(sink.id().into());
 
-        // save updates
         if let Err(_) = repo.save_queue_and_new_line(&mut story) {
             return sink.send(Outbound::ShowInternalError);
         }
 
         // send updates to story authors
-        notify_authors_with_new_positions(&story, &sink);
-
         sink.send(Outbound::ShowThanks);
+
+        for author in story.authors_with_new_positions() {
+            send_position_updates_to(author, &story, &sink)
+        }
     }
 }

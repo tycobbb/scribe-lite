@@ -3,7 +3,7 @@ use crate::domain::story;
 use crate::action::event::Outbound;
 use crate::action::routes::Sink;
 use crate::action::action::Action;
-use super::notify::notify_new_author;
+use super::shared::send_position_updates_to;
 
 // types
 #[derive(Debug)]
@@ -30,12 +30,13 @@ impl Action for Join {
         // join story
         story.join(sink.id().into());
 
-        // save updates
         if let Err(_) = repo.save_queue(&mut story) {
             return sink.send(Outbound::ShowInternalError);
         }
 
-        // notify author
-        notify_new_author(&story, &sink);
+        // send updates to story authors
+        if let Some(author) = story.new_author() {
+            send_position_updates_to(author, &story, &sink);
+        }
     }
 }

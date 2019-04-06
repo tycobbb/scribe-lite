@@ -1,10 +1,10 @@
-use chrono::{ Duration, Utc };
+use chrono::Duration;
 use crate::core::db;
 use crate::domain::story;
 use crate::action::action::Action;
 use crate::action::event::{ Outbound, Scheduled };
 use crate::action::routes::Sink;
-use super::notify::notify_authors_with_new_positions;
+use super::shared::send_position_updates_to;
 
 // types
 #[derive(Debug)]
@@ -28,8 +28,7 @@ impl Action for TestPulse {
             Err(_) => return sink.send(Outbound::ShowInternalError)
         };
 
-
-        // if the writer isn't idle, schedule the next pulse
+        // if the author is active, schedule the next pulse
         let delta = story.active_author()
             .and_then(|author| author.idle_time())
             .unwrap_or(Duration::max_value());
@@ -41,14 +40,18 @@ impl Action for TestPulse {
             return
         }
 
-        // otherwise, remove the writer
+        // otherwise, remove the idle author
         story.remove_active_author();
-        sink.send(Outbound::ShowDisconnected);
-        notify_authors_with_new_positions(&story, &sink);
 
-        // save updates
-        if let Err(_) = repo.save_queue_and_new_line(&mut story) {
+        if let Err(_) = repo.save_queue(&mut story) {
             return sink.send(Outbound::ShowInternalError);
+        }
+
+        // send updates to story authors
+        sink.send(Outbound::ShowDisconnected);
+
+        for author in story.authors_with_new_positions() {
+            send_position_updates_to(author, &story, &sink);
         }
     }
 }

@@ -3,7 +3,6 @@ use serde_derive::{ Serialize, Deserialize };
 use chrono::{ DateTime, NaiveDateTime, Utc };
 use crate::domain::Id;
 use super::queue::Queue;
-use super::author::Author;
 
 // types
 pub type Column =

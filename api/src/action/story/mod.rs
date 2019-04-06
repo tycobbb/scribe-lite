@@ -1,4 +1,4 @@
-mod notify;
+mod shared;
 
 mod join;
 pub use self::join::Join;

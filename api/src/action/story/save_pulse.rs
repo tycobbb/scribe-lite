@@ -37,10 +37,9 @@ impl Action for SavePulse {
             Err(_) => return sink.send(Outbound::ShowInternalError)
         };
 
-        // update the timestamp
+        // update the author's pulse
         story.rustle_active_author(DateTime::from_utc(self.pulse.timestamp, Utc));
 
-        // save updates
         if let Err(_) = repo.save_queue(&mut story) {
             return sink.send(Outbound::ShowInternalError);
         }

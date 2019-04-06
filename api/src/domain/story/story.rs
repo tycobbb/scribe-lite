@@ -24,15 +24,6 @@ impl Story {
         }
     }
 
-    // commands/membership
-    pub fn join(&mut self, author_id: &Id) {
-        self.queue.join(author_id);
-    }
-
-    pub fn leave(&mut self, author_id: &Id) {
-        self.queue.leave(author_id);
-    }
-
     // commands/lines
     pub fn add_line(&mut self,
         text:  String,
@@ -43,12 +34,21 @@ impl Story {
         self.has_new_line = true;
     }
 
-    // commands/pulse
+    // commands/queue
+    pub fn join(&mut self, author_id: &Id) {
+        self.queue.join(author_id);
+    }
+
+    pub fn leave(&mut self, author_id: &Id) {
+        self.queue.leave(author_id);
+    }
+
     pub fn rustle_active_author(&mut self, time: DateTime<Utc>) {
         self.queue.rustle_active_author(time);
     }
 
     pub fn remove_active_author(&mut self) {
+        self.queue.remove_active_author();
     }
 
     // queries/lines
@@ -66,7 +66,7 @@ impl Story {
         }
     }
 
-    // queries/authors
+    // queries/queue
     pub fn active_author(&self) -> Option<ActiveAuthor> {
         self.queue.active_author()
     }
