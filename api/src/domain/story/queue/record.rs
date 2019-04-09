@@ -6,36 +6,52 @@ use super::queue::Queue;
 
 // types
 pub type Column =
-    Option<json::Value>;
+    json::Value;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Record {
     pub author_ids:         Vec<i32>,
-    pub author_rustle_time: Option<NaiveDateTime>
+    pub author_rustle_time: NaiveDateTime
 }
 
 // impls
+// TODO: figure out how to newtype column so that it can be used w/
+// diesel, and move this fn there
+pub fn initial_column_value() -> Column {
+    let record = Record {
+        author_ids: Vec::new(),
+        author_rustle_time: Utc::now().naive_utc()
+    };
+
+    record.encode()
+}
+
+impl Record {
+    // json
+    fn decode(column: Column) -> Record {
+        json::from_value::<Record>(column)
+            .map_err(|error| format!("[domain] failed to decode queue error={}", error))
+            .unwrap()
+    }
+
+    fn encode(&self) -> Column {
+        json::to_value(self)
+            .map_err(|error| format!("[domain] failed to encode queue error={}", error))
+            .unwrap()
+    }
+}
+
 impl Queue {
     pub fn from_column(column: Column) -> Self {
-        let record = column
-            .map(json::from_value::<Record>)
-            .transpose()
-            .unwrap_or_else(|error| {
-                error!("[domain] failed to deserialize queue error={}", error);
-                None
-            });
-
-        let record = match record {
-            Some(record) => record,
-            None         => return Queue::new(Vec::new(), None)
-        };
+        let record = Record::decode(column);
 
         let author_ids = record.author_ids
             .into_iter()
             .map(Id::from);
 
-        let author_rustle_time = record.author_rustle_time
-            .map(|time| DateTime::from_utc(time, Utc));
+        let author_rustle_time = DateTime::from_utc(
+            record.author_rustle_time, Utc
+        );
 
         Queue::new(
             author_ids.collect(),
@@ -49,18 +65,13 @@ impl Queue {
             .map(|id| id.into());
 
         let author_rustle_time = self.author_rustle_time
-            .map(|time| time.naive_utc());
+            .naive_utc();
 
         let record: Record = Record {
             author_ids:         author_ids.collect(),
             author_rustle_time: author_rustle_time
         };
 
-        json::to_value(record)
-            .map(Some)
-            .unwrap_or_else(|error| {
-                error!("[domain] failed to serialize queue error={}", error);
-                None
-            })
+        record.encode()
     }
 }

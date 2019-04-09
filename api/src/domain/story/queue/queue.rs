@@ -6,14 +6,14 @@ use super::author::{ Author, ActiveAuthor };
 #[derive(Debug)]
 pub struct Queue {
     pub(super) author_ids:         Vec<Id>,
-    pub(super) author_rustle_time: Option<DateTime<Utc>>,
+    pub(super) author_rustle_time: DateTime<Utc>,
     pub has_new_author:            bool,
     removed_author_index:          Option<usize>
 }
 
 // impls
 impl Queue {
-    pub fn new(author_ids: Vec<Id>, author_rustle_time: Option<DateTime<Utc>>) -> Self {
+    pub fn new(author_ids: Vec<Id>, author_rustle_time: DateTime<Utc>) -> Self {
         Queue {
             author_ids:           author_ids,
             author_rustle_time:   author_rustle_time,
@@ -23,25 +23,39 @@ impl Queue {
     }
 
     // commands/membership
-    pub fn join(&mut self, author_id: &Id) {
-        self.has_new_author = true;
+    pub fn add_author(&mut self, author_id: &Id) {
         self.author_ids.push(author_id.clone());
+
+        // track changes
+        self.has_new_author = true;
+
+        // if the active author joined, reset timer
+        if self.author_ids.len() == 1 {
+            self.author_rustle_time = Utc::now();
+        }
     }
 
-    pub fn leave(&mut self, author_id: &Id) {
+    pub fn remove_author(&mut self, author_id: &Id) {
         if self.author_ids.is_empty() {
             return warn!("[story] attempted to leave an empty queue");
         }
 
         match self.author_ids.iter().position(|id| id == author_id) {
-            Some(i) => self.remove_author(i),
+            Some(i) => self.remove_author_at(i),
             None    => warn!("[story] attempted to remove an author that was not in the queue")
         };
     }
 
-    fn remove_author(&mut self, index: usize) {
+    fn remove_author_at(&mut self, index: usize) {
         self.author_ids.remove(index);
+
+        // track changes
         self.removed_author_index = Some(index);
+
+        // if the active author was removed, reset timer
+        if index == 0 {
+            self.author_rustle_time = Utc::now();
+        }
     }
 
     // commands/pulse
@@ -50,7 +64,7 @@ impl Queue {
             return warn!("[story] attempted to rustle the active author of an empty queue");
         }
 
-        self.author_rustle_time = Some(time)
+        self.author_rustle_time = time;
     }
 
     pub fn remove_active_author(&mut self) {
@@ -58,7 +72,7 @@ impl Queue {
             return warn!("[story] attempted to remove the active author of an empty queue");
         }
 
-        self.remove_author(0);
+        self.remove_author_at(0);
     }
 
     // queries
@@ -101,7 +115,7 @@ impl Queue {
             .collect()
     }
 
-    // factories
+    // queries/helpers
     fn make_author<'a>(&'a self, id: &'a Id, index: usize) -> Author<'a> {
         if index == 0 {
             Author::active(id, &self.author_rustle_time)

@@ -36,11 +36,11 @@ impl Story {
 
     // commands/queue
     pub fn join(&mut self, author_id: &Id) {
-        self.queue.join(author_id);
+        self.queue.add_author(author_id);
     }
 
     pub fn leave(&mut self, author_id: &Id) {
-        self.queue.leave(author_id);
+        self.queue.remove_author(author_id);
     }
 
     pub fn rustle_active_author(&mut self, time: DateTime<Utc>) {

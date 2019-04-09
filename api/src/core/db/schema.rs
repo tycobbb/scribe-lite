@@ -15,7 +15,7 @@ table! {
         id -> Int4,
         created_at -> Timestamp,
         updated_at -> Timestamp,
-        queue -> Nullable<Json>,
+        queue -> Json,
     }
 }
 

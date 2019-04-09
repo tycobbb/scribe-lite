@@ -12,7 +12,7 @@ pub enum Author<'a> {
 #[derive(Debug)]
 pub struct ActiveAuthor<'a> {
     pub id:          &'a Id,
-    pub rustle_time: Option<&'a DateTime<Utc>>
+    pub rustle_time: &'a DateTime<Utc>
 }
 
 #[derive(Debug)]
@@ -29,7 +29,7 @@ pub struct Position {
 // impls
 impl<'a> Author<'a> {
     // factories
-    pub fn active(id: &'a Id, rustle_time: &'a Option<DateTime<Utc>>) -> Author<'a> {
+    pub fn active(id: &'a Id, rustle_time: &'a DateTime<Utc>) -> Author<'a> {
         Author::Active(ActiveAuthor::new(id, rustle_time))
     }
 
@@ -39,16 +39,16 @@ impl<'a> Author<'a> {
 }
 
 impl<'a> ActiveAuthor<'a> {
-    pub fn new(id: &'a Id, rustle_time: &'a Option<DateTime<Utc>>) -> ActiveAuthor<'a> {
+    pub fn new(id: &'a Id, rustle_time: &'a DateTime<Utc>) -> ActiveAuthor<'a> {
         ActiveAuthor {
             id:          id,
-            rustle_time: rustle_time.as_ref(),
+            rustle_time: rustle_time
         }
     }
 
     // queries
-    pub fn idle_time(&self) -> Option<Duration> {
-        self.rustle_time.map(|time| Utc::now() - *time)
+    pub fn idle_duration(&self) -> Duration {
+        Utc::now() - *self.rustle_time
     }
 }
 

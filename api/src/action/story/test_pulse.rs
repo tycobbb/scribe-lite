@@ -30,10 +30,10 @@ impl Action for TestPulse {
 
         // if the author is active, schedule the next pulse
         let delta = story.active_author()
-            .and_then(|author| author.idle_time())
+            .map(|author| author.idle_duration())
             .unwrap_or(Duration::max_value());
 
-        if delta < Duration::seconds(60) {
+        if delta >= Duration::seconds(60) {
             let remainder        = Duration::seconds(30) - delta;
             let remainder_millis = std::cmp::max(remainder.num_milliseconds(), 0);
             sink.schedule(Scheduled::FindPulse, remainder_millis as u64);

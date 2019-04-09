@@ -1,6 +1,6 @@
 use diesel::prelude::*;
 use super::story::Story;
-use super::record::Record;
+use super::record::{ Record, NewRecord };
 
 // types
 pub struct Factory<'a> {
@@ -21,7 +21,7 @@ impl<'a> Factory<'a> {
         use crate::core::db::schema::stories;
 
         diesel::insert_into(stories::table)
-            .default_values()
+            .values(NewRecord::new())
             .get_result::<Record>(self.conn)
             .map(Story::from_record_initial)
     }

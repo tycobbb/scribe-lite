@@ -1,0 +1,2 @@
+ALTER TABLE stories
+  ALTER COLUMN queue SET NOT NULL;

@@ -15,6 +15,12 @@ pub struct Record {
     pub queue:      queue::Column
 }
 
+#[derive(Debug, Insertable)]
+#[table_name="stories"]
+pub struct NewRecord {
+    pub queue: queue::Column
+}
+
 #[derive(Debug, AsChangeset)]
 #[table_name="stories"]
 pub struct QueueChangeset {
@@ -22,6 +28,14 @@ pub struct QueueChangeset {
 }
 
 // impls
+impl NewRecord {
+    pub fn new() -> NewRecord {
+        NewRecord {
+            queue: queue::initial_column_value()
+        }
+    }
+}
+
 impl Story {
     pub fn from_record_initial(record: Record) -> Self {
         Story::from_record(record, vec![])
