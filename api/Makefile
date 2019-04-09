@@ -1,56 +1,58 @@
-.DEFAULT_GOAL := help
+include ../Makefile.base.mk
 
-# -- run/stop --
+# -- cosmetics --
+help-column-width = 10
+
+# -- start/stop --
 ## starts the api server
-s:
+start:
 	cargo run
-.PHONY: s
+.PHONY: start
 
 ## builds the api code
-b:
+build:
 	cargo build
-.PHONY: b
+.PHONY: build
+
+# -- verify --
+## verifies the api code
+verify: v/format
+.PHONY: verify
+
+## checks the code format
+v/format:
+	$(format) --check
+.PHONY: v/format
+
+## fixes any formatting errors
+v/f/fix:
+	$(format)
+.PHONY: v/f/fix
+
+format = rustfmt ./**/*.rs
 
 # -- db --
 ## resets the database
-db/r:
+db/reset:
 	diesel database reset
-.PHONY: db/r
+.PHONY: db/reset
 
 ## runs the database migrations
-db/m:
+db/migrate:
 	diesel migration run
-.PHONY: db/m
+.PHONY: db/migrate
 
 ## creates a new database migration
 db/m/new:
-	diesel migration generate PLACEHOLDER
+	diesel migration generate PLACEHOLDERS
+.PHONY: db/m/new
 
 ## re-runs the most recent migration
 db/m/redo:
 	diesel migration redo
+.PHONY: db/m/redo
 
 ## rolls back the most recent migration
 db/m/undo:
 	diesel migration revert
-
-# -- help --
-help:
-	@awk "$$HELP" $(MAKEFILE_LIST)
-
-define HELP
-BEGIN {
-	print "\033[4;37musage:\033[0m";
-	print "  \033[1;37mmake <target>\033[0m\n";
-	print "\033[4;37mcommands:\033[0m";
-}
-/^## (.*)$$/ {
-	$$1=""; docs=$$0;
-	getline;
-	sub(/:/, "", $$1);
-	printf "  \033[1;31m%-9s\033[0;90m %s\033[0m\n", $$1, docs;
-}
-endef
-export HELP
-
-.PHONY: help
+.PHONY: db/m/undo

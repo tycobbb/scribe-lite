@@ -9,11 +9,7 @@
         "RUST_LOG": "error,api=debug,rocket=debug,ws=debug"
       },
       "cargo": {
-        "args": [
-          "build",
-          "--bin=api",
-          "--package=api"
-        ],
+        "args": ["build", "--bin=api", "--package=api"],
         "filter": {
           "kind": "bin"
         }
@@ -26,11 +22,7 @@
       "request": "attach",
       "name": "Debug API (Attach)",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=api",
-          "--package=api"
-        ],
+        "args": ["build", "--bin=api", "--package=api"],
         "filter": {
           "kind": "bin"
         }
@@ -43,12 +35,7 @@
       "request": "launch",
       "name": "Debug API Tests",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=api",
-          "--package=api"
-        ],
+        "args": ["test", "--no-run", "--bin=api", "--package=api"],
         "filter": {
           "kind": "bin"
         }
