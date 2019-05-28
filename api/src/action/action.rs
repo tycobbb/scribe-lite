@@ -1,11 +1,11 @@
 use super::routes::Sink;
 
-// types
+// -- types --
 // a command type that can produce events
 pub trait Action {
     type Args;
 
-    // inits an action
+    // -- init --s an action
     // - args:   the action's arguments, if any
     fn new(args: Self::Args) -> Self;
 

@@ -1,22 +1,20 @@
-use diesel::prelude::*;
+use super::record::{NewRecord, Record};
 use super::story::Story;
-use super::record::{ Record, NewRecord };
+use diesel::prelude::*;
 
-// types
+// -- types --
 pub struct Factory<'a> {
-    conn: &'a diesel::PgConnection
+    conn: &'a diesel::PgConnection,
 }
 
-// impls
+// -- impls --
 impl<'a> Factory<'a> {
-    // init
+    // -- impls/init
     pub fn new(conn: &'a diesel::PgConnection) -> Self {
-        Factory {
-            conn: conn
-        }
+        Factory { conn: conn }
     }
 
-    // commands
+    // -- impls/commands
     pub fn create_for_today(&self) -> QueryResult<Story> {
         use crate::core::db::schema::stories;
 

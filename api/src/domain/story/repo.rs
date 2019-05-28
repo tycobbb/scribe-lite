@@ -1,32 +1,29 @@
+use super::factory::Factory;
+use super::line;
+use super::record::Record;
+use super::story::Story;
+use crate::core::empty;
 use chrono::Utc;
 use diesel::prelude::*;
-use crate::core::empty;
-use super::line;
-use super::story::Story;
-use super::record::Record;
-use super::factory::Factory;
 
-// types
+// -- types --
 pub struct Repo<'a> {
-    conn: &'a diesel::PgConnection
+    conn: &'a diesel::PgConnection,
 }
 
-// impls
+// -- impls --
 impl<'a> Repo<'a> {
-    // init
+    // -- impls/init
     pub fn new(conn: &'a diesel::PgConnection) -> Self {
-        Repo {
-            conn: conn
-        }
+        Repo { conn: conn }
     }
 
-    // commands
+    // -- impls/commands
     #[must_use]
     pub fn save_queue(&self, story: &mut Story) -> QueryResult<()> {
         use crate::core::db::schema::stories;
 
-        let target = stories::table
-            .filter(stories::id.eq(i32::from(&story.id)));
+        let target = stories::table.filter(stories::id.eq(i32::from(&story.id)));
 
         let updated = diesel::update(target)
             .set(story.make_queue_changeset())
@@ -41,7 +38,7 @@ impl<'a> Repo<'a> {
 
         let new_line = match story.new_line() {
             Some(line) => line,
-            None       => return Ok(())
+            None => return Ok(()),
         };
 
         let inserted = new_line
@@ -60,14 +57,12 @@ impl<'a> Repo<'a> {
         })
     }
 
-    // queries
+    // -- impls/queries
     pub fn find_for_today(&self) -> QueryResult<Story> {
-        use crate::core::db::schema::{ stories, lines };
+        use crate::core::db::schema::{lines, stories};
 
         // find today's story
-        let midnight = Utc::today()
-            .and_hms(0, 0, 0)
-            .naive_utc();
+        let midnight = Utc::today().and_hms(0, 0, 0).naive_utc();
 
         let story = stories::table
             .filter(stories::created_at.gt(midnight))

@@ -1,33 +1,42 @@
-use crate::core::{ socket, Id };
+use super::message::MessageIn;
 use super::routes::Routes;
 use super::sink::Sink;
 use super::timeout::Timeout;
-use super::message::MessageIn;
+use crate::core::{socket, Id};
 
-// types
+// -- types --
 #[derive(Debug)]
-pub struct Connection<R> where R: Routes {
+pub struct Connection<R>
+where
+    R: Routes,
+{
     routes: R,
-    sink:   Sink
+    sink: Sink,
 }
 
-// impls
-impl<R> Connection<R> where R: Routes {
-    // init
+// -- impls --
+impl<R> Connection<R>
+where
+    R: Routes,
+{
+    // -- impls/init --
     pub fn new(routes: R, sink: Sink) -> Connection<R> {
         Connection {
             routes: routes,
-            sink:   sink
+            sink: sink,
         }
     }
 
-    // props
+    // impls/queries
     pub fn id(&self) -> &Id {
         &self.sink.id
     }
 }
 
-impl<R> ws::Handler for Connection<R> where R: Routes {
+impl<R> ws::Handler for Connection<R>
+where
+    R: Routes,
+{
     fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
         self.routes.connect(self.sink.clone());
         Ok(())
@@ -39,9 +48,8 @@ impl<R> ws::Handler for Connection<R> where R: Routes {
             .map_err(socket::Error::SocketFailed)
             .and_then(MessageIn::decode);
 
-        let handled = decoded.and_then(|message| {
-            self.routes.on_message(message, self.sink.clone())
-        });
+        let handled =
+            decoded.and_then(|message| self.routes.on_message(message, self.sink.clone()));
 
         if let Err(error) = handled {
             self.sink.send_to(self.id(), Err(error))
@@ -51,10 +59,9 @@ impl<R> ws::Handler for Connection<R> where R: Routes {
     }
 
     fn on_timeout(&mut self, token: ws::util::Token) -> ws::Result<()> {
-        let handled = self.routes.on_timeout(
-            Timeout::new(token.0),
-            self.sink.clone()
-        );
+        let handled = self
+            .routes
+            .on_timeout(Timeout::new(token.0), self.sink.clone());
 
         if let Err(error) = handled {
             self.sink.send_to(self.id(), Err(error))

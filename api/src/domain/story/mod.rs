@@ -1,5 +1,5 @@
 pub mod queue;
-pub use self::queue::{ Author, Position };
+pub use self::queue::{Author, Position};
 
 mod story;
 pub use self::story::Story;

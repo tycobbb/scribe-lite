@@ -1,16 +1,14 @@
-// types
+// -- types --
 #[derive(Debug, PartialEq, Eq)]
-pub struct Timeout(
-    usize
-);
+pub struct Timeout(usize);
 
-// impls
+// -- impls --
 impl Timeout {
     pub fn new(value: usize) -> Timeout {
         Timeout(value)
     }
 
-    // queries
+    // -- impls/queries
     pub fn token(&self) -> ws::util::Token {
         ws::util::Token(self.0)
     }

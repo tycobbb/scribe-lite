@@ -1,26 +1,25 @@
-use serde_json as json;
-use serde_derive::{ Serialize, Deserialize };
-use chrono::{ DateTime, NaiveDateTime, Utc };
-use crate::domain::Id;
 use super::queue::Queue;
+use crate::domain::Id;
+use chrono::{DateTime, NaiveDateTime, Utc};
+use serde_derive::{Deserialize, Serialize};
+use serde_json as json;
 
-// types
-pub type Column =
-    json::Value;
+// -- types --
+pub type Column = json::Value;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Record {
-    pub author_ids:         Vec<i32>,
-    pub author_rustle_time: NaiveDateTime
+    pub author_ids: Vec<i32>,
+    pub author_rustle_time: NaiveDateTime,
 }
 
-// impls
+// -- impls --
 // TODO: figure out how to newtype column so that it can be used w/
 // diesel, and move this fn there
 pub fn initial_column_value() -> Column {
     let record = Record {
         author_ids: Vec::new(),
-        author_rustle_time: Utc::now().naive_utc()
+        author_rustle_time: Utc::now().naive_utc(),
     };
 
     record.encode()
@@ -45,31 +44,21 @@ impl Queue {
     pub fn from_column(column: Column) -> Self {
         let record = Record::decode(column);
 
-        let author_ids = record.author_ids
-            .into_iter()
-            .map(Id::from);
+        let author_ids = record.author_ids.into_iter().map(Id::from);
 
-        let author_rustle_time = DateTime::from_utc(
-            record.author_rustle_time, Utc
-        );
+        let author_rustle_time = DateTime::from_utc(record.author_rustle_time, Utc);
 
-        Queue::new(
-            author_ids.collect(),
-            author_rustle_time
-        )
+        Queue::new(author_ids.collect(), author_rustle_time)
     }
 
     pub fn into_column(&self) -> Column {
-        let author_ids = self.author_ids
-            .iter()
-            .map(|id| id.into());
+        let author_ids = self.author_ids.iter().map(|id| id.into());
 
-        let author_rustle_time = self.author_rustle_time
-            .naive_utc();
+        let author_rustle_time = self.author_rustle_time.naive_utc();
 
         let record: Record = Record {
-            author_ids:         author_ids.collect(),
-            author_rustle_time: author_rustle_time
+            author_ids: author_ids.collect(),
+            author_rustle_time: author_rustle_time,
         };
 
         record.encode()

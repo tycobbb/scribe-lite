@@ -1,10 +1,8 @@
-// types
+// -- types --
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
-pub struct Id(
-    pub u32
-);
+pub struct Id(pub u32);
 
-// impls
+// -- impls --
 impl From<u32> for Id {
     fn from(value: u32) -> Id {
         Id(value)

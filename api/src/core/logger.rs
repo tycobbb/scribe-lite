@@ -3,7 +3,9 @@ use std::io::Write;
 pub fn setup() {
     let mut logs = env_logger::Builder::from_default_env();
     logs.format(|buf, record| {
-        writeln!(buf, "[{}] {:<6} - {}",
+        writeln!(
+            buf,
+            "[{}] {:<6} - {}",
             format_level(record.level()),
             format_module(record.module_path()),
             record.args()
@@ -16,8 +18,8 @@ pub fn setup() {
 fn format_level<'a>(level: log::Level) -> &'a str {
     match level {
         log::Level::Error => "E",
-        log::Level::Warn  => "W",
-        log::Level::Info  => "I",
+        log::Level::Warn => "W",
+        log::Level::Info => "I",
         log::Level::Debug => "D",
         log::Level::Trace => "T",
     }

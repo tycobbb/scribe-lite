@@ -1,4 +1,4 @@
-// types
+// -- types --
 declare namespace Module {
   var Elm: Elm
 

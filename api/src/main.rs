@@ -8,13 +8,13 @@ extern crate log;
 extern crate diesel;
 
 // modules
+mod action;
 mod core;
 mod domain;
-mod action;
 
 // main
-use crate::core::socket;
 use crate::core::logger;
+use crate::core::socket;
 
 fn main() {
     logger::setup();

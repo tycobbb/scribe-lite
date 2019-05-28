@@ -1,32 +1,32 @@
-use chrono::{ DateTime, Duration, Utc };
-use serde_derive::Serialize;
 use crate::domain::Id;
+use chrono::{DateTime, Duration, Utc};
+use serde_derive::Serialize;
 
-// types
+// -- types --
 #[derive(Debug)]
 pub enum Author<'a> {
     Active(ActiveAuthor<'a>),
-    Queued(QueuedAuthor<'a>)
+    Queued(QueuedAuthor<'a>),
 }
 
 #[derive(Debug)]
 pub struct ActiveAuthor<'a> {
-    pub id:          &'a Id,
-    pub rustle_time: &'a DateTime<Utc>
+    pub id: &'a Id,
+    pub rustle_time: &'a DateTime<Utc>,
 }
 
 #[derive(Debug)]
 pub struct QueuedAuthor<'a> {
-    pub id:       &'a Id,
-    pub position: Position
+    pub id: &'a Id,
+    pub position: Position,
 }
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Position {
-    pub behind: usize
+    pub behind: usize,
 }
 
-// impls
+// -- impls --
 impl<'a> Author<'a> {
     // factories
     pub fn active(id: &'a Id, rustle_time: &'a DateTime<Utc>) -> Author<'a> {
@@ -41,12 +41,12 @@ impl<'a> Author<'a> {
 impl<'a> ActiveAuthor<'a> {
     pub fn new(id: &'a Id, rustle_time: &'a DateTime<Utc>) -> ActiveAuthor<'a> {
         ActiveAuthor {
-            id:          id,
-            rustle_time: rustle_time
+            id: id,
+            rustle_time: rustle_time,
         }
     }
 
-    // queries
+    // -- impls/queries
     pub fn idle_duration(&self) -> Duration {
         Utc::now() - *self.rustle_time
     }
@@ -56,9 +56,7 @@ impl<'a> QueuedAuthor<'a> {
     pub fn new(id: &'a Id, behind: usize) -> QueuedAuthor {
         QueuedAuthor {
             id: id,
-            position: Position {
-                behind: behind
-            }
+            position: Position { behind: behind },
         }
     }
 }

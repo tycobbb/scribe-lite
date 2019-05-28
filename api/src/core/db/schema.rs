@@ -21,7 +21,4 @@ table! {
 
 joinable!(lines -> stories (story_id));
 
-allow_tables_to_appear_in_same_query!(
-    lines,
-    stories,
-);
+allow_tables_to_appear_in_same_query!(lines, stories,);

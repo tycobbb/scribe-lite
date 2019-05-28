@@ -1,32 +1,30 @@
-use serde_derive::Deserialize;
-use crate::core::db;
-use crate::domain::story;
+use super::shared::send_position_updates_to;
+use crate::action::action::Action;
 use crate::action::event::Outbound;
 use crate::action::routes::Sink;
-use crate::action::action::Action;
-use super::shared::send_position_updates_to;
+use crate::core::db;
+use crate::domain::story;
+use serde_derive::Deserialize;
 
-// types
+// -- types --
 #[derive(Debug)]
 pub struct AddLine {
-    line: NewLine
+    line: NewLine,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct NewLine {
-    text:  String,
-    name:  Option<String>,
-    email: Option<String>
+    text: String,
+    name: Option<String>,
+    email: Option<String>,
 }
 
-// impls
+// -- impls --
 impl Action for AddLine {
     type Args = NewLine;
 
     fn new(line: NewLine) -> Self {
-        AddLine {
-            line: line
-        }
+        AddLine { line: line }
     }
 
     fn call(self, sink: Sink) {
@@ -35,17 +33,12 @@ impl Action for AddLine {
 
         // find story
         let mut story = match repo.find_for_today() {
-            Ok(s)  => s,
-            Err(_) => return sink.send(Outbound::ShowInternalError)
+            Ok(s) => s,
+            Err(_) => return sink.send(Outbound::ShowInternalError),
         };
 
         // finalize the author's line
-        story.add_line(
-            self.line.text,
-            self.line.name,
-            self.line.email
-        );
-
+        story.add_line(self.line.text, self.line.name, self.line.email);
         story.leave(sink.id().into());
 
         if let Err(_) = repo.save_queue_and_new_line(&mut story) {

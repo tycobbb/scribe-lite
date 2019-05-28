@@ -1,12 +1,12 @@
-use chrono::{ DateTime, NaiveDateTime, Utc };
-use serde_derive::Deserialize;
-use crate::core::db;
-use crate::domain::story;
 use crate::action::action::Action;
 use crate::action::event::Outbound;
 use crate::action::routes::Sink;
+use crate::core::db;
+use crate::domain::story;
+use chrono::{DateTime, NaiveDateTime, Utc};
+use serde_derive::Deserialize;
 
-// types
+// -- types --
 #[derive(Debug)]
 pub struct SavePulse {
     pulse: Pulse,
@@ -17,14 +17,12 @@ pub struct Pulse {
     timestamp: NaiveDateTime,
 }
 
-// impls
+// -- impls --
 impl Action for SavePulse {
     type Args = Pulse;
 
     fn new(pulse: Pulse) -> Self {
-        SavePulse {
-            pulse: pulse
-        }
+        SavePulse { pulse: pulse }
     }
 
     fn call(self, sink: Sink) {
@@ -33,8 +31,8 @@ impl Action for SavePulse {
 
         // find story
         let mut story = match repo.find_for_today() {
-            Ok(s)  => s,
-            Err(_) => return sink.send(Outbound::ShowInternalError)
+            Ok(s) => s,
+            Err(_) => return sink.send(Outbound::ShowInternalError),
         };
 
         // update the author's pulse

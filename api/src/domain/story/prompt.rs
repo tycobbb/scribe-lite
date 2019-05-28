@@ -1,19 +1,19 @@
-use serde_derive::Serialize;
 use super::line::Line;
+use serde_derive::Serialize;
 
-// types
+// -- types --
 #[derive(Debug, Serialize)]
 pub struct Prompt {
     text: String,
-    name: Option<String>
+    name: Option<String>,
 }
 
-// impls
+// -- impls --
 impl Prompt {
     pub fn from_line(line: &Line) -> Self {
         Prompt {
             text: line.text.clone(),
-            name: line.name.clone()
+            name: line.name.clone(),
         }
     }
 }
@@ -22,7 +22,7 @@ impl Default for Prompt {
     fn default() -> Self {
         Prompt {
             text: "You get to write the first line! Follow your heart <3".to_string(),
-            name: None
+            name: None,
         }
     }
 }

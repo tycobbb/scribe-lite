@@ -1,7 +1,8 @@
-use crate::domain::story;
-use crate::action::event::{ Outbound, Scheduled };
+use crate::action::event::{Outbound, Scheduled};
 use crate::action::routes::Sink;
+use crate::domain::story;
 
+// -- impls --
 pub fn send_position_updates_to(author: story::Author, story: &story::Story, sink: &Sink) {
     match author {
         story::Author::Active(author) => {

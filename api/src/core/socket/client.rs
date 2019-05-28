@@ -1,24 +1,21 @@
-use std::rc::Rc;
+use crate::core::id::Id;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use crate::core::id::Id;
+use std::rc::Rc;
 
-// aliases
-pub type ClientById =
-    HashMap<Id, Client>;
+// -- aliases --
+pub type ClientById = HashMap<Id, Client>;
 
-// types
+// -- types --
 #[derive(Debug)]
-pub struct Client(
-    pub ws::Sender
-);
+pub struct Client(pub ws::Sender);
 
 #[derive(Debug, Clone)]
 pub struct Clients {
-    clients: Rc<RefCell<ClientById>>
+    clients: Rc<RefCell<ClientById>>,
 }
 
-// impls
+// -- impls --
 impl Client {
     pub fn id(&self) -> Id {
         Id(self.0.connection_id())
@@ -39,12 +36,10 @@ impl Client {
 
 impl Clients {
     pub fn new(clients: Rc<RefCell<ClientById>>) -> Self {
-        Clients {
-            clients: clients
-        }
+        Clients { clients: clients }
     }
 
-    // commands
+    // -- impls/commands
     pub fn send_to(&self, id: &Id, message: ws::Message) {
         self.with_client(id, |client| {
             client.send(message);
@@ -57,13 +52,16 @@ impl Clients {
         })
     }
 
-    // queries
-    fn with_client<F>(&self, id: &Id, handler: F) where F: FnOnce(&Client) {
+    // -- impls/queries
+    fn with_client<F>(&self, id: &Id, handler: F)
+    where
+        F: FnOnce(&Client),
+    {
         let clients = self.clients.borrow();
 
         match clients.get(id) {
             Some(client) => handler(client),
-            None         => error!("[socket] attempted to send to unknown client id={:?}", id)
+            None => error!("[socket] attempted to send to unknown client id={:?}", id),
         };
     }
 }

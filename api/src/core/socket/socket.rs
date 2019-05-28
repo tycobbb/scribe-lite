@@ -1,21 +1,27 @@
-use yansi::{ Paint, Color };
-use crate::core::empty;
-use super::routes::Routes;
 use super::channel::Channel;
+use super::routes::Routes;
+use crate::core::empty;
+use yansi::{Color, Paint};
 
 // constants
 const HOST: &'static str = "127.0.0.1:8080";
 
-// types
+// -- types --
 pub struct Socket;
 
-// impls
+// -- impls --
 impl Socket {
-    // commands
-    pub fn listen<R>(&self, routes: R) where R: Routes + Clone {
-        info!("🧦  {} {}",
+    // -- impls/commands
+    pub fn listen<R>(&self, routes: R)
+    where
+        R: Routes + Clone,
+    {
+        info!(
+            "🧦  {} {}",
             Paint::default("Socket is starting on").bold(),
-            Paint::default(HOST.replace("127.0.0.1", "http://localhost")).bold().underline()
+            Paint::default(HOST.replace("127.0.0.1", "http://localhost"))
+                .bold()
+                .underline()
         );
 
         let finished = ws::WebSocket::new(Channel::new(routes))
@@ -25,17 +31,18 @@ impl Socket {
         self.on_finished(finished);
     }
 
-    // events
+    // -- impls/events
     fn on_finished(&self, result: ws::Result<()>) {
         if let Err(error) = result {
-            error!("🧦  {}: {}",
-                Paint::default("Socket finished with error").bold().fg(Color::Red),
+            error!(
+                "🧦  {}: {}",
+                Paint::default("Socket finished with error")
+                    .bold()
+                    .fg(Color::Red),
                 error
             );
         } else {
-            info!("🧦  {}",
-                Paint::default("Socket finished").bold()
-            );
+            info!("🧦  {}", Paint::default("Socket finished").bold());
         }
     }
 }

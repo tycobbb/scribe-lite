@@ -1,2 +1,1 @@
-pub fn ignore<T>(_: T) {
-}
+pub fn ignore<T>(_: T) {}

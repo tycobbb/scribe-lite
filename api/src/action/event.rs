@@ -1,6 +1,6 @@
 use crate::domain::story as model;
 
-// types
+// -- types --
 #[derive(Debug)]
 pub enum Outbound {
     ShowQueue(model::Position),
@@ -8,22 +8,22 @@ pub enum Outbound {
     ShowThanks,
     CheckPulse,
     ShowDisconnected,
-    ShowInternalError
+    ShowInternalError,
 }
 
 #[derive(Debug)]
 pub enum Scheduled {
     FindPulse = 0,
-    TestPulse = 1
+    TestPulse = 1,
 }
 
-// impls
+// -- impls --
 impl Scheduled {
     pub fn from_raw(value: usize) -> Option<Scheduled> {
         match value {
             0 => Some(Scheduled::FindPulse),
             1 => Some(Scheduled::TestPulse),
-            _ => None
+            _ => None,
         }
     }
 }

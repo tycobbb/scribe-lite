@@ -1,15 +1,15 @@
-use crate::core::db;
-use crate::domain::story;
+use super::shared::send_position_updates_to;
+use crate::action::action::Action;
 use crate::action::event::Outbound;
 use crate::action::routes::Sink;
-use crate::action::action::Action;
-use super::shared::send_position_updates_to;
+use crate::core::db;
+use crate::domain::story;
 
-// types
+// -- types --
 #[derive(Debug)]
 pub struct Join;
 
-// impls
+// -- impls --
 impl Action for Join {
     type Args = ();
 
@@ -23,8 +23,8 @@ impl Action for Join {
 
         // find story
         let mut story = match repo.find_or_create_for_today() {
-            Ok(s)  => s,
-            Err(_) => return sink.send(Outbound::ShowInternalError)
+            Ok(s) => s,
+            Err(_) => return sink.send(Outbound::ShowInternalError),
         };
 
         // join story

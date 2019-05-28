@@ -1,12 +1,12 @@
-use crate::action::event::{ Outbound, Scheduled };
-use crate::action::routes::Sink;
 use crate::action::action::Action;
+use crate::action::event::{Outbound, Scheduled};
+use crate::action::routes::Sink;
 
-// types
+// -- types --
 #[derive(Debug)]
 pub struct FindPulse;
 
-// impls
+// -- impls --
 impl Action for FindPulse {
     type Args = ();
 
@@ -17,7 +17,6 @@ impl Action for FindPulse {
     fn call(self, sink: Sink) {
         // send message to client
         sink.send(Outbound::CheckPulse);
-
         // schedule evaluation in 30s
         sink.schedule(Scheduled::TestPulse, 30 * 1000);
     }

@@ -1,16 +1,16 @@
-use chrono::Duration;
+use super::shared::send_position_updates_to;
+use crate::action::action::Action;
+use crate::action::event::{Outbound, Scheduled};
+use crate::action::routes::Sink;
 use crate::core::db;
 use crate::domain::story;
-use crate::action::action::Action;
-use crate::action::event::{ Outbound, Scheduled };
-use crate::action::routes::Sink;
-use super::shared::send_position_updates_to;
+use chrono::Duration;
 
-// types
+// -- types --
 #[derive(Debug)]
 pub struct TestPulse;
 
-// impls
+// -- impls --
 impl Action for TestPulse {
     type Args = ();
 
@@ -24,20 +24,21 @@ impl Action for TestPulse {
 
         // find story
         let mut story = match repo.find_for_today() {
-            Ok(s)  => s,
-            Err(_) => return sink.send(Outbound::ShowInternalError)
+            Ok(s) => s,
+            Err(_) => return sink.send(Outbound::ShowInternalError),
         };
 
         // if the author is active, schedule the next pulse
-        let delta = story.active_author()
+        let delta = story
+            .active_author()
             .map(|author| author.idle_duration())
             .unwrap_or(Duration::max_value());
 
         if delta >= Duration::seconds(60) {
-            let remainder        = Duration::seconds(30) - delta;
+            let remainder = Duration::seconds(30) - delta;
             let remainder_millis = std::cmp::max(remainder.num_milliseconds(), 0);
             sink.schedule(Scheduled::FindPulse, remainder_millis as u64);
-            return
+            return;
         }
 
         // otherwise, remove the idle author

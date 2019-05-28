@@ -1,22 +1,23 @@
-use serde::{ Serialize, Deserialize };
-use crate::core::Id;
-use crate::core::socket;
 use super::action::Action;
-use super::event::{ Outbound, Scheduled };
+use super::event::{Outbound, Scheduled};
 use super::story;
+use crate::core::socket;
+use crate::core::Id;
+use serde::{Deserialize, Serialize};
 
-// types
+// -- types --
 #[derive(Clone)]
 pub struct Routes;
 
 #[derive(Clone)]
 pub struct Sink {
-    sink: socket::Sink
+    sink: socket::Sink,
 }
 
-// impls/inbound
+// -- impls --
+// -- impls/inbound
 impl socket::Routes for Routes {
-    // commands
+    // -- impls/commands
     fn connect(&self, sink: socket::Sink) {
         story::Join.call(Sink::new(sink));
     }
@@ -25,9 +26,9 @@ impl socket::Routes for Routes {
         use bind_action_from_message as route;
 
         match msg.name {
-            "ADD_LINE"   => route::<story::AddLine>(msg, sink),
+            "ADD_LINE" => route::<story::AddLine>(msg, sink),
             "SEND_PULSE" => route::<story::SavePulse>(msg, sink),
-            _            => return Ok(error!("[routes] received unknown msg={:?}", msg))
+            _ => return Ok(error!("[routes] received unknown msg={:?}", msg)),
         }
     }
 
@@ -36,12 +37,12 @@ impl socket::Routes for Routes {
 
         let scheduled = match Scheduled::from_raw(timeout.value()) {
             Some(scheduled) => scheduled,
-            None            => return Ok(error!("[routes] received unknown timeout={:?}", timeout))
+            None => return Ok(error!("[routes] received unknown timeout={:?}", timeout)),
         };
 
         match scheduled {
             Scheduled::FindPulse => route::<story::FindPulse>(sink),
-            Scheduled::TestPulse => route::<story::TestPulse>(sink)
+            Scheduled::TestPulse => route::<story::TestPulse>(sink),
         }
     }
 
@@ -50,21 +51,19 @@ impl socket::Routes for Routes {
     }
 }
 
-// impls/outbound
+// -- impls/outbound
 impl Sink {
-    // init
+    // -- impls/init --
     pub fn new(sink: socket::Sink) -> Self {
-        Sink {
-            sink: sink
-        }
+        Sink { sink: sink }
     }
 
-    // props
+    // -- impls/queries
     pub fn id(&self) -> &Id {
         &self.sink.id
     }
 
-    // commands
+    // -- impls/commands
     pub fn send(&self, event: Outbound) {
         self.send_to(self.id(), event);
     }
@@ -73,12 +72,12 @@ impl Sink {
         use bind_message_from_data as route;
 
         let message = match event {
-            Outbound::ShowQueue(d)      => route("SHOW_QUEUE", d),
-            Outbound::ShowPrompt(d)     => route("SHOW_PROMPT", d),
-            Outbound::ShowThanks        => route("SHOW_THANKS", ()),
-            Outbound::CheckPulse        => route("CHECK_PULSE", ()),
-            Outbound::ShowDisconnected  => route("SHOW_DISCONNECTED", ()),
-            Outbound::ShowInternalError => route("SHOW_INTERNAL_ERROR", ())
+            Outbound::ShowQueue(d) => route("SHOW_QUEUE", d),
+            Outbound::ShowPrompt(d) => route("SHOW_PROMPT", d),
+            Outbound::ShowThanks => route("SHOW_THANKS", ()),
+            Outbound::CheckPulse => route("CHECK_PULSE", ()),
+            Outbound::ShowDisconnected => route("SHOW_DISCONNECTED", ()),
+            Outbound::ShowInternalError => route("SHOW_INTERNAL_ERROR", ()),
         };
 
         self.sink.send_to(id, message);
@@ -94,29 +93,37 @@ impl Sink {
     }
 }
 
-// impls/binding
-fn bind_action<'a, A>(args: A::Args, sink: socket::Sink) where A: Action {
+// -- impls/binding
+fn bind_action<'a, A>(args: A::Args, sink: socket::Sink)
+where
+    A: Action,
+{
     let action = A::new(args);
     action.call(Sink::new(sink));
 }
 
 fn bind_action_from_message<'a, A>(
-    msg:  socket::MessageIn<'a>,
-    sink: socket::Sink
-) -> socket::Result<()> where A: Action, A::Args: Deserialize<'a> {
+    msg: socket::MessageIn<'a>,
+    sink: socket::Sink,
+) -> socket::Result<()>
+where
+    A: Action,
+    A::Args: Deserialize<'a>,
+{
     msg.decode_args().map(|args| bind_action::<A>(args, sink))
 }
 
-fn bind_action_from_empty<'a, A>(
-    sink: socket::Sink
-) -> socket::Result<()> where A: Action<Args=()> {
+fn bind_action_from_empty<'a, A>(sink: socket::Sink) -> socket::Result<()>
+where
+    A: Action<Args = ()>,
+{
     bind_action::<A>((), sink);
     Ok(())
 }
 
-fn bind_message_from_data<T>(
-    name:  &str,
-    value: T
-) -> socket::Result<socket::MessageOut> where T: Serialize {
+fn bind_message_from_data<T>(name: &str, value: T) -> socket::Result<socket::MessageOut>
+where
+    T: Serialize,
+{
     socket::MessageOut::encoding_data(name.to_owned(), value)
 }
