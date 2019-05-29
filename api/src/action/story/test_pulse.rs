@@ -25,7 +25,7 @@ impl Action for TestPulse {
         // find story
         let mut story = match repo.find_for_today() {
             Ok(s) => s,
-            Err(_) => return sink.send(Outbound::ShowInternalError),
+            Err(error) => return sink.send(Outbound::show_error(&error)),
         };
 
         // if the author is active, schedule the next pulse
@@ -44,8 +44,8 @@ impl Action for TestPulse {
         // otherwise, remove the idle author
         story.remove_active_author();
 
-        if let Err(_) = repo.save_queue(&mut story) {
-            return sink.send(Outbound::ShowInternalError);
+        if let Err(error) = repo.save_queue(&mut story) {
+            return sink.send(Outbound::show_error(&error));
         }
 
         // send updates to story authors

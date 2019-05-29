@@ -18,22 +18,23 @@ pub struct Sink {
 // -- impls/inbound
 impl socket::Routes for Routes {
     // -- impls/commands
-    fn connect(&self, sink: socket::Sink) {
-        story::Join.call(Sink::new(sink));
+    fn on_connect(&self, sink: socket::Sink) -> socket::Result<()> {
+        use bind_action_from_empty as bind;
+        bind::<story::Join>(sink)
     }
 
     fn on_message<'a>(&self, msg: socket::MessageIn<'a>, sink: socket::Sink) -> socket::Result<()> {
-        use bind_action_from_message as route;
+        use bind_action_from_message as bind;
 
         match msg.name {
-            "ADD_LINE" => route::<story::AddLine>(msg, sink),
-            "SEND_PULSE" => route::<story::SavePulse>(msg, sink),
+            "ADD_LINE" => bind::<story::AddLine>(msg, sink),
+            "SEND_PULSE" => bind::<story::SavePulse>(msg, sink),
             _ => return Ok(error!("[routes] received unknown msg={:?}", msg)),
         }
     }
 
     fn on_timeout(&self, timeout: socket::Timeout, sink: socket::Sink) -> socket::Result<()> {
-        use bind_action_from_empty as route;
+        use bind_action_from_empty as bind;
 
         let scheduled = match Scheduled::from_raw(timeout.value()) {
             Some(scheduled) => scheduled,
@@ -41,13 +42,14 @@ impl socket::Routes for Routes {
         };
 
         match scheduled {
-            Scheduled::FindPulse => route::<story::FindPulse>(sink),
-            Scheduled::TestPulse => route::<story::TestPulse>(sink),
+            Scheduled::FindPulse => bind::<story::FindPulse>(sink),
+            Scheduled::TestPulse => bind::<story::TestPulse>(sink),
         }
     }
 
-    fn disconnect(&self, sink: socket::Sink) {
-        story::Leave.call(Sink::new(sink));
+    fn on_disconnect(&self, sink: socket::Sink) -> socket::Result<()> {
+        use bind_action_from_empty as bind;
+        bind::<story::Leave>(sink)
     }
 }
 
@@ -69,15 +71,15 @@ impl Sink {
     }
 
     pub fn send_to(&self, id: &Id, event: Outbound) {
-        use bind_message_from_data as route;
+        use bind_message_from_data as bind;
 
         let message = match event {
-            Outbound::ShowQueue(d) => route("SHOW_QUEUE", d),
-            Outbound::ShowPrompt(d) => route("SHOW_PROMPT", d),
-            Outbound::ShowThanks => route("SHOW_THANKS", ()),
-            Outbound::CheckPulse => route("CHECK_PULSE", ()),
-            Outbound::ShowDisconnected => route("SHOW_DISCONNECTED", ()),
-            Outbound::ShowInternalError => route("SHOW_INTERNAL_ERROR", ()),
+            Outbound::ShowQueue(d) => bind("SHOW_QUEUE", d),
+            Outbound::ShowPrompt(d) => bind("SHOW_PROMPT", d),
+            Outbound::ShowThanks => bind("SHOW_THANKS", ()),
+            Outbound::CheckPulse => bind("CHECK_PULSE", ()),
+            Outbound::ShowDisconnected => bind("SHOW_DISCONNECTED", ()),
+            Outbound::ShowInternalError(d) => bind("SHOW_INTERNAL_ERROR", d),
         };
 
         self.sink.send_to(id, message);

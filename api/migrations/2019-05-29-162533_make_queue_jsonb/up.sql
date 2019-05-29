@@ -1,0 +1,2 @@
+ALTER TABLE stories
+  ALTER COLUMN queue SET DATA TYPE jsonb;

@@ -43,9 +43,7 @@ impl Record {
 impl Queue {
     pub fn from_column(column: Column) -> Self {
         let record = Record::decode(column);
-
         let author_ids = record.author_ids.into_iter().map(Id::from);
-
         let author_rustle_time = DateTime::from_utc(record.author_rustle_time, Utc);
 
         Queue::new(author_ids.collect(), author_rustle_time)
@@ -53,7 +51,6 @@ impl Queue {
 
     pub fn into_column(&self) -> Column {
         let author_ids = self.author_ids.iter().map(|id| id.into());
-
         let author_rustle_time = self.author_rustle_time.naive_utc();
 
         let record: Record = Record {

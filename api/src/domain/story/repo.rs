@@ -23,9 +23,7 @@ impl<'a> Repo<'a> {
     pub fn save_queue(&self, story: &mut Story) -> QueryResult<()> {
         use crate::core::db::schema::stories;
 
-        let target = stories::table.filter(stories::id.eq(i32::from(&story.id)));
-
-        let updated = diesel::update(target)
+        let updated = diesel::update(stories::table.filter(stories::id.eq(i32::from(&story.id))))
             .set(story.make_queue_changeset())
             .execute(self.conn);
 

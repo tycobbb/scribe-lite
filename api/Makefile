@@ -1,7 +1,7 @@
 include ../Makefile.base.mk
 
 # -- cosmetics --
-help-column-width = 10
+help-column-width = 15
 
 # -- start/stop --
 ## starts the api server
@@ -25,13 +25,22 @@ v/format:
 .PHONY: v/format
 
 ## fixes any formatting errors
-v/f/fix:
+v/format/fix:
 	$(format)
-.PHONY: v/f/fix
+.PHONY: v/format/fix
 
 format = rustfmt ./**/*.rs
 
 # -- db --
+## alias for db/log
+db: db/log
+.PHONY: db
+
+## tails the postgres log
+db/log:
+	tail -f /usr/local/var/log/postgres.log
+.PHONY: db/log
+
 ## resets the database
 db/reset:
 	diesel database reset
@@ -43,16 +52,16 @@ db/migrate:
 .PHONY: db/migrate
 
 ## creates a new database migration
-db/m/new:
+db/migrate/new:
 	diesel migration generate PLACEHOLDERS
-.PHONY: db/m/new
+.PHONY: db/migrate/new
 
-## re-runs the most recent migration
-db/m/redo:
-	diesel migration redo
-.PHONY: db/m/redo
-
-## rolls back the most recent migration
-db/m/undo:
+## rollback the most recent migration
+db/migrate/undo:
 	diesel migration revert
-.PHONY: db/m/undo
+.PHONY: db/migrate/undo
+
+## rollback and re-apply the most recent migration
+db/migrate/redo:
+	diesel migration redo
+.PHONY: db/migrate/redo

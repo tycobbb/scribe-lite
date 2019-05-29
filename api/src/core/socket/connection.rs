@@ -38,7 +38,12 @@ where
     R: Routes,
 {
     fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
-        self.routes.connect(self.sink.clone());
+        let handled = self.routes.on_connect(self.sink.clone());
+
+        if let Err(error) = handled {
+            self.sink.send_to(self.id(), Err(error))
+        }
+
         Ok(())
     }
 
@@ -71,6 +76,10 @@ where
     }
 
     fn on_close(&mut self, _: ws::CloseCode, _: &str) {
-        self.routes.disconnect(self.sink.clone());
+        let handled = self.routes.on_disconnect(self.sink.clone());
+
+        if let Err(error) = handled {
+            self.sink.send_to(self.id(), Err(error))
+        }
     }
 }

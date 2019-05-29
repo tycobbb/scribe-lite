@@ -1,4 +1,4 @@
-use super::line;
+use super::line::{self, Line};
 use super::queue;
 use super::story::Story;
 use crate::core::db::schema::stories;
@@ -42,8 +42,9 @@ impl Story {
     }
 
     pub fn from_record(record: Record, lines: Vec<line::Record>) -> Self {
-        let lines = lines.into_iter().map(line::Line::from_record);
+        let lines = lines.into_iter().map(Line::from_record);
         let queue = queue::Queue::from_column(record.queue);
+
         Story::new(Id::from(record.id), queue, lines.collect())
     }
 

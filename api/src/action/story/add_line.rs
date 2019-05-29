@@ -34,15 +34,15 @@ impl Action for AddLine {
         // find story
         let mut story = match repo.find_for_today() {
             Ok(s) => s,
-            Err(_) => return sink.send(Outbound::ShowInternalError),
+            Err(error) => return sink.send(Outbound::show_error(&error)),
         };
 
         // finalize the author's line
         story.add_line(self.line.text, self.line.name, self.line.email);
         story.leave(sink.id().into());
 
-        if let Err(_) = repo.save_queue_and_new_line(&mut story) {
-            return sink.send(Outbound::ShowInternalError);
+        if let Err(error) = repo.save_queue_and_new_line(&mut story) {
+            return sink.send(Outbound::show_error(&error));
         }
 
         // send updates to story authors

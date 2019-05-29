@@ -24,14 +24,14 @@ impl Action for Join {
         // find story
         let mut story = match repo.find_or_create_for_today() {
             Ok(s) => s,
-            Err(_) => return sink.send(Outbound::ShowInternalError),
+            Err(error) => return sink.send(Outbound::show_error(&error)),
         };
 
         // join story
         story.join(sink.id().into());
 
-        if let Err(_) = repo.save_queue(&mut story) {
-            return sink.send(Outbound::ShowInternalError);
+        if let Err(error) = repo.save_queue(&mut story) {
+            return sink.send(Outbound::show_error(&error));
         }
 
         // send updates to story authors
