@@ -30,10 +30,9 @@ impl Action for SavePulse {
         let repo = story::Repo::new(&conn);
 
         // find story
-        let mut story = match repo.find_for_today() {
-            Ok(s) => s,
-            Err(error) => return sink.send(Outbound::show_error(&error)),
-        };
+        let mut story = guard!(repo.find_for_today(), else |error| {
+            return sink.send(Outbound::show_error(&error))
+        });
 
         // update the author's pulse
         story.rustle_active_author(DateTime::from_utc(self.pulse.timestamp, Utc));

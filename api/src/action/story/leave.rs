@@ -22,10 +22,9 @@ impl Action for Leave {
         let repo = story::Repo::new(&conn);
 
         // find story
-        let mut story = match repo.find_for_today() {
-            Ok(s) => s,
-            Err(error) => return sink.send(Outbound::show_error(&error)),
-        };
+        let mut story = guard!(repo.find_for_today(), else |error| {
+            return sink.send(Outbound::show_error(&error))
+        });
 
         // leave story
         story.leave(sink.id());

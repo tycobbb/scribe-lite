@@ -23,10 +23,9 @@ impl Action for TestPulse {
         let repo = story::Repo::new(&conn);
 
         // find story
-        let mut story = match repo.find_for_today() {
-            Ok(s) => s,
-            Err(error) => return sink.send(Outbound::show_error(&error)),
-        };
+        let mut story = guard!(repo.find_for_today(), else |error| {
+            return sink.send(Outbound::show_error(&error))
+        });
 
         // if the author is active, schedule the next pulse
         let delta = story

@@ -58,10 +58,10 @@ impl Clients {
         F: FnOnce(&Client),
     {
         let clients = self.clients.borrow();
+        let client = guard!(clients.get(id), else {
+            return error!("[socket] attempted to send to unknown client id={:?}", id)
+        });
 
-        match clients.get(id) {
-            Some(client) => handler(client),
-            None => error!("[socket] attempted to send to unknown client id={:?}", id),
-        };
+        handler(client);
     }
 }

@@ -32,10 +32,9 @@ impl Action for AddLine {
         let repo = story::Repo::new(&conn);
 
         // find story
-        let mut story = match repo.find_for_today() {
-            Ok(s) => s,
-            Err(error) => return sink.send(Outbound::show_error(&error)),
-        };
+        let mut story = guard!(repo.find_for_today(), else |error| {
+            return sink.send(Outbound::show_error(&error))
+        });
 
         // finalize the author's line
         story.add_line(self.line.text, self.line.name, self.line.email);

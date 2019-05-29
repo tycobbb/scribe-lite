@@ -34,10 +34,9 @@ impl<'a> Repo<'a> {
     pub fn save_new_line(&self, story: &mut Story) -> QueryResult<()> {
         use crate::core::db::schema::lines;
 
-        let new_line = match story.new_line() {
-            Some(line) => line,
-            None => return Ok(()),
-        };
+        let new_line = guard!(story.new_line(), else {
+            return Ok(())
+        });
 
         let inserted = new_line
             .into_new_record(&story.id)

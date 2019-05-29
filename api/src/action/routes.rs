@@ -36,10 +36,9 @@ impl socket::Routes for Routes {
     fn on_timeout(&self, timeout: socket::Timeout, sink: socket::Sink) -> socket::Result<()> {
         use bind_action_from_empty as bind;
 
-        let scheduled = match Scheduled::from_raw(timeout.value()) {
-            Some(scheduled) => scheduled,
-            None => return Ok(error!("[routes] received unknown timeout={:?}", timeout)),
-        };
+        let scheduled = guard!(Scheduled::from_raw(timeout.value()), else {
+            return Ok(error!("[routes] received unknown timeout={:?}", timeout))
+        });
 
         match scheduled {
             Scheduled::FindPulse => bind::<story::FindPulse>(sink),

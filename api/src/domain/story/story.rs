@@ -50,17 +50,19 @@ impl Story {
 
     // -- impls/queries/lines
     pub fn new_line(&self) -> Option<&Line> {
-        match self.has_new_line {
-            true => self.lines.last(),
-            false => None,
+        if !self.has_new_line {
+            return None;
+        } else {
+            self.lines.last()
         }
     }
 
     pub fn next_line_prompt(&self) -> Prompt {
-        match self.lines.last() {
-            Some(line) => Prompt::from_line(line),
-            None => Prompt::default(),
-        }
+        let line = guard!(self.lines.last(), else {
+            return Prompt::default()
+        });
+
+        Prompt::from_line(line)
     }
 
     // -- impls/queries/queue

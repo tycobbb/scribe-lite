@@ -8,6 +8,8 @@ extern crate log;
 extern crate diesel;
 
 // modules
+#[macro_use]
+mod syntax;
 mod action;
 mod core;
 mod domain;

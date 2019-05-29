@@ -40,10 +40,11 @@ impl Queue {
             return warn!("[story] attempted to leave an empty queue");
         }
 
-        match self.author_ids.iter().position(|id| id == author_id) {
-            Some(i) => self.remove_author_at(i),
-            None => warn!("[story] attempted to remove an author that was not in the queue"),
-        };
+        let pos = guard!(self.author_ids.iter().position(|id| id == author_id), else {
+            return warn!("[story] attempted to remove an author that was not in the queue")
+        });
+
+        self.remove_author_at(pos);
     }
 
     fn remove_author_at(&mut self, index: usize) {
@@ -104,10 +105,9 @@ impl Queue {
     }
 
     pub fn authors_with_new_positions(&self) -> Vec<Author> {
-        let index = match self.removed_author_index {
-            Some(index) => index,
-            None => return Vec::new(),
-        };
+        let index = guard!(self.removed_author_index, else {
+            return Vec::new()
+        });
 
         self.author_ids[index..]
             .iter()

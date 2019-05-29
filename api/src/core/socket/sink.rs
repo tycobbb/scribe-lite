@@ -34,10 +34,9 @@ impl Sink {
         }
 
         // extract message text, if possible
-        let text = match encoded {
-            Ok(text) => text,
-            Err(error) => return error!("[socket] failed to encode internal error: {:?}", error),
-        };
+        let text = guard!(encoded, else |err| {
+            return error!("[socket] failed to encode internal error: {:?}", err)
+        });
 
         self.clients.send_to(id, ws::Message::text(text));
     }
