@@ -1,11 +1,12 @@
 module State exposing (..)
 
+-- types --
 type alias Pair a m =
   ( a
   , Cmd m
   )
 
--- initialization
+-- impls/init --
 just : a -> Pair a m
 just =
   withCmd Cmd.none

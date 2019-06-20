@@ -3,7 +3,6 @@ use crate::action::event::Outbound;
 use crate::action::routes::Sink;
 use crate::core::db;
 use crate::domain::story;
-use chrono::{DateTime, NaiveDateTime, Utc};
 use serde_derive::Deserialize;
 
 // -- types --
@@ -14,7 +13,7 @@ pub struct SavePulse {
 
 #[derive(Debug, Deserialize)]
 pub struct Pulse {
-    timestamp: NaiveDateTime,
+    timestamp: i64,
 }
 
 // -- impls --
@@ -35,7 +34,7 @@ impl Action for SavePulse {
         });
 
         // update the author's pulse
-        story.rustle_active_author(DateTime::from_utc(self.pulse.timestamp, Utc));
+        story.update_active_author_pulse(self.pulse.timestamp);
 
         if let Err(error) = repo.save_queue(&mut story) {
             return sink.send(Outbound::show_error(&error));

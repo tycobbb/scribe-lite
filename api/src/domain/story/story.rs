@@ -2,7 +2,6 @@ use super::line::Line;
 use super::prompt::Prompt;
 use super::queue::{ActiveAuthor, Author, Queue};
 use crate::domain::Id;
-use chrono::{DateTime, Utc};
 
 // -- types --
 #[derive(Debug)]
@@ -40,8 +39,8 @@ impl Story {
         self.queue.remove_author(author_id);
     }
 
-    pub fn rustle_active_author(&mut self, time: DateTime<Utc>) {
-        self.queue.rustle_active_author(time);
+    pub fn update_active_author_pulse(&mut self, millis: i64) {
+        self.queue.update_active_author_pulse(millis);
     }
 
     pub fn remove_active_author(&mut self) {

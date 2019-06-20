@@ -1,6 +1,6 @@
 use super::queue::Queue;
 use crate::domain::Id;
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::Utc;
 use serde_derive::{Deserialize, Serialize};
 use serde_json as json;
 
@@ -10,7 +10,7 @@ pub type Column = json::Value;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Record {
     pub author_ids: Vec<i32>,
-    pub author_rustle_time: NaiveDateTime,
+    pub author_pulse_millis: i64,
 }
 
 // -- impls --
@@ -19,7 +19,7 @@ pub struct Record {
 pub fn initial_column_value() -> Column {
     let record = Record {
         author_ids: Vec::new(),
-        author_rustle_time: Utc::now().naive_utc(),
+        author_pulse_millis: Utc::now().timestamp_millis(),
     };
 
     record.encode()
@@ -44,18 +44,16 @@ impl Queue {
     pub fn from_column(column: Column) -> Self {
         let record = Record::decode(column);
         let author_ids = record.author_ids.into_iter().map(Id::from);
-        let author_rustle_time = DateTime::from_utc(record.author_rustle_time, Utc);
 
-        Queue::new(author_ids.collect(), author_rustle_time)
+        Queue::new(author_ids.collect(), record.author_pulse_millis)
     }
 
     pub fn into_column(&self) -> Column {
         let author_ids = self.author_ids.iter().map(|id| id.into());
-        let author_rustle_time = self.author_rustle_time.naive_utc();
 
         let record: Record = Record {
             author_ids: author_ids.collect(),
-            author_rustle_time: author_rustle_time,
+            author_pulse_millis: self.author_pulse_millis,
         };
 
         record.encode()

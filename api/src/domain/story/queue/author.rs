@@ -1,5 +1,5 @@
 use crate::domain::Id;
-use chrono::{DateTime, Duration, Utc};
+use chrono::Utc;
 use serde_derive::Serialize;
 
 // -- types --
@@ -12,7 +12,7 @@ pub enum Author<'a> {
 #[derive(Debug)]
 pub struct ActiveAuthor<'a> {
     pub id: &'a Id,
-    pub rustle_time: &'a DateTime<Utc>,
+    pub pulse_millis: i64,
 }
 
 #[derive(Debug)]
@@ -29,8 +29,8 @@ pub struct Position {
 // -- impls --
 impl<'a> Author<'a> {
     // factories
-    pub fn active(id: &'a Id, rustle_time: &'a DateTime<Utc>) -> Author<'a> {
-        Author::Active(ActiveAuthor::new(id, rustle_time))
+    pub fn active(id: &'a Id, pulse_millis: i64) -> Author<'a> {
+        Author::Active(ActiveAuthor::new(id, pulse_millis))
     }
 
     pub fn queued(id: &'a Id, behind: usize) -> Author<'a> {
@@ -39,16 +39,16 @@ impl<'a> Author<'a> {
 }
 
 impl<'a> ActiveAuthor<'a> {
-    pub fn new(id: &'a Id, rustle_time: &'a DateTime<Utc>) -> ActiveAuthor<'a> {
+    pub fn new(id: &'a Id, pulse_millis: i64) -> ActiveAuthor<'a> {
         ActiveAuthor {
             id: id,
-            rustle_time: rustle_time,
+            pulse_millis: pulse_millis,
         }
     }
 
     // -- impls/queries
-    pub fn idle_duration(&self) -> Duration {
-        Utc::now() - *self.rustle_time
+    pub fn idle_millis(&self) -> i64 {
+        std::cmp::max(Utc::now().timestamp_millis() - self.pulse_millis, 0)
     }
 }
 

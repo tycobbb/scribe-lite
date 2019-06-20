@@ -3,11 +3,11 @@ port module Socket exposing (MessageOut, Event, send, recv, push, subscribe)
 import Json.Encode as JE
 import Json.Decode as JD
 
--- ports
+-- ports --
 port send : JE.Value -> Cmd msg
 port recv : (JD.Value -> msg) -> Sub msg
 
--- types
+-- types --
 type alias Event a =
   { name    : String
   , decoder : JD.Decoder a
@@ -31,13 +31,14 @@ type Error
   = MismatchedEvent
   | DecodeFailed JD.Error
 
--- commands/push
+-- impls --
+-- impls/push
 push : MessageOut -> Cmd msg
 push message =
   encodeMessage message
     |> send
 
--- commands/subscribe
+-- impls/subscribe
 subscribe : (a -> msg) -> msg -> Event a -> Sub msg
 subscribe toMsg toIgnore event =
   recv (\data ->

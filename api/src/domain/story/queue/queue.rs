@@ -1,22 +1,22 @@
 use super::author::{ActiveAuthor, Author};
 use crate::domain::Id;
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 
 // -- types --
 #[derive(Debug)]
 pub struct Queue {
     pub(super) author_ids: Vec<Id>,
-    pub(super) author_rustle_time: DateTime<Utc>,
+    pub(super) author_pulse_millis: i64,
     pub has_new_author: bool,
     removed_author_index: Option<usize>,
 }
 
 // -- impls --
 impl Queue {
-    pub fn new(author_ids: Vec<Id>, author_rustle_time: DateTime<Utc>) -> Self {
+    pub fn new(author_ids: Vec<Id>, author_pulse_millis: i64) -> Self {
         Queue {
             author_ids: author_ids,
-            author_rustle_time: author_rustle_time,
+            author_pulse_millis: author_pulse_millis,
             has_new_author: false,
             removed_author_index: None,
         }
@@ -31,7 +31,7 @@ impl Queue {
 
         // if the active author joined, reset timer
         if self.author_ids.len() == 1 {
-            self.author_rustle_time = Utc::now();
+            self.author_pulse_millis = Utc::now().timestamp_millis();
         }
     }
 
@@ -55,17 +55,17 @@ impl Queue {
 
         // if the active author was removed, reset timer
         if index == 0 {
-            self.author_rustle_time = Utc::now();
+            self.author_pulse_millis = Utc::now().timestamp_millis();
         }
     }
 
     // -- impls/commands/pulse
-    pub fn rustle_active_author(&mut self, time: DateTime<Utc>) {
+    pub fn update_active_author_pulse(&mut self, millis: i64) {
         if self.author_ids.is_empty() {
-            return warn!("[story] attempted to rustle the active author of an empty queue");
+            return warn!("[story] attempted to update the pulse for the author an empty queue");
         }
 
-        self.author_rustle_time = time;
+        self.author_pulse_millis = millis;
     }
 
     pub fn remove_active_author(&mut self) {
@@ -85,7 +85,7 @@ impl Queue {
 
         Some(ActiveAuthor::new(
             &self.author_ids[0],
-            &self.author_rustle_time,
+            self.author_pulse_millis,
         ))
     }
 
@@ -119,7 +119,7 @@ impl Queue {
     // -- impls/queries/helpers
     fn make_author<'a>(&'a self, id: &'a Id, index: usize) -> Author<'a> {
         if index == 0 {
-            Author::active(id, &self.author_rustle_time)
+            Author::active(id, self.author_pulse_millis)
         } else {
             Author::queued(id, index)
         }

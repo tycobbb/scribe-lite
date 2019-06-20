@@ -1,12 +1,15 @@
 module Scenes.Story.Story exposing (State, Model, Msg, init, subscriptions, update, view, background)
 
-import Browser.Navigation as Nav
+import Browser.Events
+import Browser.Navigation
 import Css exposing (..)
 import Html.Styled as H exposing (Html)
 import Html.Styled.Attributes exposing (attribute, placeholder, value)
 import Html.Styled.Events exposing (onInput, onSubmit)
 import Json.Encode as JE
 import Json.Decode as JD exposing (field)
+import Task
+import Time
 
 import Session exposing (Session)
 import Socket
@@ -20,12 +23,12 @@ import Scenes.Story.Editor as Editor
 import Views.Scene as Scene
 import Views.Button as Button
 
--- constants
+-- constants --
 background : Color
 background =
   Colors.secondaryBackground
 
--- state
+-- state --
 type alias State =
   State.Pair Model Msg
 
@@ -34,26 +37,28 @@ init =
   Editor.init
     |> State.map initModel EditorMsg
 
--- model
+-- model --
 type alias Model =
-  { editor   : Editor.Model
-  , isQueued : Bool
-  , date     : String
-  , title    : String
-  , subtitle : String
-  , email    : String
-  , name     : String
+  { editor     : Editor.Model
+  , isQueued   : Bool
+  , date       : String
+  , title      : String
+  , subtitle   : String
+  , email      : String
+  , name       : String
+  , rustleTime : Maybe Time.Posix
   }
 
 initModel : Editor.Model -> Model
 initModel editor =
-  { editor   = editor
-  , isQueued = True
-  , date     = "Friday May 24 (2017)"
-  , title    = ""
-  , subtitle = ""
-  , email    = ""
-  , name     = ""
+  { editor     = editor
+  , isQueued   = True
+  , date       = "Friday May 24 (2017)"
+  , title      = ""
+  , subtitle   = ""
+  , email      = ""
+  , name       = ""
+  , rustleTime = Nothing
   }
 
 -- model/queries
@@ -102,7 +107,7 @@ toOrdinal number =
       (_, 3) -> string ++ "rd"
       (_, _) -> string ++ "th"
 
--- update
+-- update --
 type Msg
   = ChangeEmail String
   | ChangeName String
@@ -111,6 +116,8 @@ type Msg
   | ShowPrompt Prompt
   | ShowThanks Bool
   | CheckPulse Bool
+  | RecordPulse1
+  | RecordPulse2 Time.Posix
   | EditorMsg Editor.Msg
   | Ignored
 
@@ -136,26 +143,35 @@ update session msg model =
         |> State.withoutCmd
     ShowThanks _ ->
       model
-        |> State.withCmd (Nav.replaceUrl session.key "/thanks")
+        |> State.withCmd (Browser.Navigation.replaceUrl session.key "/thanks")
     CheckPulse _ ->
-      Debug.log "Story" "Checking pulse..."
-        |> always (State.just model)
+      model
+        |> State.withCmd (sendPulse model)
+    RecordPulse1 ->
+      model
+        |> State.withCmd (Task.perform RecordPulse2 Time.now)
+    RecordPulse2 rustleTime ->
+      { model | rustleTime = Just rustleTime }
+        |> State.withoutCmd
     EditorMsg lineMsg ->
       State.just model
         |> State.merge setEditor EditorMsg (Editor.update lineMsg model.editor)
     Ignored ->
       State.just model
 
--- subscriptions
+-- subs --
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
     [ showQueue
     , showPrompt
     , showThanks
+    , checkPulse
+    , recordPulse
     ]
 
--- socket/in/SHOW_QUEUE
+-- impls --
+-- impls/prompt
 type alias Position =
   { behind : Int
   }
@@ -171,7 +187,6 @@ showQueue =
       |> Socket.Event "SHOW_QUEUE"
       |> Socket.subscribe ShowQueue Ignored
 
--- socket/in/SHOW_PREVIOUS_LINE
 type alias Prompt =
   { text : String
   , name : Maybe String
@@ -189,14 +204,37 @@ showPrompt =
       |> Socket.Event "SHOW_PROMPT"
       |> Socket.subscribe ShowPrompt Ignored
 
--- socket/in/CHECK_PULSE
+-- impls/pulse
 checkPulse : Sub Msg
 checkPulse =
   JD.null True
     |> Socket.Event "CHECK_PULSE"
     |> Socket.subscribe CheckPulse Ignored
 
--- socket/out/ADD_LINE
+recordPulse : Sub Msg
+recordPulse =
+  Sub.batch
+    [ Browser.Events.onMouseMove (JD.succeed RecordPulse1)
+    , Browser.Events.onKeyPress (JD.succeed RecordPulse1)
+    ]
+
+sendPulse : Model -> Cmd Msg
+sendPulse model =
+  let
+    encodePulse timestamp =
+      JE.object
+        [ ("timestamp", JE.int (Time.posixToMillis timestamp))
+        ]
+    pushPulse timestamp =
+      encodePulse timestamp
+        |> Socket.MessageOut "SEND_PULSE"
+        |> Socket.push
+  in
+    model.rustleTime
+      |> Maybe.map pushPulse
+      |> Maybe.withDefault Cmd.none
+
+-- impls/add-line
 addLine : Model -> Cmd Msg
 addLine model =
   let
@@ -211,14 +249,13 @@ addLine model =
       |> Socket.MessageOut "ADD_LINE"
       |> Socket.push
 
--- socket/in/SHOW_THANKS
 showThanks : Sub Msg
 showThanks =
   JD.null True
     |> Socket.Event "SHOW_THANKS"
     |> Socket.subscribe ShowThanks Ignored
 
--- view
+-- view --
 view : Model -> Html Msg
 view model =
   Scene.view []

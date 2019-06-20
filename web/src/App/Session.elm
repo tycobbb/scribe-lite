@@ -1,7 +1,8 @@
 module Session exposing (..)
 
-import Browser.Navigation as Nav
+import Browser.Navigation
 
+-- types --
 type alias Session =
-  { key : Nav.Key
+  { key : Browser.Navigation.Key
   }
