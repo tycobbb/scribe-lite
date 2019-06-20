@@ -47,8 +47,16 @@ impl<'a> ActiveAuthor<'a> {
     }
 
     // -- impls/queries
+    pub fn is_idle(&self) -> bool {
+        self.idle_millis() >= 60 * 1000
+    }
+
     pub fn idle_millis(&self) -> i64 {
         std::cmp::max(Utc::now().timestamp_millis() - self.pulse_millis, 0)
+    }
+
+    pub fn find_pulse_at_millis(&self) -> i64 {
+        std::cmp::max(30 * 1000 - self.idle_millis(), 0)
     }
 }
 

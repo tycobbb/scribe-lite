@@ -39,26 +39,26 @@ init =
 
 -- model --
 type alias Model =
-  { editor     : Editor.Model
-  , isQueued   : Bool
-  , date       : String
-  , title      : String
-  , subtitle   : String
-  , email      : String
-  , name       : String
-  , rustleTime : Maybe Time.Posix
+  { editor   : Editor.Model
+  , isQueued : Bool
+  , date     : String
+  , title    : String
+  , subtitle : String
+  , email    : String
+  , name     : String
+  , activeAt : Maybe Time.Posix
   }
 
 initModel : Editor.Model -> Model
 initModel editor =
-  { editor     = editor
-  , isQueued   = True
-  , date       = "Friday May 24 (2017)"
-  , title      = ""
-  , subtitle   = ""
-  , email      = ""
-  , name       = ""
-  , rustleTime = Nothing
+  { editor   = editor
+  , isQueued = True
+  , date     = "Friday May 24 (2017)"
+  , title    = ""
+  , subtitle = ""
+  , email    = ""
+  , name     = ""
+  , activeAt = Nothing
   }
 
 -- model/queries
@@ -115,9 +115,9 @@ type Msg
   | ShowQueue Position
   | ShowPrompt Prompt
   | ShowThanks Bool
-  | CheckPulse Bool
-  | RecordPulse1
-  | RecordPulse2 Time.Posix
+  | FindPulse Bool
+  | RecordActivity
+  | RecordActivityTime Time.Posix
   | EditorMsg Editor.Msg
   | Ignored
 
@@ -144,14 +144,14 @@ update session msg model =
     ShowThanks _ ->
       model
         |> State.withCmd (Browser.Navigation.replaceUrl session.key "/thanks")
-    CheckPulse _ ->
+    FindPulse _ ->
       model
-        |> State.withCmd (sendPulse model)
-    RecordPulse1 ->
+        |> State.withCmd (savePulse model)
+    RecordActivity ->
       model
-        |> State.withCmd (Task.perform RecordPulse2 Time.now)
-    RecordPulse2 rustleTime ->
-      { model | rustleTime = Just rustleTime }
+        |> State.withCmd (Task.perform RecordActivityTime Time.now)
+    RecordActivityTime activeAt ->
+      { model | activeAt = Just activeAt }
         |> State.withoutCmd
     EditorMsg lineMsg ->
       State.just model
@@ -166,8 +166,8 @@ subscriptions model =
     [ showQueue
     , showPrompt
     , showThanks
-    , checkPulse
-    , recordPulse
+    , findPulse
+    , recordActivity
     ]
 
 -- impls --
@@ -204,34 +204,35 @@ showPrompt =
       |> Socket.Event "SHOW_PROMPT"
       |> Socket.subscribe ShowPrompt Ignored
 
--- impls/pulse
-checkPulse : Sub Msg
-checkPulse =
-  JD.null True
-    |> Socket.Event "CHECK_PULSE"
-    |> Socket.subscribe CheckPulse Ignored
-
-recordPulse : Sub Msg
-recordPulse =
+-- impls/activity
+recordActivity : Sub Msg
+recordActivity =
   Sub.batch
-    [ Browser.Events.onMouseMove (JD.succeed RecordPulse1)
-    , Browser.Events.onKeyPress (JD.succeed RecordPulse1)
+    [ Browser.Events.onMouseMove (JD.succeed RecordActivity)
+    , Browser.Events.onKeyPress (JD.succeed RecordActivity)
     ]
 
-sendPulse : Model -> Cmd Msg
-sendPulse model =
+-- impls/pulse
+findPulse : Sub Msg
+findPulse =
+  JD.null True
+    |> Socket.Event "FIND_PULSE"
+    |> Socket.subscribe FindPulse Ignored
+
+savePulse : Model -> Cmd Msg
+savePulse model =
   let
     encodePulse timestamp =
       JE.object
-        [ ("timestamp", JE.int (Time.posixToMillis timestamp))
+        [ ("millis", JE.int (Time.posixToMillis timestamp))
         ]
-    pushPulse timestamp =
-      encodePulse timestamp
-        |> Socket.MessageOut "SEND_PULSE"
+    pushPulse data =
+      data
+        |> Socket.MessageOut "SAVE_PULSE"
         |> Socket.push
   in
-    model.rustleTime
-      |> Maybe.map pushPulse
+    model.activeAt
+      |> Maybe.map (encodePulse >> pushPulse)
       |> Maybe.withDefault Cmd.none
 
 -- impls/add-line

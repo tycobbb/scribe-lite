@@ -30,13 +30,12 @@ impl Action for TestPulse {
             return
         });
 
-        // if the author is active
-        let idle_millis = active_author.idle_millis();
-
-        if idle_millis <= 60 * 1000 {
-            // schedule the next pulse check
-            let remainder = std::cmp::max(30 * 1000 - idle_millis, 0);
-            sink.schedule(Scheduled::FindPulse, remainder as u64);
+        // if the author was active in the last 60s
+        if !active_author.is_idle() {
+            sink.schedule(
+                Scheduled::FindPulse,
+                active_author.find_pulse_at_millis() as u64,
+            );
         } else {
             // otherwise, remove the idle author
             story.remove_active_author();

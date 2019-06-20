@@ -25,21 +25,19 @@ impl socket::Routes for Routes {
 
     fn on_message<'a>(&self, msg: socket::MessageIn<'a>, sink: socket::Sink) -> socket::Result<()> {
         use bind_action_from_message as bind;
-
         match msg.name {
             "ADD_LINE" => bind::<story::AddLine>(msg, sink),
-            "SEND_PULSE" => bind::<story::SavePulse>(msg, sink),
+            "SAVE_PULSE" => bind::<story::SavePulse>(msg, sink),
             _ => return Ok(error!("[routes] received unknown msg={:?}", msg)),
         }
     }
 
     fn on_timeout(&self, timeout: socket::Timeout, sink: socket::Sink) -> socket::Result<()> {
-        use bind_action_from_empty as bind;
-
         let scheduled = guard!(Scheduled::from_raw(timeout.value()), else {
             return Ok(error!("[routes] received unknown timeout={:?}", timeout))
         });
 
+        use bind_action_from_empty as bind;
         match scheduled {
             Scheduled::FindPulse => bind::<story::FindPulse>(sink),
             Scheduled::TestPulse => bind::<story::TestPulse>(sink),
@@ -71,12 +69,11 @@ impl Sink {
 
     pub fn send_to(&self, id: &Id, event: Outbound) {
         use bind_message_from_data as bind;
-
         let message = match event {
             Outbound::ShowQueue(d) => bind("SHOW_QUEUE", d),
             Outbound::ShowPrompt(d) => bind("SHOW_PROMPT", d),
             Outbound::ShowThanks => bind("SHOW_THANKS", ()),
-            Outbound::CheckPulse => bind("CHECK_PULSE", ()),
+            Outbound::FindPulse => bind("FIND_PULSE", ()),
             Outbound::ShowDisconnected => bind("SHOW_DISCONNECTED", ()),
             Outbound::ShowInternalError(d) => bind("SHOW_INTERNAL_ERROR", d),
         };

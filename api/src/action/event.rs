@@ -7,7 +7,7 @@ pub enum Outbound {
     ShowQueue(story::Position),
     ShowPrompt(story::Prompt),
     ShowThanks,
-    CheckPulse,
+    FindPulse,
     ShowDisconnected,
     ShowInternalError(Error),
 }
