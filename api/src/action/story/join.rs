@@ -1,4 +1,4 @@
-use super::shared::send_position_updates_to;
+use super::send_position;
 use crate::action::action::Action;
 use crate::action::event::Outbound;
 use crate::action::routes::Sink;
@@ -27,15 +27,14 @@ impl Action for Join {
         });
 
         // join story
-        story.join(sink.id().into());
-
+        story.join(sink.id());
         if let Err(error) = repo.save_queue(&mut story) {
             return sink.send(Outbound::show_error(&error));
         }
 
-        // send updates to story authors
+        // broadcast position to new author
         if let Some(author) = story.new_author() {
-            send_position_updates_to(author, &story, &sink);
+            send_position::to_author(author, &story, &sink);
         }
     }
 }

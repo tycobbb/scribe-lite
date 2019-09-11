@@ -1,4 +1,4 @@
-use super::shared::send_position_updates_to;
+use super::send_position;
 use crate::action::action::Action;
 use crate::action::event::{Outbound, Scheduled};
 use crate::action::routes::Sink;
@@ -30,26 +30,25 @@ impl Action for TestPulse {
             return
         });
 
-        // if the author was active in the last 60s
+        // if the author was active in the last 60s, schedule a new check
         if !active_author.is_idle() {
             sink.schedule(
                 Scheduled::FindPulse,
                 active_author.find_pulse_at_millis() as u64,
             );
-        } else {
-            // otherwise, remove the idle author
-            story.remove_active_author();
+            return
+        }
 
-            if let Err(error) = repo.save_queue(&mut story) {
-                return sink.send(Outbound::show_error(&error));
-            }
+        // otherwise, the author is idling so remove them
+        story.remove_active_author();
+        if let Err(error) = repo.save_queue(&mut story) {
+            return sink.send(Outbound::show_error(&error));
+        }
 
-            // send updates to story authors
-            sink.send(Outbound::ShowDisconnected);
-
-            for author in story.authors_with_new_positions() {
-                send_position_updates_to(author, &story, &sink);
-            }
+        // and send new positions to queued authors
+        sink.send(Outbound::ShowDisconnected);
+        for author in story.authors_with_new_positions() {
+            send_position::to_author(author, &story, &sink);
         }
     }
 }

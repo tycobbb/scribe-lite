@@ -1,4 +1,4 @@
-mod shared;
+mod send_position;
 
 mod join;
 pub use self::join::Join;

@@ -20,6 +20,7 @@ import Styles.Mixins as Mixins
 import Timers
 
 import Scenes.Story.Editor as Editor
+import Scenes.Story.Pulse as Pulse
 import Views.Scene as Scene
 import Views.Button as Button
 
@@ -39,6 +40,7 @@ init =
 
 -- model --
 type alias Model =
+  Pulse.Model
   { editor   : Editor.Model
   , isQueued : Bool
   , date     : String
@@ -46,19 +48,18 @@ type alias Model =
   , subtitle : String
   , email    : String
   , name     : String
-  , activeAt : Maybe Time.Posix
   }
 
 initModel : Editor.Model -> Model
 initModel editor =
-  { editor   = editor
-  , isQueued = True
-  , date     = "Friday May 24 (2017)"
-  , title    = ""
-  , subtitle = ""
-  , email    = ""
-  , name     = ""
-  , activeAt = Nothing
+  { editor    = editor
+  , isQueued  = True
+  , date      = "Friday May 24 (2017)"
+  , title     = ""
+  , subtitle  = ""
+  , email     = ""
+  , name      = ""
+  , timestamp = Nothing
   }
 
 -- model/queries
@@ -146,13 +147,13 @@ update session msg model =
         |> State.withCmd (Browser.Navigation.replaceUrl session.key "/thanks")
     FindPulse _ ->
       model
-        |> State.withCmd (savePulse model)
+        |> Pulse.find
     RecordActivity ->
       model
-        |> State.withCmd (Task.perform RecordActivityTime Time.now)
+        |> Pulse.refresh RecordActivityTime
     RecordActivityTime activeAt ->
-      { model | activeAt = Just activeAt }
-        |> State.withoutCmd
+      model
+        |> Pulse.setTimestamp activeAt
     EditorMsg lineMsg ->
       State.just model
         |> State.merge setEditor EditorMsg (Editor.update lineMsg model.editor)
@@ -166,8 +167,8 @@ subscriptions model =
     [ showQueue
     , showPrompt
     , showThanks
-    , findPulse
-    , recordActivity
+    , Pulse.onFind FindPulse Ignored
+    , Pulse.onRefresh RecordActivity
     ]
 
 -- impls --
@@ -203,37 +204,6 @@ showPrompt =
     decodePrompt
       |> Socket.Event "SHOW_PROMPT"
       |> Socket.subscribe ShowPrompt Ignored
-
--- impls/activity
-recordActivity : Sub Msg
-recordActivity =
-  Sub.batch
-    [ Browser.Events.onMouseMove (JD.succeed RecordActivity)
-    , Browser.Events.onKeyPress (JD.succeed RecordActivity)
-    ]
-
--- impls/pulse
-findPulse : Sub Msg
-findPulse =
-  JD.null True
-    |> Socket.Event "FIND_PULSE"
-    |> Socket.subscribe FindPulse Ignored
-
-savePulse : Model -> Cmd Msg
-savePulse model =
-  let
-    encodePulse timestamp =
-      JE.object
-        [ ("millis", JE.int (Time.posixToMillis timestamp))
-        ]
-    pushPulse data =
-      data
-        |> Socket.MessageOut "SAVE_PULSE"
-        |> Socket.push
-  in
-    model.activeAt
-      |> Maybe.map (encodePulse >> pushPulse)
-      |> Maybe.withDefault Cmd.none
 
 -- impls/add-line
 addLine : Model -> Cmd Msg

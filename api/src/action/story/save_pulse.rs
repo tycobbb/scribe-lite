@@ -35,7 +35,6 @@ impl Action for SavePulse {
 
         // update the author's pulse
         story.update_active_author_pulse(self.pulse.timestamp);
-
         if let Err(error) = repo.save_queue(&mut story) {
             return sink.send(Outbound::show_error(&error));
         }

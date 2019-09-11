@@ -1,7 +1,9 @@
 use std::io::Write;
 
+// -- impls --
 pub fn setup() {
     let mut logs = env_logger::Builder::from_default_env();
+
     logs.format(|buf, record| {
         writeln!(
             buf,
@@ -15,6 +17,7 @@ pub fn setup() {
     logs.init();
 }
 
+// -- impls/helpers
 fn format_level<'a>(level: log::Level) -> &'a str {
     match level {
         log::Level::Error => "E",

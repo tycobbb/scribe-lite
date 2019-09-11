@@ -17,14 +17,16 @@ pub struct Sink {
 // -- impls --
 // -- impls/inbound
 impl socket::Routes for Routes {
-    // -- impls/commands
+    // -- impls/events
     fn on_connect(&self, sink: socket::Sink) -> socket::Result<()> {
         use bind_action_from_empty as bind;
+
         bind::<story::Join>(sink)
     }
 
     fn on_message<'a>(&self, msg: socket::MessageIn<'a>, sink: socket::Sink) -> socket::Result<()> {
         use bind_action_from_message as bind;
+
         match msg.name {
             "ADD_LINE" => bind::<story::AddLine>(msg, sink),
             "SAVE_PULSE" => bind::<story::SavePulse>(msg, sink),
@@ -33,11 +35,12 @@ impl socket::Routes for Routes {
     }
 
     fn on_timeout(&self, timeout: socket::Timeout, sink: socket::Sink) -> socket::Result<()> {
+        use bind_action_from_empty as bind;
+
         let scheduled = guard!(Scheduled::from_raw(timeout.value()), else {
             return Ok(error!("[routes] received unknown timeout={:?}", timeout))
         });
 
-        use bind_action_from_empty as bind;
         match scheduled {
             Scheduled::FindPulse => bind::<story::FindPulse>(sink),
             Scheduled::TestPulse => bind::<story::TestPulse>(sink),
@@ -46,13 +49,14 @@ impl socket::Routes for Routes {
 
     fn on_disconnect(&self, sink: socket::Sink) -> socket::Result<()> {
         use bind_action_from_empty as bind;
+
         bind::<story::Leave>(sink)
     }
 }
 
 // -- impls/outbound
 impl Sink {
-    // -- impls/init --
+    // -- impls/init
     pub fn new(sink: socket::Sink) -> Self {
         Sink { sink: sink }
     }
@@ -69,6 +73,7 @@ impl Sink {
 
     pub fn send_to(&self, id: &Id, event: Outbound) {
         use bind_message_from_data as bind;
+
         let message = match event {
             Outbound::ShowQueue(d) => bind("SHOW_QUEUE", d),
             Outbound::ShowPrompt(d) => bind("SHOW_PROMPT", d),
